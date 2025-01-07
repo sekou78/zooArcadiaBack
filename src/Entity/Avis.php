@@ -22,6 +22,9 @@ class Avis
     #[ORM\Column]
     private ?bool $isVisible = null;
 
+    #[ORM\ManyToOne(inversedBy: 'avis')]
+    private ?Animal $animal = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -59,6 +62,18 @@ class Avis
     public function setVisible(bool $isVisible): static
     {
         $this->isVisible = $isVisible;
+
+        return $this;
+    }
+
+    public function getAnimal(): ?Animal
+    {
+        return $this->animal;
+    }
+
+    public function setAnimal(?Animal $animal): static
+    {
+        $this->animal = $animal;
 
         return $this;
     }
