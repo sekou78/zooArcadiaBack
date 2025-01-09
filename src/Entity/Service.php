@@ -2,27 +2,30 @@
 
 namespace App\Entity;
 
-use App\Repository\RoleRepository;
+use App\Repository\ServiceRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: RoleRepository::class)]
-class Role
+#[ORM\Entity(repositoryClass: ServiceRepository::class)]
+class Service
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 50)]
-    private ?string $label = null;
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $nom = null;
+
+    #[ORM\Column(length: 250, nullable: true)]
+    private ?string $description = null;
 
     /**
      * @var Collection<int, User>
      */
-    #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'role')]
-    private Collection $users;
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'services')]
+    private Collection $utilisateurs;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
@@ -32,7 +35,7 @@ class Role
 
     public function __construct()
     {
-        $this->users = new ArrayCollection();
+        $this->utilisateurs = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -40,14 +43,26 @@ class Role
         return $this->id;
     }
 
-    public function getLabel(): ?string
+    public function getNom(): ?string
     {
-        return $this->label;
+        return $this->nom;
     }
 
-    public function setLabel(string $label): static
+    public function setNom(?string $nom): static
     {
-        $this->label = $label;
+        $this->nom = $nom;
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): static
+    {
+        $this->description = $description;
 
         return $this;
     }
@@ -55,29 +70,23 @@ class Role
     /**
      * @return Collection<int, User>
      */
-    public function getUsers(): Collection
+    public function getUtilisateurs(): Collection
     {
-        return $this->users;
+        return $this->utilisateurs;
     }
 
-    public function addUser(User $user): static
+    public function addUtilisateur(User $utilisateur): static
     {
-        if (!$this->users->contains($user)) {
-            $this->users->add($user);
-            $user->setRole($this);
+        if (!$this->utilisateurs->contains($utilisateur)) {
+            $this->utilisateurs->add($utilisateur);
         }
 
         return $this;
     }
 
-    public function removeUser(User $user): static
+    public function removeUtilisateur(User $utilisateur): static
     {
-        if ($this->users->removeElement($user)) {
-            // set the owning side to null (unless already changed)
-            if ($user->getRole() === $this) {
-                $user->setRole(null);
-            }
-        }
+        $this->utilisateurs->removeElement($utilisateur);
 
         return $this;
     }
