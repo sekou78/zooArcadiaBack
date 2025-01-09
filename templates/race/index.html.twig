@@ -1,20 +1,39 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello RaceController!{% endblock %}
+{% block title %}Race index{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+    <h1>Race index</h1>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Label</th>
+                <th>CreatedAt</th>
+                <th>UpdatedAt</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for race in races %}
+            <tr>
+                <td>{{ race.id }}</td>
+                <td>{{ race.label }}</td>
+                <td>{{ race.createdAt ? race.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ race.updatedAt ? race.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_race_show', {'id': race.id}) }}">show</a>
+                    <a href="{{ path('app_race_edit', {'id': race.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/Users/sciss/Downloads/ECF/zooArcadiaBack/src/Controller/RaceController.php</code></li>
-        <li>Your template at <code>C:/Users/sciss/Downloads/ECF/zooArcadiaBack/templates/race/index.html.twig</code></li>
-    </ul>
-</div>
+    <a href="{{ path('app_race_new') }}">Create new</a>
 {% endblock %}
