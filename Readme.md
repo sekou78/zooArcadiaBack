@@ -1,7 +1,7 @@
 # Instructions installation
 
     * Project requirements
-        - PHP >=7.2.5 ou supérieur
+        - PHP >=8.2.12 ou supérieur
         - SQL >=8.0
         - Symfony CLI
         - Composer
@@ -23,4 +23,4 @@
 
     * Mise en place du fichier .env.local et paramétrage
         - $ cp .env .env.local
-        - $ php bin/console d:d:c
+        - $ php bin/console database:doctrine:create
