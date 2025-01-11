@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Habitat;
-use App\Form\HabitatType;
 use App\Repository\HabitatRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,6 +13,12 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/habitat')]
 final class HabitatController extends AbstractController
 {
+    public function __construct(
+        private EntityManagerInterface $manager, 
+        private HabitatRepository $repository)
+    {
+        
+    }
     #[Route(name: 'app_habitat_index', methods: ['GET'])]
     public function index(HabitatRepository $habitatRepository): Response
     {
@@ -22,59 +27,71 @@ final class HabitatController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'app_habitat_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/new', name: 'app_habitat_new', methods: ['POST'])]
+    public function new(): Response
     {
         $habitat = new Habitat();
-        $form = $this->createForm(HabitatType::class, $habitat);
-        $form->handleRequest($request);
+        $habitat->setName('Toto');
+        $habitat->setDescription("La description");
+        $habitat->setCommentHabitat("Commentaire habitat");
+        $habitat->setCreatedAt(new \DateTimeImmutable());
+        $habitat->setUpdatedAt(new \DateTimeImmutable());
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($habitat);
-            $entityManager->flush();
+        $this->manager->persist($habitat);
+        $this->manager->flush();
 
-            return $this->redirectToRoute('app_habitat_index', [], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->render('habitat/new.html.twig', [
-            'habitat' => $habitat,
-            'form' => $form,
-        ]);
+        return $this->json(
+            ['message' => "Habitat resource created with {$habitat->getId()} id"],
+            Response::HTTP_CREATED,
+        );
     }
 
     #[Route('/{id}', name: 'app_habitat_show', methods: ['GET'])]
-    public function show(Habitat $habitat): Response
+    public function show(int $id): Response
     {
-        return $this->render('habitat/show.html.twig', [
-            'habitat' => $habitat,
+        $habitat = $this->repository->findOneBy(['id' => $id]);
+
+        if (!$habitat) {
+            throw $this->createNotFoundException("Pas d'habitat trouvé pour cet {$id} id");
+        }
+
+        return $this->json(
+            ['message' => "l'habitat trouvé : 
+            {$habitat->getName()}
+            {$habitat->getDescription()}
+            {$habitat->getCommentHabitat()}
+            pour {$habitat->getId()} id"
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'app_habitat_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Habitat $habitat, EntityManagerInterface $entityManager): Response
+    #[Route('/edit/{id}', name: 'app_habitat_edit', methods: ['PUT'])]
+    public function edit(int $id): Response
     {
-        $form = $this->createForm(HabitatType::class, $habitat);
-        $form->handleRequest($request);
+        $habitat = $this->repository->findOneBy(['id' => $id]);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_habitat_index', [], Response::HTTP_SEE_OTHER);
+        if (!$habitat) {
+            throw $this->createNotFoundException("Pas d'habitat trouvé pour cet {$id} id");
         }
 
-        return $this->render('habitat/edit.html.twig', [
-            'habitat' => $habitat,
-            'form' => $form,
-        ]);
+        $habitat->setName('Loute');
+        $habitat->setDescription("La description modifié");
+        $habitat->setCommentHabitat("Commentaire habitat modifié");
+        $this->manager->flush();
+
+        return $this->redirectToRoute('app_habitat_show', ['id' => $habitat->getId()]);
     }
 
-    #[Route('/{id}', name: 'app_habitat_delete', methods: ['POST'])]
-    public function delete(Request $request, Habitat $habitat, EntityManagerInterface $entityManager): Response
+    #[Route('/{id}', name: 'app_habitat_delete', methods: ['DELETE'])]
+    public function delete(int $id): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$habitat->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($habitat);
-            $entityManager->flush();
+        $habitat = $this->repository->findOneBy(['id' => $id]);
+
+        if (!$habitat) {
+            throw $this->createNotFoundException("Pas d'habitat trouvé pour cet {$id} id");
         }
+
+        $this->manager->remove($habitat);
+        $this->manager->flush();
 
         return $this->redirectToRoute('app_habitat_index', [], Response::HTTP_SEE_OTHER);
     }

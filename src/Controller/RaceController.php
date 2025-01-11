@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Race;
-use App\Form\RaceType;
 use App\Repository\RaceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,6 +13,12 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/race')]
 final class RaceController extends AbstractController
 {
+    public function __construct(
+        private EntityManagerInterface $manager, 
+        private RaceRepository $repository)
+    {
+        
+    }
     #[Route(name: 'app_race_index', methods: ['GET'])]
     public function index(RaceRepository $raceRepository): Response
     {
@@ -22,59 +27,65 @@ final class RaceController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'app_race_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/new', name: 'app_race_new', methods: ['POST'])]
+    public function new(): Response
     {
         $race = new Race();
-        $form = $this->createForm(RaceType::class, $race);
-        $form->handleRequest($request);
+        $race->setLabel('Ma babel');
+        $race->setCreatedAt(new \DateTimeImmutable());
+        $race->setUpdatedAt(new \DateTimeImmutable());
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($race);
-            $entityManager->flush();
+        $this->manager->persist($race);
+        $this->manager->flush();
 
-            return $this->redirectToRoute('app_race_index', [], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->render('race/new.html.twig', [
-            'race' => $race,
-            'form' => $form,
-        ]);
+        return $this->json(
+            ['message' => "Race resource created with {$race->getId()} id"],
+            Response::HTTP_CREATED,
+        );
     }
 
     #[Route('/{id}', name: 'app_race_show', methods: ['GET'])]
-    public function show(Race $race): Response
+    public function show(int $id): Response
     {
-        return $this->render('race/show.html.twig', [
-            'race' => $race,
+        $race = $this->repository->findOneBy(['id' => $id]);
+
+        if (!$race) {
+            throw $this->createNotFoundException("Pas d'race trouvé pour cet {$id} id");
+        }
+
+        return $this->json(
+            ['message' => "la race trouvé : 
+            {$race->getLabel()}
+            pour {$race->getId()} id"
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'app_race_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Race $race, EntityManagerInterface $entityManager): Response
+    #[Route('/edit/{id}', name: 'app_race_edit', methods: ['PUT'])]
+    public function edit(int $id): Response
     {
-        $form = $this->createForm(RaceType::class, $race);
-        $form->handleRequest($request);
+        $race = $this->repository->findOneBy(['id' => $id]);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_race_index', [], Response::HTTP_SEE_OTHER);
+        if (!$race) {
+            throw $this->createNotFoundException("Pas de race trouvé pour cet {$id} id");
         }
 
-        return $this->render('race/edit.html.twig', [
-            'race' => $race,
-            'form' => $form,
-        ]);
+        $race->setLabel('Nos babel modifié');
+        $this->manager->flush();
+
+        return $this->redirectToRoute('app_race_show', ['id' => $race->getId()]);
     }
 
-    #[Route('/{id}', name: 'app_race_delete', methods: ['POST'])]
-    public function delete(Request $request, Race $race, EntityManagerInterface $entityManager): Response
+    #[Route('/{id}', name: 'app_race_delete', methods: ['DELETE'])]
+    public function delete(int $id): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$race->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($race);
-            $entityManager->flush();
+        $race = $this->repository->findOneBy(['id' => $id]);
+
+        if (!$race) {
+            throw $this->createNotFoundException("Pas d'race trouvé pour cet {$id} id");
         }
+
+        $this->manager->remove($race);
+        $this->manager->flush();
 
         return $this->redirectToRoute('app_race_index', [], Response::HTTP_SEE_OTHER);
     }

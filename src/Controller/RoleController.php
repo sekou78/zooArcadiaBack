@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Role;
-use App\Form\RoleType;
 use App\Repository\RoleRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,6 +13,12 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/role')]
 final class RoleController extends AbstractController
 {
+    public function __construct(
+        private EntityManagerInterface $manager, 
+        private RoleRepository $repository)
+    {
+        
+    }
     #[Route(name: 'app_role_index', methods: ['GET'])]
     public function index(RoleRepository $roleRepository): Response
     {
@@ -22,59 +27,65 @@ final class RoleController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'app_role_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/new', name: 'app_role_new', methods: ['POST'])]
+    public function new(): Response
     {
         $role = new Role();
-        $form = $this->createForm(RoleType::class, $role);
-        $form->handleRequest($request);
+        $role->setLabel('le babel');
+        $role->setCreatedAt(new \DateTimeImmutable());
+        $role->setUpdatedAt(new \DateTimeImmutable());
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($role);
-            $entityManager->flush();
+        $this->manager->persist($role);
+        $this->manager->flush();
 
-            return $this->redirectToRoute('app_role_index', [], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->render('role/new.html.twig', [
-            'role' => $role,
-            'form' => $form,
-        ]);
+        return $this->json(
+            ['message' => "Role resource created with {$role->getId()} id"],
+            Response::HTTP_CREATED,
+        );
     }
 
     #[Route('/{id}', name: 'app_role_show', methods: ['GET'])]
-    public function show(Role $role): Response
+    public function show(int $id): Response
     {
-        return $this->render('role/show.html.twig', [
-            'role' => $role,
+        $role = $this->repository->findOneBy(['id' => $id]);
+
+        if (!$role) {
+            throw $this->createNotFoundException("Pas de role trouvé pour cet {$id} id");
+        }
+
+        return $this->json(
+            ['message' => "le role trouvé : 
+            {$role->getLabel()}
+            pour {$role->getId()} id"
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'app_role_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Role $role, EntityManagerInterface $entityManager): Response
+    #[Route('/edit/{id}', name: 'app_role_edit', methods: ['PUT'])]
+    public function edit(int $id): Response
     {
-        $form = $this->createForm(RoleType::class, $role);
-        $form->handleRequest($request);
+        $role = $this->repository->findOneBy(['id' => $id]);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_role_index', [], Response::HTTP_SEE_OTHER);
+        if (!$role) {
+            throw $this->createNotFoundException("Pas d'role trouvé pour cet {$id} id");
         }
 
-        return $this->render('role/edit.html.twig', [
-            'role' => $role,
-            'form' => $form,
-        ]);
+        $role->setLabel('Ma babel modifié');
+        $this->manager->flush();
+
+        return $this->redirectToRoute('app_role_show', ['id' => $role->getId()]);
     }
 
-    #[Route('/{id}', name: 'app_role_delete', methods: ['POST'])]
-    public function delete(Request $request, Role $role, EntityManagerInterface $entityManager): Response
+    #[Route('/{id}', name: 'app_role_delete', methods: ['DELETE'])]
+    public function delete(int $id): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$role->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($role);
-            $entityManager->flush();
+        $role = $this->repository->findOneBy(['id' => $id]);
+
+        if (!$role) {
+            throw $this->createNotFoundException("Pas d'role trouvé pour cet {$id} id");
         }
+
+        $this->manager->remove($role);
+        $this->manager->flush();
 
         return $this->redirectToRoute('app_role_index', [], Response::HTTP_SEE_OTHER);
     }

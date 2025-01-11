@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\RapportVeterinaire;
-use App\Form\RapportVeterinaireType;
 use App\Repository\RapportVeterinaireRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -11,70 +10,85 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/rapport/veterinaire')]
+#[Route('/rapport_veterinaire')]
 final class RapportVeterinaireController extends AbstractController
 {
+    public function __construct(
+        private EntityManagerInterface $manager, 
+        private RapportVeterinaireRepository $repository)
+    {
+        
+    }
     #[Route(name: 'app_rapport_veterinaire_index', methods: ['GET'])]
-    public function index(RapportVeterinaireRepository $rapportVeterinaireRepository): Response
+    public function index(RapportVeterinaireRepository $rapport_veterinaireRepository): Response
     {
         return $this->render('rapport_veterinaire/index.html.twig', [
-            'rapport_veterinaires' => $rapportVeterinaireRepository->findAll(),
+            'rapport_veterinaires' => $rapport_veterinaireRepository->findAll(),
         ]);
     }
 
-    #[Route('/new', name: 'app_rapport_veterinaire_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/new', name: 'app_rapport_veterinaire_new', methods: ['POST'])]
+    public function new(): Response
     {
-        $rapportVeterinaire = new RapportVeterinaire();
-        $form = $this->createForm(RapportVeterinaireType::class, $rapportVeterinaire);
-        $form->handleRequest($request);
+        $rapport_veterinaire = new RapportVeterinaire();
+        $rapport_veterinaire->setDate(new \DateTimeImmutable());
+        $rapport_veterinaire->setDetail("Le bon detail");
+        $rapport_veterinaire->setCreatedAt(new \DateTimeImmutable());
+        $rapport_veterinaire->setUpdatedAt(new \DateTimeImmutable());
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($rapportVeterinaire);
-            $entityManager->flush();
+        $this->manager->persist($rapport_veterinaire);
+        $this->manager->flush();
 
-            return $this->redirectToRoute('app_rapport_veterinaire_index', [], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->render('rapport_veterinaire/new.html.twig', [
-            'rapport_veterinaire' => $rapportVeterinaire,
-            'form' => $form,
-        ]);
+        return $this->json(
+            ['message' => "RapportVeterinaire resource created with {$rapport_veterinaire->getId()} id"],
+            Response::HTTP_CREATED,
+        );
     }
 
     #[Route('/{id}', name: 'app_rapport_veterinaire_show', methods: ['GET'])]
-    public function show(RapportVeterinaire $rapportVeterinaire): Response
+    public function show(int $id): Response
     {
-        return $this->render('rapport_veterinaire/show.html.twig', [
-            'rapport_veterinaire' => $rapportVeterinaire,
+        $rapport_veterinaire = $this->repository->findOneBy(['id' => $id]);
+
+        if (!$rapport_veterinaire) {
+            throw $this->createNotFoundException("Pas de rapport_veterinaire trouvé pour cet {$id} id");
+        }
+
+        return $this->json(
+            ['message' => "le rapport_veterinaire trouvé : 
+            {$rapport_veterinaire->getDate()->format("d-m-Y")}
+            {$rapport_veterinaire->getDetail()}
+            pour {$rapport_veterinaire->getId()} id"
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'app_rapport_veterinaire_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, RapportVeterinaire $rapportVeterinaire, EntityManagerInterface $entityManager): Response
+    #[Route('/edit/{id}', name: 'app_rapport_veterinaire_edit', methods: ['PUT'])]
+    public function edit(int $id): Response
     {
-        $form = $this->createForm(RapportVeterinaireType::class, $rapportVeterinaire);
-        $form->handleRequest($request);
+        $rapport_veterinaire = $this->repository->findOneBy(['id' => $id]);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_rapport_veterinaire_index', [], Response::HTTP_SEE_OTHER);
+        if (!$rapport_veterinaire) {
+            throw $this->createNotFoundException("Pas d'rapport_veterinaire trouvé pour cet {$id} id");
         }
 
-        return $this->render('rapport_veterinaire/edit.html.twig', [
-            'rapport_veterinaire' => $rapportVeterinaire,
-            'form' => $form,
-        ]);
+        $rapport_veterinaire->setDate(new \DateTimeImmutable(), "modifié");
+        $rapport_veterinaire->setDetail("Le detail modifié");
+        $this->manager->flush();
+
+        return $this->redirectToRoute('app_rapport_veterinaire_show', ['id' => $rapport_veterinaire->getId()]);
     }
 
-    #[Route('/{id}', name: 'app_rapport_veterinaire_delete', methods: ['POST'])]
-    public function delete(Request $request, RapportVeterinaire $rapportVeterinaire, EntityManagerInterface $entityManager): Response
+    #[Route('/{id}', name: 'app_rapport_veterinaire_delete', methods: ['DELETE'])]
+    public function delete(int $id): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$rapportVeterinaire->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($rapportVeterinaire);
-            $entityManager->flush();
+        $rapport_veterinaire = $this->repository->findOneBy(['id' => $id]);
+
+        if (!$rapport_veterinaire) {
+            throw $this->createNotFoundException("Pas d'rapport_veterinaire trouvé pour cet {$id} id");
         }
+
+        $this->manager->remove($rapport_veterinaire);
+        $this->manager->flush();
 
         return $this->redirectToRoute('app_rapport_veterinaire_index', [], Response::HTTP_SEE_OTHER);
     }

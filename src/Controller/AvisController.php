@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Avis;
-use App\Form\AvisType;
 use App\Repository\AvisRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,6 +13,12 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/avis')]
 final class AvisController extends AbstractController
 {
+    public function __construct(
+        private EntityManagerInterface $manager, 
+        private AvisRepository $repository)
+    {
+        
+    }
     #[Route(name: 'app_avis_index', methods: ['GET'])]
     public function index(AvisRepository $avisRepository): Response
     {
@@ -22,59 +27,66 @@ final class AvisController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'app_avis_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/new', name: 'app_avis_new', methods: ['POST'])]
+    public function new(): Response
     {
-        $avi = new Avis();
-        $form = $this->createForm(AvisType::class, $avi);
-        $form->handleRequest($request);
+        $avis = new Avis();
+        $avis->setPseudo('Baba');
+        $avis->setComments("Le meilleur des commentaires");
+        $avis->setVisible("");
+        $avis->setCreatedAt(new \DateTimeImmutable());
+        $avis->setUpdatedAt(new \DateTimeImmutable());
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($avi);
-            $entityManager->flush();
+        $this->manager->persist($avis);
+        $this->manager->flush();
 
-            return $this->redirectToRoute('app_avis_index', [], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->render('avis/new.html.twig', [
-            'avi' => $avi,
-            'form' => $form,
-        ]);
+        return $this->json(
+            ['message' => "Avis resource created with {$avis->getId()} id"],
+            Response::HTTP_CREATED,
+        );
     }
 
     #[Route('/{id}', name: 'app_avis_show', methods: ['GET'])]
-    public function show(Avis $avi): Response
+    public function show(int $id): Response
     {
-        return $this->render('avis/show.html.twig', [
-            'avi' => $avi,
+        $avis = $this->repository->findOneBy(['id' => $id]);
+
+        if (!$avis) {
+            throw $this->createNotFoundException("Pas d'avis trouvé pour cet {$id} id");
+        }
+
+        return $this->json(
+            ['message' => "l'avis trouvé : {$avis->getPseudo()} pour {$avis->getId()} id"
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'app_avis_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Avis $avi, EntityManagerInterface $entityManager): Response
+    #[Route('/edit/{id}', name: 'app_avis_edit', methods: ['PUT'])]
+    public function edit(int $id): Response
     {
-        $form = $this->createForm(AvisType::class, $avi);
-        $form->handleRequest($request);
+        $avis = $this->repository->findOneBy(['id' => $id]);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_avis_index', [], Response::HTTP_SEE_OTHER);
+        if (!$avis) {
+            throw $this->createNotFoundException("Pas d'avis trouvé pour cet {$id} id");
         }
 
-        return $this->render('avis/edit.html.twig', [
-            'avi' => $avi,
-            'form' => $form,
-        ]);
+        $avis->setPseudo('Baba');
+        $avis->setComments("Commentaires modifié");
+        $this->manager->flush();
+
+        return $this->redirectToRoute('app_avis_show', ['id' => $avis->getId()]);
     }
 
-    #[Route('/{id}', name: 'app_avis_delete', methods: ['POST'])]
-    public function delete(Request $request, Avis $avi, EntityManagerInterface $entityManager): Response
+    #[Route('/{id}', name: 'app_avis_delete', methods: ['DELETE'])]
+    public function delete(int $id): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$avi->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($avi);
-            $entityManager->flush();
+        $avis = $this->repository->findOneBy(['id' => $id]);
+
+        if (!$avis) {
+            throw $this->createNotFoundException("Pas d'avis trouvé pour cet {$id} id");
         }
+
+        $this->manager->remove($avis);
+        $this->manager->flush();
 
         return $this->redirectToRoute('app_avis_index', [], Response::HTTP_SEE_OTHER);
     }

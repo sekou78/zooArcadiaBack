@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Service;
-use App\Form\ServiceType;
 use App\Repository\ServiceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,6 +13,12 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/service')]
 final class ServiceController extends AbstractController
 {
+    public function __construct(
+        private EntityManagerInterface $manager, 
+        private ServiceRepository $repository)
+    {
+        
+    }
     #[Route(name: 'app_service_index', methods: ['GET'])]
     public function index(ServiceRepository $serviceRepository): Response
     {
@@ -22,59 +27,68 @@ final class ServiceController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'app_service_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/new', name: 'app_service_new', methods: ['POST'])]
+    public function new(): Response
     {
         $service = new Service();
-        $form = $this->createForm(ServiceType::class, $service);
-        $form->handleRequest($request);
+        $service->setNom('Mala');
+        $service->setDescription("La description service");
+        $service->setCreatedAt(new \DateTimeImmutable());
+        $service->setUpdatedAt(new \DateTimeImmutable());
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($service);
-            $entityManager->flush();
+        $this->manager->persist($service);
+        $this->manager->flush();
 
-            return $this->redirectToRoute('app_service_index', [], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->render('service/new.html.twig', [
-            'service' => $service,
-            'form' => $form,
-        ]);
+        return $this->json(
+            ['message' => "Service resource created with {$service->getId()} id"],
+            Response::HTTP_CREATED,
+        );
     }
 
     #[Route('/{id}', name: 'app_service_show', methods: ['GET'])]
-    public function show(Service $service): Response
+    public function show(int $id): Response
     {
-        return $this->render('service/show.html.twig', [
-            'service' => $service,
+        $service = $this->repository->findOneBy(['id' => $id]);
+
+        if (!$service) {
+            throw $this->createNotFoundException("Pas de service trouvé pour cet {$id} id");
+        }
+
+        return $this->json(
+            ['message' => "le service trouvé : 
+            {$service->getNom()}
+            {$service->getDescription()}
+            pour {$service->getId()} id"
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'app_service_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Service $service, EntityManagerInterface $entityManager): Response
+    #[Route('/edit/{id}', name: 'app_service_edit', methods: ['PUT'])]
+    public function edit(int $id): Response
     {
-        $form = $this->createForm(ServiceType::class, $service);
-        $form->handleRequest($request);
+        $service = $this->repository->findOneBy(['id' => $id]);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_service_index', [], Response::HTTP_SEE_OTHER);
+        if (!$service) {
+            throw $this->createNotFoundException("Pas de service trouvé pour cet {$id} id");
         }
 
-        return $this->render('service/edit.html.twig', [
-            'service' => $service,
-            'form' => $form,
-        ]);
+        $service->setNom('Baba');
+        $service->setDescription("La description modifié");
+        $this->manager->flush();
+
+        return $this->redirectToRoute('app_service_show', ['id' => $service->getId()]);
     }
 
-    #[Route('/{id}', name: 'app_service_delete', methods: ['POST'])]
-    public function delete(Request $request, Service $service, EntityManagerInterface $entityManager): Response
+    #[Route('/{id}', name: 'app_service_delete', methods: ['DELETE'])]
+    public function delete(int $id): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$service->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($service);
-            $entityManager->flush();
+        $service = $this->repository->findOneBy(['id' => $id]);
+
+        if (!$service) {
+            throw $this->createNotFoundException("Pas d'service trouvé pour cet {$id} id");
         }
+
+        $this->manager->remove($service);
+        $this->manager->flush();
 
         return $this->redirectToRoute('app_service_index', [], Response::HTTP_SEE_OTHER);
     }

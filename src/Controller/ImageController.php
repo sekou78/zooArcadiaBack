@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Image;
-use App\Form\ImageType;
 use App\Repository\ImageRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,6 +13,12 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/image')]
 final class ImageController extends AbstractController
 {
+    public function __construct(
+        private EntityManagerInterface $manager, 
+        private ImageRepository $repository)
+    {
+        
+    }
     #[Route(name: 'app_image_index', methods: ['GET'])]
     public function index(ImageRepository $imageRepository): Response
     {
@@ -22,59 +27,65 @@ final class ImageController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'app_image_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/new', name: 'app_image_new', methods: ['POST'])]
+    public function new(): Response
     {
         $image = new Image();
-        $form = $this->createForm(ImageType::class, $image);
-        $form->handleRequest($request);
+        $image->setImageData(' ');
+        $image->setCreatedAt(new \DateTimeImmutable());
+        $image->setUpdatedAt(new \DateTimeImmutable());
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($image);
-            $entityManager->flush();
+        $this->manager->persist($image);
+        $this->manager->flush();
 
-            return $this->redirectToRoute('app_image_index', [], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->render('image/new.html.twig', [
-            'image' => $image,
-            'form' => $form,
-        ]);
+        return $this->json(
+            ['message' => "Image resource created with {$image->getId()} id"],
+            Response::HTTP_CREATED,
+        );
     }
 
     #[Route('/{id}', name: 'app_image_show', methods: ['GET'])]
-    public function show(Image $image): Response
+    public function show(int $id): Response
     {
-        return $this->render('image/show.html.twig', [
-            'image' => $image,
+        $image = $this->repository->findOneBy(['id' => $id]);
+
+        if (!$image) {
+            throw $this->createNotFoundException("Pas d'image trouvé pour cet {$id} id");
+        }
+
+        return $this->json(
+            ['message' => "l'image trouvé : 
+            {$image->getImageData()}
+            pour {$image->getId()} id"
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'app_image_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Image $image, EntityManagerInterface $entityManager): Response
+    #[Route('/edit/{id}', name: 'app_image_edit', methods: ['PUT'])]
+    public function edit(int $id): Response
     {
-        $form = $this->createForm(ImageType::class, $image);
-        $form->handleRequest($request);
+        $image = $this->repository->findOneBy(['id' => $id]);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_image_index', [], Response::HTTP_SEE_OTHER);
+        if (!$image) {
+            throw $this->createNotFoundException("Pas d'image trouvé pour cet {$id} id");
         }
 
-        return $this->render('image/edit.html.twig', [
-            'image' => $image,
-            'form' => $form,
-        ]);
+        $image->setImageData('modifié');
+        $this->manager->flush();
+
+        return $this->redirectToRoute('app_image_show', ['id' => $image->getId()]);
     }
 
-    #[Route('/{id}', name: 'app_image_delete', methods: ['POST'])]
-    public function delete(Request $request, Image $image, EntityManagerInterface $entityManager): Response
+    #[Route('/{id}', name: 'app_image_delete', methods: ['DELETE'])]
+    public function delete(int $id): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$image->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($image);
-            $entityManager->flush();
+        $image = $this->repository->findOneBy(['id' => $id]);
+
+        if (!$image) {
+            throw $this->createNotFoundException("Pas d'image trouvé pour cet {$id} id");
         }
+
+        $this->manager->remove($image);
+        $this->manager->flush();
 
         return $this->redirectToRoute('app_image_index', [], Response::HTTP_SEE_OTHER);
     }
