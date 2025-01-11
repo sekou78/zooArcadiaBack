@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit RapportVeterinaire{% endblock %}
+
+{% block body %}
+    <h1>Edit RapportVeterinaire</h1>
+
+    {{ include('rapport_veterinaire/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_rapport_veterinaire_index') }}">back to list</a>
+
+    {{ include('rapport_veterinaire/_delete_form.html.twig') }}
+{% endblock %}
