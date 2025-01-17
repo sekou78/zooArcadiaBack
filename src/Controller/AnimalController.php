@@ -4,89 +4,126 @@ namespace App\Controller;
 
 use App\Entity\Animal;
 use App\Repository\AnimalRepository;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\SerializerInterface;
 
-#[Route('/animal')]
+#[Route('api/animal', name: 'app_api_animal_')]
 final class AnimalController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $manager, 
-        private AnimalRepository $repository)
+        private AnimalRepository $repository,
+        private SerializerInterface $serializer,
+        private UrlGeneratorInterface $urlGenerator
+        )
     {
         
     }
-    #[Route(name: 'app_animal_index', methods: ['GET'])]
-    public function index(AnimalRepository $animalRepository): Response
-    {
-        return $this->render('animal/index.html.twig', [
-            'animals' => $animalRepository->findAll(),
-        ]);
-    }
 
-    #[Route('/new', name: 'app_animal_new', methods: ['POST'])]
-    public function new(): Response
+    #[Route(name: 'new', methods: 'POST')]
+    public function new(Request $request): JsonResponse
     {
-        $animal = new Animal();
-        $animal->setLastname('Toto');
-        $animal->setEtat("good");
-        $animal->setCreatedAt(new \DateTimeImmutable());
-        $animal->setUpdatedAt(new \DateTimeImmutable());
-
+        $animal = $this->serializer->deserialize($request->getContent(), Animal::class, 'json');
+        $animal->setCreatedAt(new DateTimeImmutable());
+        
         $this->manager->persist($animal);
         $this->manager->flush();
 
-        return $this->json(
-            ['message' => "Animal resource created with {$animal->getId()} id"],
+        $responseData = $this->serializer->serialize($animal, 'json');
+        $location = $this->urlGenerator->generate(
+            'app_api_animal_show',
+            ['id' => $animal->getId()],
+            UrlGeneratorInterface::ABSOLUTE_URL,
+        );
+
+        return new JsonResponse(
+            $responseData,
             Response::HTTP_CREATED,
+            ["location" => $location],
+            true
         );
     }
 
-    #[Route('/{id}', name: 'app_animal_show', methods: ['GET'])]
-    public function show(int $id): Response
+    #[Route('/{id}', name: 'show', methods: 'GET')]
+    public function show(int $id): JsonResponse
     {
         $animal = $this->repository->findOneBy(['id' => $id]);
 
-        if (!$animal) {
-            throw $this->createNotFoundException("Pas d'animal trouvé pour cet {$id} id");
+        if ($animal) {
+            $responseData = $this->serializer->serialize($animal,'json');
+
+            return new JsonResponse(
+                $responseData,
+                Response::HTTP_OK,
+                [],
+                true
+            );
         }
 
-        return $this->json(
-            ['message' => "l'animal trouvé : {$animal->getLastname()} pour {$animal->getId()} id"
-        ]);
+        return new JsonResponse(
+            null,
+            Response::HTTP_NOT_FOUND
+        );
     }
 
-    #[Route('/edit/{id}', name: 'app_animal_edit', methods: ['PUT'])]
-    public function edit(int $id): Response
+    #[Route('/{id}', name: 'edit', methods: 'PUT')]
+    public function edit(int $id, Request $request): JsonResponse
     {
         $animal = $this->repository->findOneBy(['id' => $id]);
 
-        if (!$animal) {
-            throw $this->createNotFoundException("Pas d'animal trouvé pour cet {$id} id");
+        if ($animal) {
+            $animal = $this->serializer->deserialize(
+                $request->getContent(),
+                animal::class,
+                'json',
+                [AbstractNormalizer::OBJECT_TO_POPULATE => $animal]
+            );
+            
+                $animal->setUpdatedAt(new DateTimeImmutable());
+            
+                $this->manager->flush();
+            
+                $modify = $this->serializer->serialize($animal, 'json');
+
+                return new JsonResponse(
+                    $modify, 
+                    Response::HTTP_OK, 
+                    [], 
+                    true
+                );
         }
 
-        $animal->setLastname('Toto modifié');
-        $animal->setEtat("good modifié");
-        $this->manager->flush();
-
-        return $this->redirectToRoute('app_animal_show', ['id' => $animal->getId()]);
+        return new JsonResponse(
+            null,
+            Response::HTTP_NOT_FOUND
+        );
     }
 
-    #[Route('/{id}', name: 'app_animal_delete', methods: ['DELETE'])]
-    public function delete(int $id): Response
+
+    #[Route('/{id}', name: 'delete', methods: 'DELETE')]
+    public function delete(int $id): JsonResponse
     {
         $animal = $this->repository->findOneBy(['id' => $id]);
 
-        if (!$animal) {
-            throw $this->createNotFoundException("Pas d'animal trouvé pour cet {$id} id");
+        if ($animal) {
+            $this->manager->remove($animal);
+            $this->manager->flush();
+
+            return new JsonResponse(
+                null,
+                Response::HTTP_NO_CONTENT
+            );
         }
 
-        $this->manager->remove($animal);
-        $this->manager->flush();
-
-        return $this->redirectToRoute('app_animal_index', [], Response::HTTP_SEE_OTHER);
+        return new JsonResponse(
+            null,
+            Response::HTTP_NOT_FOUND
+        );
     }
 }

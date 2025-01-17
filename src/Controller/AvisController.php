@@ -4,90 +4,126 @@ namespace App\Controller;
 
 use App\Entity\Avis;
 use App\Repository\AvisRepository;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\SerializerInterface;
 
-#[Route('/avis')]
+#[Route('api/avis', name: 'app_api_avis_')]
 final class AvisController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $manager, 
-        private AvisRepository $repository)
+        private AvisRepository $repository,
+        private SerializerInterface $serializer,
+        private UrlGeneratorInterface $urlGenerator
+        )
     {
         
     }
-    #[Route(name: 'app_avis_index', methods: ['GET'])]
-    public function index(AvisRepository $avisRepository): Response
-    {
-        return $this->render('avis/index.html.twig', [
-            'avis' => $avisRepository->findAll(),
-        ]);
-    }
 
-    #[Route('/new', name: 'app_avis_new', methods: ['POST'])]
-    public function new(): Response
+    #[Route(name: 'new', methods: 'POST')]
+    public function new(Request $request): JsonResponse
     {
-        $avis = new Avis();
-        $avis->setPseudo('Baba');
-        $avis->setComments("Le meilleur des commentaires");
-        $avis->setVisible("");
-        $avis->setCreatedAt(new \DateTimeImmutable());
-        $avis->setUpdatedAt(new \DateTimeImmutable());
-
+        $avis = $this->serializer->deserialize($request->getContent(), Avis::class, 'json');
+        $avis->setCreatedAt(new DateTimeImmutable());
+        
         $this->manager->persist($avis);
         $this->manager->flush();
 
-        return $this->json(
-            ['message' => "Avis resource created with {$avis->getId()} id"],
+        $responseData = $this->serializer->serialize($avis, 'json');
+        $location = $this->urlGenerator->generate(
+            'app_api_avis_show',
+            ['id' => $avis->getId()],
+            UrlGeneratorInterface::ABSOLUTE_URL,
+        );
+
+        return new JsonResponse(
+            $responseData,
             Response::HTTP_CREATED,
+            ["location" => $location],
+            true
         );
     }
 
-    #[Route('/{id}', name: 'app_avis_show', methods: ['GET'])]
-    public function show(int $id): Response
+    #[Route('/{id}', name: 'show', methods: 'GET')]
+    public function show(int $id): JsonResponse
     {
         $avis = $this->repository->findOneBy(['id' => $id]);
 
-        if (!$avis) {
-            throw $this->createNotFoundException("Pas d'avis trouvé pour cet {$id} id");
+        if ($avis) {
+            $responseData = $this->serializer->serialize($avis,'json');
+
+            return new JsonResponse(
+                $responseData,
+                Response::HTTP_OK,
+                [],
+                true
+            );
         }
 
-        return $this->json(
-            ['message' => "l'avis trouvé : {$avis->getPseudo()} pour {$avis->getId()} id"
-        ]);
+        return new JsonResponse(
+            null,
+            Response::HTTP_NOT_FOUND
+        );
     }
 
-    #[Route('/edit/{id}', name: 'app_avis_edit', methods: ['PUT'])]
-    public function edit(int $id): Response
+    #[Route('/{id}', name: 'edit', methods: 'PUT')]
+    public function edit(int $id, Request $request): JsonResponse
     {
         $avis = $this->repository->findOneBy(['id' => $id]);
 
-        if (!$avis) {
-            throw $this->createNotFoundException("Pas d'avis trouvé pour cet {$id} id");
+        if ($avis) {
+            $avis = $this->serializer->deserialize(
+                $request->getContent(),
+                avis::class,
+                'json',
+                [AbstractNormalizer::OBJECT_TO_POPULATE => $avis]
+            );
+            
+                $avis->setUpdatedAt(new DateTimeImmutable());
+            
+                $this->manager->flush();
+            
+                $modify = $this->serializer->serialize($avis, 'json');
+
+                return new JsonResponse(
+                    $modify, 
+                    Response::HTTP_OK, 
+                    [], 
+                    true
+                );
         }
 
-        $avis->setPseudo('Baba');
-        $avis->setComments("Commentaires modifié");
-        $this->manager->flush();
-
-        return $this->redirectToRoute('app_avis_show', ['id' => $avis->getId()]);
+        return new JsonResponse(
+            null,
+            Response::HTTP_NOT_FOUND
+        );
     }
 
-    #[Route('/{id}', name: 'app_avis_delete', methods: ['DELETE'])]
-    public function delete(int $id): Response
+
+    #[Route('/{id}', name: 'delete', methods: 'DELETE')]
+    public function delete(int $id): JsonResponse
     {
         $avis = $this->repository->findOneBy(['id' => $id]);
 
-        if (!$avis) {
-            throw $this->createNotFoundException("Pas d'avis trouvé pour cet {$id} id");
+        if ($avis) {
+            $this->manager->remove($avis);
+            $this->manager->flush();
+
+            return new JsonResponse(
+                null,
+                Response::HTTP_NO_CONTENT
+            );
         }
 
-        $this->manager->remove($avis);
-        $this->manager->flush();
-
-        return $this->redirectToRoute('app_avis_index', [], Response::HTTP_SEE_OTHER);
+        return new JsonResponse(
+            null,
+            Response::HTTP_NOT_FOUND
+        );
     }
 }

@@ -4,95 +4,126 @@ namespace App\Controller;
 
 use App\Entity\Habitat;
 use App\Repository\HabitatRepository;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\SerializerInterface;
 
-#[Route('/habitat')]
+#[Route('api/habitat', name: 'app_api_habitat_')]
 final class HabitatController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $manager, 
-        private HabitatRepository $repository)
+        private HabitatRepository $repository,
+        private SerializerInterface $serializer,
+        private UrlGeneratorInterface $urlGenerator
+        )
     {
         
     }
-    #[Route(name: 'app_habitat_index', methods: ['GET'])]
-    public function index(HabitatRepository $habitatRepository): Response
-    {
-        return $this->render('habitat/index.html.twig', [
-            'habitats' => $habitatRepository->findAll(),
-        ]);
-    }
 
-    #[Route('/new', name: 'app_habitat_new', methods: ['POST'])]
-    public function new(): Response
+    #[Route(name: 'new', methods: 'POST')]
+    public function new(Request $request): JsonResponse
     {
-        $habitat = new Habitat();
-        $habitat->setName('Toto');
-        $habitat->setDescription("La description");
-        $habitat->setCommentHabitat("Commentaire habitat");
-        $habitat->setCreatedAt(new \DateTimeImmutable());
-        $habitat->setUpdatedAt(new \DateTimeImmutable());
-
+        $habitat = $this->serializer->deserialize($request->getContent(), Habitat::class, 'json');
+        $habitat->setCreatedAt(new DateTimeImmutable());
+        
         $this->manager->persist($habitat);
         $this->manager->flush();
 
-        return $this->json(
-            ['message' => "Habitat resource created with {$habitat->getId()} id"],
+        $responseData = $this->serializer->serialize($habitat, 'json');
+        $location = $this->urlGenerator->generate(
+            'app_api_habitat_show',
+            ['id' => $habitat->getId()],
+            UrlGeneratorInterface::ABSOLUTE_URL,
+        );
+
+        return new JsonResponse(
+            $responseData,
             Response::HTTP_CREATED,
+            ["location" => $location],
+            true
         );
     }
 
-    #[Route('/{id}', name: 'app_habitat_show', methods: ['GET'])]
-    public function show(int $id): Response
+    #[Route('/{id}', name: 'show', methods: 'GET')]
+    public function show(int $id): JsonResponse
     {
         $habitat = $this->repository->findOneBy(['id' => $id]);
 
-        if (!$habitat) {
-            throw $this->createNotFoundException("Pas d'habitat trouvé pour cet {$id} id");
+        if ($habitat) {
+            $responseData = $this->serializer->serialize($habitat,'json');
+
+            return new JsonResponse(
+                $responseData,
+                Response::HTTP_OK,
+                [],
+                true
+            );
         }
 
-        return $this->json(
-            ['message' => "l'habitat trouvé : 
-            {$habitat->getName()}
-            {$habitat->getDescription()}
-            {$habitat->getCommentHabitat()}
-            pour {$habitat->getId()} id"
-        ]);
+        return new JsonResponse(
+            null,
+            Response::HTTP_NOT_FOUND
+        );
     }
 
-    #[Route('/edit/{id}', name: 'app_habitat_edit', methods: ['PUT'])]
-    public function edit(int $id): Response
+    #[Route('/{id}', name: 'edit', methods: 'PUT')]
+    public function edit(int $id, Request $request): JsonResponse
     {
         $habitat = $this->repository->findOneBy(['id' => $id]);
 
-        if (!$habitat) {
-            throw $this->createNotFoundException("Pas d'habitat trouvé pour cet {$id} id");
+        if ($habitat) {
+            $habitat = $this->serializer->deserialize(
+                $request->getContent(),
+                habitat::class,
+                'json',
+                [AbstractNormalizer::OBJECT_TO_POPULATE => $habitat]
+            );
+            
+                $habitat->setUpdatedAt(new DateTimeImmutable());
+            
+                $this->manager->flush();
+            
+                $modify = $this->serializer->serialize($habitat, 'json');
+
+                return new JsonResponse(
+                    $modify, 
+                    Response::HTTP_OK, 
+                    [], 
+                    true
+                );
         }
 
-        $habitat->setName('Loute');
-        $habitat->setDescription("La description modifié");
-        $habitat->setCommentHabitat("Commentaire habitat modifié");
-        $this->manager->flush();
-
-        return $this->redirectToRoute('app_habitat_show', ['id' => $habitat->getId()]);
+        return new JsonResponse(
+            null,
+            Response::HTTP_NOT_FOUND
+        );
     }
 
-    #[Route('/{id}', name: 'app_habitat_delete', methods: ['DELETE'])]
-    public function delete(int $id): Response
+
+    #[Route('/{id}', name: 'delete', methods: 'DELETE')]
+    public function delete(int $id): JsonResponse
     {
         $habitat = $this->repository->findOneBy(['id' => $id]);
 
-        if (!$habitat) {
-            throw $this->createNotFoundException("Pas d'habitat trouvé pour cet {$id} id");
+        if ($habitat) {
+            $this->manager->remove($habitat);
+            $this->manager->flush();
+
+            return new JsonResponse(
+                null,
+                Response::HTTP_NO_CONTENT
+            );
         }
 
-        $this->manager->remove($habitat);
-        $this->manager->flush();
-
-        return $this->redirectToRoute('app_habitat_index', [], Response::HTTP_SEE_OTHER);
+        return new JsonResponse(
+            null,
+            Response::HTTP_NOT_FOUND
+        );
     }
 }
