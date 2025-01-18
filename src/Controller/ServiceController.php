@@ -4,92 +4,123 @@ namespace App\Controller;
 
 use App\Entity\Service;
 use App\Repository\ServiceRepository;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\SerializerInterface;
 
-#[Route('/service')]
+#[Route('api/service', name: 'app_api_service_')]
 final class ServiceController extends AbstractController
 {
     public function __construct(
-        private EntityManagerInterface $manager, 
-        private ServiceRepository $repository)
-    {
-        
-    }
-    #[Route(name: 'app_service_index', methods: ['GET'])]
-    public function index(ServiceRepository $serviceRepository): Response
-    {
-        return $this->render('service/index.html.twig', [
-            'services' => $serviceRepository->findAll(),
-        ]);
-    }
+        private EntityManagerInterface $manager,
+        private ServiceRepository $repository,
+        private SerializerInterface $serializer,
+        private UrlGeneratorInterface $urlGenerator
+    ) {}
 
-    #[Route('/new', name: 'app_service_new', methods: ['POST'])]
-    public function new(): Response
+    #[Route(name: 'new', methods: 'POST')]
+    public function new(Request $request): JsonResponse
     {
-        $service = new Service();
-        $service->setNom('Mala');
-        $service->setDescription("La description service");
-        $service->setCreatedAt(new \DateTimeImmutable());
-        $service->setUpdatedAt(new \DateTimeImmutable());
+        $service = $this->serializer->deserialize($request->getContent(), Service::class, 'json');
+        $service->setCreatedAt(new DateTimeImmutable());
 
         $this->manager->persist($service);
         $this->manager->flush();
 
-        return $this->json(
-            ['message' => "Service resource created with {$service->getId()} id"],
+        $responseData = $this->serializer->serialize($service, 'json');
+        $location = $this->urlGenerator->generate(
+            'app_api_service_show',
+            ['id' => $service->getId()],
+            UrlGeneratorInterface::ABSOLUTE_URL,
+        );
+
+        return new JsonResponse(
+            $responseData,
             Response::HTTP_CREATED,
+            ["location" => $location],
+            true
         );
     }
 
-    #[Route('/{id}', name: 'app_service_show', methods: ['GET'])]
-    public function show(int $id): Response
+    #[Route('/{id}', name: 'show', methods: 'GET')]
+    public function show(int $id): JsonResponse
     {
         $service = $this->repository->findOneBy(['id' => $id]);
 
-        if (!$service) {
-            throw $this->createNotFoundException("Pas de service trouvé pour cet {$id} id");
+        if ($service) {
+            $responseData = $this->serializer->serialize($service, 'json');
+
+            return new JsonResponse(
+                $responseData,
+                Response::HTTP_OK,
+                [],
+                true
+            );
         }
 
-        return $this->json(
-            ['message' => "le service trouvé : 
-            {$service->getNom()}
-            {$service->getDescription()}
-            pour {$service->getId()} id"
-        ]);
+        return new JsonResponse(
+            null,
+            Response::HTTP_NOT_FOUND
+        );
     }
 
-    #[Route('/edit/{id}', name: 'app_service_edit', methods: ['PUT'])]
-    public function edit(int $id): Response
+    #[Route('/{id}', name: 'edit', methods: 'PUT')]
+    public function edit(int $id, Request $request): JsonResponse
     {
         $service = $this->repository->findOneBy(['id' => $id]);
 
-        if (!$service) {
-            throw $this->createNotFoundException("Pas de service trouvé pour cet {$id} id");
+        if ($service) {
+            $service = $this->serializer->deserialize(
+                $request->getContent(),
+                service::class,
+                'json',
+                [AbstractNormalizer::OBJECT_TO_POPULATE => $service]
+            );
+
+            $service->setUpdatedAt(new DateTimeImmutable());
+
+            $this->manager->flush();
+
+            $modify = $this->serializer->serialize($service, 'json');
+
+            return new JsonResponse(
+                $modify,
+                Response::HTTP_OK,
+                [],
+                true
+            );
         }
 
-        $service->setNom('Baba');
-        $service->setDescription("La description modifié");
-        $this->manager->flush();
-
-        return $this->redirectToRoute('app_service_show', ['id' => $service->getId()]);
+        return new JsonResponse(
+            null,
+            Response::HTTP_NOT_FOUND
+        );
     }
 
-    #[Route('/{id}', name: 'app_service_delete', methods: ['DELETE'])]
-    public function delete(int $id): Response
+
+    #[Route('/{id}', name: 'delete', methods: 'DELETE')]
+    public function delete(int $id): JsonResponse
     {
         $service = $this->repository->findOneBy(['id' => $id]);
 
-        if (!$service) {
-            throw $this->createNotFoundException("Pas d'service trouvé pour cet {$id} id");
+        if ($service) {
+            $this->manager->remove($service);
+            $this->manager->flush();
+
+            return new JsonResponse(
+                null,
+                Response::HTTP_NO_CONTENT
+            );
         }
 
-        $this->manager->remove($service);
-        $this->manager->flush();
-
-        return $this->redirectToRoute('app_service_index', [], Response::HTTP_SEE_OTHER);
+        return new JsonResponse(
+            null,
+            Response::HTTP_NOT_FOUND
+        );
     }
 }

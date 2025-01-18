@@ -14,7 +14,7 @@ class Image
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::BLOB)]
+    #[ORM\Column(type: Types::BLOB, nullable: true)]
     private $imageData;
 
     #[ORM\ManyToOne(inversedBy: 'images')]
@@ -23,8 +23,11 @@ class Image
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255)]
+    private ?string $filePath = null;
 
     public function getId(): ?int
     {
@@ -76,6 +79,17 @@ class Image
     {
         $this->updatedAt = $updatedAt;
 
+        return $this;
+    }
+
+    public function getFilePath(): ?string
+    {
+        return $this->filePath;
+    }
+
+    public function setFilePath(?string $filePath): static
+    {
+        $this->filePath = $filePath;
         return $this;
     }
 }
