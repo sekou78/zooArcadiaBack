@@ -17,21 +17,19 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class AvisController extends AbstractController
 {
     public function __construct(
-        private EntityManagerInterface $manager, 
+        private EntityManagerInterface $manager,
         private AvisRepository $repository,
         private SerializerInterface $serializer,
         private UrlGeneratorInterface $urlGenerator
-        )
-    {
-        
-    }
+    ) {}
 
     #[Route(name: 'new', methods: 'POST')]
     public function new(Request $request): JsonResponse
     {
         $avis = $this->serializer->deserialize($request->getContent(), Avis::class, 'json');
         $avis->setCreatedAt(new DateTimeImmutable());
-        
+        $avis->setVisible(false); // Définit une valeur par défaut pour `isVisible`
+
         $this->manager->persist($avis);
         $this->manager->flush();
 
@@ -56,7 +54,7 @@ final class AvisController extends AbstractController
         $avis = $this->repository->findOneBy(['id' => $id]);
 
         if ($avis) {
-            $responseData = $this->serializer->serialize($avis,'json');
+            $responseData = $this->serializer->serialize($avis, 'json');
 
             return new JsonResponse(
                 $responseData,
@@ -84,19 +82,19 @@ final class AvisController extends AbstractController
                 'json',
                 [AbstractNormalizer::OBJECT_TO_POPULATE => $avis]
             );
-            
-                $avis->setUpdatedAt(new DateTimeImmutable());
-            
-                $this->manager->flush();
-            
-                $modify = $this->serializer->serialize($avis, 'json');
 
-                return new JsonResponse(
-                    $modify, 
-                    Response::HTTP_OK, 
-                    [], 
-                    true
-                );
+            $avis->setUpdatedAt(new DateTimeImmutable());
+
+            $this->manager->flush();
+
+            $modify = $this->serializer->serialize($avis, 'json');
+
+            return new JsonResponse(
+                $modify,
+                Response::HTTP_OK,
+                [],
+                true
+            );
         }
 
         return new JsonResponse(

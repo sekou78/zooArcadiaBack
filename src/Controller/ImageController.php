@@ -194,8 +194,13 @@ final class ImageController extends AbstractController
             );
         }
 
-        // Retourner directement l'image mise à jour
-        return new BinaryFileResponse($imagePath);
+        // Retourner une réponse de l'image mise à jour
+        return new JsonResponse([
+            'id' => $image->getId(),
+            'filePath' => $image->getFilePath(), // URL relative de l'image
+            'updatedAt' => $image->getUpdatedAt()->format('Y-m-d H:i:s'),
+            'message' => 'Image updated successfully'
+        ], Response::HTTP_OK);
     }
 
     //Supprimer une image
