@@ -41,6 +41,31 @@ final class ImageController extends AbstractController
         // Vérifier si c'est une requête multipart (fichier normal)
         $uploadedFile = $request->files->get('image');
 
+        // Vérifier l'extension et le type MIME
+        $allowedExtensions = [
+            'jpg',
+            'jpeg',
+            'png',
+            'gif',
+            'webp'
+        ];
+        $allowedMimeTypes = [
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp'
+        ];
+
+        $fileExtension = strtolower($uploadedFile->getClientOriginalExtension());
+        $mimeType = $uploadedFile->getMimeType();
+
+        if (!in_array($fileExtension, $allowedExtensions) || !in_array($mimeType, $allowedMimeTypes)) {
+            return new JsonResponse(
+                ['error' => 'Invalid file type'],
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
         if ($uploadedFile) {
             $fileName = uniqid() . '.' . $uploadedFile->guessExtension();
 
@@ -135,8 +160,19 @@ final class ImageController extends AbstractController
         }
 
         // Vérifier l'extension et le type MIME
-        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-        $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        $allowedExtensions = [
+            'jpg',
+            'jpeg',
+            'png',
+            'gif',
+            'webp'
+        ];
+        $allowedMimeTypes = [
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp'
+        ];
 
         $fileExtension = strtolower($uploadedFile->getClientOriginalExtension());
         $mimeType = $uploadedFile->getMimeType();
