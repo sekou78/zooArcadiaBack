@@ -75,6 +75,7 @@ class SecurityController extends AbstractController
             [
                 'user'  => $user->getUserIdentifier(),
                 'apiToken' => $user->getApiToken(),
+                'apiTokenExpiry' => $user->getApiTokenExpiry(),
                 'roles' => $user->getRoles()
             ],
             Response::HTTP_CREATED
@@ -103,6 +104,8 @@ class SecurityController extends AbstractController
             )
         );
         return new JsonResponse(
+            // ['message' => 'User registered successfully'],
+            //Pour le test à supprimer avant production (mise en ligne)
             [
                 'user'  => $user->getUserIdentifier(),
                 'apiToken' => $user->getApiToken(),

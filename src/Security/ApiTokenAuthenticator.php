@@ -37,6 +37,9 @@ class ApiTokenAuthenticator extends AbstractAuthenticator
         if (null === $user) {
             throw new UserNotFoundException();
         }
+        if ($user->getApiTokenExpiry() < new \DateTimeImmutable()) {
+            throw new CustomUserMessageAuthenticationException('API token has expired');
+        }
         return new SelfValidatingPassport(
             new UserBadge($user->getUserIdentifier())
         );

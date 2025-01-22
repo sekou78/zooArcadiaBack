@@ -57,6 +57,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->apiToken = bin2hex(random_bytes(50));
+        $this->apiTokenExpiry = (new \DateTimeImmutable())->modify('+1 hour'); // Expire dans 1 heure
         $this->services = new ArrayCollection();
     }
 
@@ -273,6 +274,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $apiTokenExpiry = null;
+
+    public function getApiTokenExpiry(): ?\DateTimeImmutable
+    {
+        return $this->apiTokenExpiry;
+    }
+
+    public function setApiTokenExpiry(?\DateTimeImmutable $apiTokenExpiry): static
+    {
+        $this->apiTokenExpiry = $apiTokenExpiry;
+
+        return $this;
+    }
+
+    public function renewApiToken(): static
+    {
+        $this->apiToken = bin2hex(random_bytes(50));
+        $this->apiTokenExpiry = (new \DateTimeImmutable())->modify('+1 hour');
 
         return $this;
     }
