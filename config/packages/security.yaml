@@ -16,6 +16,7 @@ security:
     main:
       lazy: true
       stateless: true
+      # csrf_protection: false
       provider: app_user_provider
       json_login:
         # api_login is a route we will create below
@@ -35,7 +36,7 @@ security:
     # - { path: ^/admin, roles: ROLE_ADMIN }
     - { path: ^/api/registration, roles: PUBLIC_ACCESS }
     - { path: ^/api/login, roles: PUBLIC_ACCESS }
-    - { path: ^/api, roles: ROLE_USER }
+    - { path: ^/api/account, roles: ROLE_USER }
 
 when@test:
   security:
