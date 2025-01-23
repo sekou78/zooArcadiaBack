@@ -113,8 +113,8 @@ final class RapportVeterinaireController extends AbstractController
             $this->manager->flush();
 
             return new JsonResponse(
-                null,
-                Response::HTTP_NO_CONTENT
+                ['message' => 'Rapport veterinaire deleted successfully'],
+                Response::HTTP_OK
             );
         }
 

@@ -113,8 +113,8 @@ final class ServiceController extends AbstractController
             $this->manager->flush();
 
             return new JsonResponse(
-                null,
-                Response::HTTP_NO_CONTENT
+                ['message' => 'Service deleted successfully'],
+                Response::HTTP_OK
             );
         }
 

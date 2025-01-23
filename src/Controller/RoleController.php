@@ -113,8 +113,8 @@ final class RoleController extends AbstractController
             $this->manager->flush();
 
             return new JsonResponse(
-                null,
-                Response::HTTP_NO_CONTENT
+                ['message' => 'Role deleted successfully'],
+                Response::HTTP_OK
             );
         }
 

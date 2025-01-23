@@ -114,8 +114,8 @@ final class AvisController extends AbstractController
             $this->manager->flush();
 
             return new JsonResponse(
-                null,
-                Response::HTTP_NO_CONTENT
+                ['message' => 'Avis deleted successfully'],
+                Response::HTTP_OK
             );
         }
 

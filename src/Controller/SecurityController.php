@@ -13,8 +13,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Csrf\CsrfToken;
-use Symfony\Component\Security\Http\Attribute\CurrentUser;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Security\Http\Attribute\{CurrentUser, IsGranted};
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -35,6 +34,7 @@ class SecurityController extends AbstractController
         CsrfTokenManagerInterface $csrfTokenManager,
         ValidatorInterface $validator
     ): JsonResponse {
+        //Utiliser un jeton CSRF
         // $csrfToken = $request->headers->get('X-CSRF-TOKEN');
         // if (!$csrfTokenManager->isTokenValid(new CsrfToken('registration', $csrfToken))) {
         //     return new JsonResponse(
@@ -75,7 +75,6 @@ class SecurityController extends AbstractController
             [
                 'user'  => $user->getUserIdentifier(),
                 'apiToken' => $user->getApiToken(),
-                'apiTokenExpiry' => $user->getApiTokenExpiry(),
                 'roles' => $user->getRoles()
             ],
             Response::HTTP_CREATED
@@ -149,6 +148,7 @@ class SecurityController extends AbstractController
         CsrfTokenManagerInterface $csrfTokenManager
     ): JsonResponse {
 
+        // Récupération et validation du jeton CSRF
         // $csrfToken = $request->headers->get('X-CSRF-TOKEN');
         // if (!$csrfTokenManager->isTokenValid(new CsrfToken('edit_account', $csrfToken))) {
         //     return new JsonResponse(
@@ -157,6 +157,7 @@ class SecurityController extends AbstractController
         //     );
         // }
 
+        //Désérialisation des données de la requête pour mettre à jour l'utilisateur
         $user = $this->serializer->deserialize(
             $request->getContent(),
             User::class,

@@ -17,21 +17,18 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class AnimalController extends AbstractController
 {
     public function __construct(
-        private EntityManagerInterface $manager, 
+        private EntityManagerInterface $manager,
         private AnimalRepository $repository,
         private SerializerInterface $serializer,
         private UrlGeneratorInterface $urlGenerator
-        )
-    {
-        
-    }
+    ) {}
 
     #[Route(name: 'new', methods: 'POST')]
     public function new(Request $request): JsonResponse
     {
         $animal = $this->serializer->deserialize($request->getContent(), Animal::class, 'json');
         $animal->setCreatedAt(new DateTimeImmutable());
-        
+
         $this->manager->persist($animal);
         $this->manager->flush();
 
@@ -56,7 +53,7 @@ final class AnimalController extends AbstractController
         $animal = $this->repository->findOneBy(['id' => $id]);
 
         if ($animal) {
-            $responseData = $this->serializer->serialize($animal,'json');
+            $responseData = $this->serializer->serialize($animal, 'json');
 
             return new JsonResponse(
                 $responseData,
@@ -84,19 +81,19 @@ final class AnimalController extends AbstractController
                 'json',
                 [AbstractNormalizer::OBJECT_TO_POPULATE => $animal]
             );
-            
-                $animal->setUpdatedAt(new DateTimeImmutable());
-            
-                $this->manager->flush();
-            
-                $modify = $this->serializer->serialize($animal, 'json');
 
-                return new JsonResponse(
-                    $modify, 
-                    Response::HTTP_OK, 
-                    [], 
-                    true
-                );
+            $animal->setUpdatedAt(new DateTimeImmutable());
+
+            $this->manager->flush();
+
+            $modify = $this->serializer->serialize($animal, 'json');
+
+            return new JsonResponse(
+                $modify,
+                Response::HTTP_OK,
+                [],
+                true
+            );
         }
 
         return new JsonResponse(
@@ -116,8 +113,8 @@ final class AnimalController extends AbstractController
             $this->manager->flush();
 
             return new JsonResponse(
-                null,
-                Response::HTTP_NO_CONTENT
+                ['message' => 'Animal deleted successfully'],
+                Response::HTTP_OK
             );
         }
 

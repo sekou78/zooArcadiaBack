@@ -17,21 +17,18 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class HabitatController extends AbstractController
 {
     public function __construct(
-        private EntityManagerInterface $manager, 
+        private EntityManagerInterface $manager,
         private HabitatRepository $repository,
         private SerializerInterface $serializer,
         private UrlGeneratorInterface $urlGenerator
-        )
-    {
-        
-    }
+    ) {}
 
     #[Route(name: 'new', methods: 'POST')]
     public function new(Request $request): JsonResponse
     {
         $habitat = $this->serializer->deserialize($request->getContent(), Habitat::class, 'json');
         $habitat->setCreatedAt(new DateTimeImmutable());
-        
+
         $this->manager->persist($habitat);
         $this->manager->flush();
 
@@ -56,7 +53,7 @@ final class HabitatController extends AbstractController
         $habitat = $this->repository->findOneBy(['id' => $id]);
 
         if ($habitat) {
-            $responseData = $this->serializer->serialize($habitat,'json');
+            $responseData = $this->serializer->serialize($habitat, 'json');
 
             return new JsonResponse(
                 $responseData,
@@ -84,19 +81,19 @@ final class HabitatController extends AbstractController
                 'json',
                 [AbstractNormalizer::OBJECT_TO_POPULATE => $habitat]
             );
-            
-                $habitat->setUpdatedAt(new DateTimeImmutable());
-            
-                $this->manager->flush();
-            
-                $modify = $this->serializer->serialize($habitat, 'json');
 
-                return new JsonResponse(
-                    $modify, 
-                    Response::HTTP_OK, 
-                    [], 
-                    true
-                );
+            $habitat->setUpdatedAt(new DateTimeImmutable());
+
+            $this->manager->flush();
+
+            $modify = $this->serializer->serialize($habitat, 'json');
+
+            return new JsonResponse(
+                $modify,
+                Response::HTTP_OK,
+                [],
+                true
+            );
         }
 
         return new JsonResponse(
@@ -116,8 +113,8 @@ final class HabitatController extends AbstractController
             $this->manager->flush();
 
             return new JsonResponse(
-                null,
-                Response::HTTP_NO_CONTENT
+                ['message' => 'Habitat deleted successfully'],
+                Response::HTTP_OK
             );
         }
 

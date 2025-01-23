@@ -31,15 +31,15 @@ class ApiTokenAuthenticator extends AbstractAuthenticator
         if (null === $apiToken) {
             throw new CustomUserMessageAuthenticationException('No API token provided');
         }
+
+        // Récupérer l'utilisateur par son jeton API
         $user = $this->repository->findOneBy(
             ['apiToken' => $apiToken]
         );
         if (null === $user) {
             throw new UserNotFoundException();
         }
-        if ($user->getApiTokenExpiry() < new \DateTimeImmutable()) {
-            throw new CustomUserMessageAuthenticationException('API token has expired');
-        }
+
         return new SelfValidatingPassport(
             new UserBadge($user->getUserIdentifier())
         );

@@ -262,6 +262,9 @@ final class ImageController extends AbstractController
         $this->manager->remove($image);
         $this->manager->flush();
 
-        return new JsonResponse(['message' => 'Image deleted successfully'], Response::HTTP_OK);
+        return new JsonResponse(
+            ['message' => 'Image deleted successfully'],
+            Response::HTTP_OK
+        );
     }
 }
