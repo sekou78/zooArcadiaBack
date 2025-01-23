@@ -6,6 +6,7 @@ use App\Entity\Service;
 use App\Repository\ServiceRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Attribute\Route;
@@ -122,5 +123,29 @@ final class ServiceController extends AbstractController
             null,
             Response::HTTP_NOT_FOUND
         );
+    }
+
+    #[Route('/api/services', name: 'list', methods: ['GET'])]
+    public function list(
+        Request $request,
+        PaginatorInterface $paginator
+    ): JsonResponse {
+        $queryBuilder = $this->manager->getRepository(Service::class)->createQueryBuilder('s');
+
+        $pagination = $paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1),
+            10
+        );
+
+        $data = [
+            'currentPage' => $pagination->getCurrentPageNumber(),
+            'totalItems' => $pagination->getTotalItemCount(),
+            'itemsPerPage' => $pagination->getItemNumberPerPage(),
+            'totalPages' => ceil($pagination->getTotalItemCount() / $pagination->getItemNumberPerPage()),
+            'items' => $pagination->getItems(),
+        ];
+
+        return new JsonResponse($data, JsonResponse::HTTP_OK);
     }
 }
