@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -76,6 +77,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if (empty($this->roles)) {
             $this->roles = ['ROLE_USER'];
         }
+        $this->serviceAnimaux = new ArrayCollection();
     }
 
     #[ORM\Column]
@@ -96,6 +98,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
+
+    /**
+     * @var Collection<int, ServiceAnimaux>
+     */
+    #[ORM\ManyToMany(targetEntity: ServiceAnimaux::class, inversedBy: 'users')]
+    #[Groups(['user_read'])]
+    private Collection $serviceAnimaux;
 
     public function getId(): ?int
     {
@@ -296,6 +305,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->updatedAt = $updatedAt;
 
+        return $this;
+    }
+
+    public function getServiceAnimaux(): Collection
+    {
+        return $this->serviceAnimaux;
+    }
+
+    public function addServiceAnimaux(ServiceAnimaux $serviceAnimaux): static
+    {
+        if (!$this->serviceAnimaux->contains($serviceAnimaux)) {
+            $this->serviceAnimaux->add($serviceAnimaux);
+            $serviceAnimaux->addUser($this);
+        }
+        return $this;
+    }
+
+    public function removeServiceAnimaux(ServiceAnimaux $serviceAnimaux): static
+    {
+        if ($this->serviceAnimaux->removeElement($serviceAnimaux)) {
+            $serviceAnimaux->removeUser($this);
+        }
         return $this;
     }
 }

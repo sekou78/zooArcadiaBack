@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ServiceAnimaux{% endblock %}
+
+{% block body %}
+    <h1>ServiceAnimaux</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ service_animaux.id }}</td>
+            </tr>
+            <tr>
+                <th>NomAnimal</th>
+                <td>{{ service_animaux.nomAnimal }}</td>
+            </tr>
+            <tr>
+                <th>Description</th>
+                <td>{{ service_animaux.description }}</td>
+            </tr>
+            <tr>
+                <th>Nourriture</th>
+                <td>{{ service_animaux.nourriture }}</td>
+            </tr>
+            <tr>
+                <th>Quantite</th>
+                <td>{{ service_animaux.quantite }}</td>
+            </tr>
+            <tr>
+                <th>DateHeure</th>
+                <td>{{ service_animaux.dateHeure ? service_animaux.dateHeure|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>CreatedAt</th>
+                <td>{{ service_animaux.createdAt ? service_animaux.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>UpdatedAt</th>
+                <td>{{ service_animaux.updatedAt ? service_animaux.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_service_animaux_index') }}">back to list</a>
+
+    <a href="{{ path('app_service_animaux_edit', {'id': service_animaux.id}) }}">edit</a>
+
+    {{ include('service_animaux/_delete_form.html.twig') }}
+{% endblock %}

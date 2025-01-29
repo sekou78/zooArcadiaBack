@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ServiceAnimaux index{% endblock %}
+
+{% block body %}
+    <h1>ServiceAnimaux index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>NomAnimal</th>
+                <th>Description</th>
+                <th>Nourriture</th>
+                <th>Quantite</th>
+                <th>DateHeure</th>
+                <th>CreatedAt</th>
+                <th>UpdatedAt</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for service_animaux in service_animauxes %}
+            <tr>
+                <td>{{ service_animaux.id }}</td>
+                <td>{{ service_animaux.nomAnimal }}</td>
+                <td>{{ service_animaux.description }}</td>
+                <td>{{ service_animaux.nourriture }}</td>
+                <td>{{ service_animaux.quantite }}</td>
+                <td>{{ service_animaux.dateHeure ? service_animaux.dateHeure|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ service_animaux.createdAt ? service_animaux.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ service_animaux.updatedAt ? service_animaux.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_service_animaux_show', {'id': service_animaux.id}) }}">show</a>
+                    <a href="{{ path('app_service_animaux_edit', {'id': service_animaux.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="9">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_service_animaux_new') }}">Create new</a>
+{% endblock %}
