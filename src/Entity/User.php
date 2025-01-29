@@ -27,8 +27,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var list<string> The user roles
      */
+    #[Assert\NotBlank]
+    #[Assert\All([
+        new Assert\Choice(
+            choices: [
+                'ROLE_ADMIN',
+                'ROLE_EMPLOYE',
+                'ROLE_VETERINAIRE'
+            ],
+            message: 'Choisissez un rôle valide.'
+        )
+    ])]
     #[ORM\Column]
-    private array $roles = [];
+    private array $roles = ['ROLE_USER'];
 
     /**
      * @var string The hashed password
@@ -39,14 +50,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[Assert\NotBlank]
+    #[Assert\Length(min: 2, max: 50)]
     #[ORM\Column(length: 50)]
     private ?string $username = null;
 
     #[Assert\NotBlank]
+    #[Assert\Length(min: 2, max: 50)]
     #[ORM\Column(length: 50)]
     private ?string $nom = null;
 
     #[Assert\NotBlank]
+    #[Assert\Length(min: 2, max: 50)]
     #[ORM\Column(length: 50)]
     private ?string $prenom = null;
 
@@ -58,6 +72,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->apiToken = bin2hex(random_bytes(50));
         $this->services = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
+        if (empty($this->roles)) {
+            $this->roles = ['ROLE_USER'];
+        }
     }
 
     #[ORM\Column]
@@ -115,7 +133,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $roles = $this->roles;
         // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
+        // $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
     }
@@ -126,8 +144,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
-
         return $this;
+    }
+
+    public function setAsAdmin(): void
+    {
+        $this->roles = ['ROLE_ADMIN'];
     }
 
     /**

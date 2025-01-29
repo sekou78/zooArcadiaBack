@@ -125,6 +125,26 @@ final class ServiceController extends AbstractController
         );
     }
 
+    // #[Route('/api/service', name: 'app_service', methods: 'POST')]
+    // #[IsGranted('ROLE_ADMIN')]
+    // public function creerService(
+    //     Request $request,
+    //     LoggerInterface $logger
+    // ): JsonResponse {
+    //     $data = json_decode($request->getContent(), true);
+
+    //     $service = new Service();
+    //     $service->setNomService($data['nomService']);
+
+    //     $this->manager->persist($service);
+    //     $this->manager->flush();
+
+    //     $logger->info('Service créé', ['user' => $this->getUser()->getEmail()]);
+
+    //     return new JsonResponse(['message' => 'Service créé'], Response::HTTP_CREATED);
+    // }
+
+
     #[Route('/api/services', name: 'list', methods: ['GET'])]
     public function list(
         Request $request,

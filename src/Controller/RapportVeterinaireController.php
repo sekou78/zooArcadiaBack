@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -49,7 +50,8 @@ final class RapportVeterinaireController extends AbstractController
     }
 
     #[Route('/{id}', name: 'show', methods: 'GET')]
-    public function show(int $id): JsonResponse
+    #[IsGranted('ROLE_ADMIN')]
+    public function show(int $id, Request $request): JsonResponse
     {
         $rapportVeterinaire = $this->repository->findOneBy(['id' => $id]);
 
@@ -124,6 +126,50 @@ final class RapportVeterinaireController extends AbstractController
             Response::HTTP_NOT_FOUND
         );
     }
+
+    #[Route('/vet-reports', name: 'vet_reports', methods: 'GET')]
+    #[IsGranted('ROLE_ADMIN')]
+    public function getVetReports(Request $request): JsonResponse
+    {
+        $criteria = $request->query->all(); // Filtrer par critères (animal, date, etc.)
+        $reports = $this->manager->getRepository(RapportVeterinaire::class)->findBy($criteria);
+
+        $responseData = $this->serializer->serialize(
+            $reports,
+            'json'
+        );
+
+        return new JsonResponse(
+            $responseData,
+            Response::HTTP_OK,
+            [],
+            true
+        );
+    }
+
+    // #[Route('/api/rapport-veterinaire', name: 'app_rapport_veterinaire', methods: 'POST')]
+    // #[IsGranted('ROLE_VETERINAIRE')]
+    // public function enregistrerRapportVeterinaire(
+    //     Request $request,
+    //     LoggerInterface $logger
+    // ): JsonResponse {
+    //     $data = json_decode($request->getContent(), true);
+
+    //     $rapport = new RapportVeterinaire();
+    //     $rapport->setEtatAnimal($data['etatAnimal']);
+    //     $rapport->setNourriture($data['nourriture']);
+    //     $rapport->setQuantite($data['quantite']);
+    //     $rapport->setUser($this->getUser());
+
+    //     $this->manager->persist($rapport);
+    //     $this->manager->flush();
+
+    //     $logger->info('Rapport vétérinaire enregistré', ['user' => $this->getUser()->getEmail()]);
+
+    //     return new JsonResponse(['message' => 'Rapport vétérinaire enregistré'], Response::HTTP_CREATED);
+    // }
+
+
 
     #[Route('/api/services', name: 'list', methods: ['GET'])]
     public function list(
