@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -70,41 +71,9 @@ final class AvisController extends AbstractController
         );
     }
 
-    #[Route('/{id}', name: 'edit', methods: 'PUT')]
-    public function edit(int $id, Request $request): JsonResponse
-    {
-        $avis = $this->repository->findOneBy(['id' => $id]);
-
-        if ($avis) {
-            $avis = $this->serializer->deserialize(
-                $request->getContent(),
-                avis::class,
-                'json',
-                [AbstractNormalizer::OBJECT_TO_POPULATE => $avis]
-            );
-
-            $avis->setUpdatedAt(new DateTimeImmutable());
-
-            $this->manager->flush();
-
-            $modify = $this->serializer->serialize($avis, 'json');
-
-            return new JsonResponse(
-                $modify,
-                Response::HTTP_OK,
-                [],
-                true
-            );
-        }
-
-        return new JsonResponse(
-            null,
-            Response::HTTP_NOT_FOUND
-        );
-    }
-
-
     #[Route('/{id}', name: 'delete', methods: 'DELETE')]
+    #[IsGranted('ROLE_EMPLOYE')]
+    #[IsGranted('ROLE_ADMIN')]
     public function delete(int $id): JsonResponse
     {
         $avis = $this->repository->findOneBy(['id' => $id]);

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Avis;
 use App\Entity\Role;
 use App\Entity\User;
 use DateTimeImmutable;
@@ -202,22 +203,29 @@ class SecurityController extends AbstractController
         );
     }
 
-    // #[Route('/employee/validate-visitor-feedback/{feedbackId}', name: 'employee_validate_feedback', methods: 'PUT')]
-    // #[IsGranted('ROLE_EMPLOYE')]
-    // public function validateVisitorFeedback(int $feedbackId, EntityManagerInterface $manager): JsonResponse
-    // {
-    //     $feedback = $manager->getRepository(VisitorFeedback::class)->find($feedbackId);
+    #[Route('/employee/validate-avis/{avisId}', name: 'employee_validate_avis', methods: 'PUT')]
+    #[IsGranted('ROLE_EMPLOYE')]
+    public function validateAvis(
+        int $avisId,
+        EntityManagerInterface $manager
+    ): JsonResponse {
+        $avis = $manager->getRepository(Avis::class)->find($avisId);
 
-    //     if (!$feedback) {
-    //         return new JsonResponse(['error' => 'Feedback not found'], Response::HTTP_NOT_FOUND);
-    //     }
+        if (!$avis) {
+            return new JsonResponse(
+                ['error' => 'Feedback not found'],
+                Response::HTTP_NOT_FOUND
+            );
+        }
 
-    //     // Valider l'avis du visiteur
-    //     $feedback->setIsValid(true);
-    //     $manager->flush();
+        // Valider l'avis du visiteur
+        $avis->setVisible(true);
+        $manager->flush();
 
-    //     return new JsonResponse(['message' => 'Feedback validated successfully']);
-    // }
+        return new JsonResponse(
+            ['message' => 'Feedback validated successfully']
+        );
+    }
 
     // #[Route('/veterinarian/reports', name: 'veterinarian_reports', methods: 'GET')]
     // #[IsGranted('ROLE_VETERINAIRE')]
