@@ -7,6 +7,7 @@ use App\Repository\ImageRepository;
 use App\Service\ImageUploaderService;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{BinaryFileResponse, JsonResponse, Request, Response};
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -266,5 +267,32 @@ final class ImageController extends AbstractController
             ['message' => 'Image deleted successfully'],
             Response::HTTP_OK
         );
+    }
+
+    // Pagination des images
+    #[Route('/api/rapports', name: 'list', methods: ['GET'])]
+    public function list(Request $request, PaginatorInterface $paginator): JsonResponse
+    {
+        // Création de la requête pour récupérer tous les images
+        $queryBuilder = $this->manager->getRepository(Image::class)->createQueryBuilder('s');
+
+        // Pagination avec le paginator
+        $pagination = $paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1), // Page actuelle (par défaut 1)
+            10 // Nombre d'éléments par page
+        );
+
+        // Structure de réponse avec les informations de pagination
+        $data = [
+            'currentPage' => $pagination->getCurrentPageNumber(),
+            'totalItems' => $pagination->getTotalItemCount(),
+            'itemsPerPage' => $pagination->getItemNumberPerPage(),
+            'totalPages' => ceil($pagination->getTotalItemCount() / $pagination->getItemNumberPerPage()),
+            'items' => $pagination->getItems(), // Les éléments paginés
+        ];
+
+        // Retourner la réponse JSON avec les données paginées
+        return new JsonResponse($data, JsonResponse::HTTP_OK);
     }
 }
