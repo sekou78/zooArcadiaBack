@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: RapportVeterinaireRepository::class)]
 class RapportVeterinaire
@@ -19,23 +20,33 @@ class RapportVeterinaire
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $date = null;
 
-    #[ORM\Column(length: 50, nullable: true)]
-    private ?string $detail = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $etat = null;
 
     #[ORM\ManyToOne(inversedBy: 'rapportVeterinaires')]
     private ?Animal $animal = null;
 
-    /**
-     * @var Collection<int, User>
-     */
-    #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'rapportsVeterinaires')]
-    private Collection $users;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[Groups(["rapportVeterinaire:write", "rapportVeterinaire:read"])] // Ajout de groupes de sérialisation
+    private ?User $veterinaire = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $nourritureProposee = null;
+
+    #[ORM\Column(type: "float")]
+    private ?float $quantiteNourriture = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $commentaireHabitat = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\OneToMany(mappedBy: 'veterinaire', targetEntity: RapportVeterinaire::class)]
+    private Collection $users;
 
     public function __construct()
     {
@@ -59,14 +70,14 @@ class RapportVeterinaire
         return $this;
     }
 
-    public function getDetail(): ?string
+    public function getEtat(): ?string
     {
-        return $this->detail;
+        return $this->etat;
     }
 
-    public function setDetail(?string $detail): static
+    public function setEtat(?string $etat): static
     {
-        $this->detail = $detail;
+        $this->etat = $etat;
 
         return $this;
     }
@@ -83,56 +94,96 @@ class RapportVeterinaire
         return $this;
     }
 
-    /**
-     * @return Collection<int, User>
-     */
+    public function getVeterinaire(): ?User
+    {
+        return $this->veterinaire;
+    }
+
+    public function setVeterinaire(?User $veterinaire): static
+    {
+        $this->veterinaire = $veterinaire;
+
+        return $this;
+    }
+
+    public function getNourritureProposee(): ?string
+    {
+        return $this->nourritureProposee;
+    }
+
+    public function setNourritureProposee(string $nourritureProposee): static
+    {
+        $this->nourritureProposee = $nourritureProposee;
+
+        return $this;
+    }
+
+    public function getQuantiteNourriture(): ?float
+    {
+        return $this->quantiteNourriture;
+    }
+
+    public function setQuantiteNourriture(float $quantiteNourriture): static
+    {
+        $this->quantiteNourriture = $quantiteNourriture;
+
+        return $this;
+    }
+
+    public function getCommentaireHabitat(): ?string
+    {
+        return $this->commentaireHabitat;
+    }
+
+    public function setCommentaireHabitat(?string $commentaireHabitat): static
+    {
+        $this->commentaireHabitat = $commentaireHabitat;
+
+        return $this;
+    }
+
+    #[ORM\PrePersist]
+    public function onPrePersist(): void
+    {
+        if (!$this->createdAt) {
+            $this->createdAt = new \DateTimeImmutable();  // Lors de la création, on définit la date de création
+        }
+        $this->updatedAt = $this->createdAt;  // "updatedAt" est défini en même temps que "createdAt"
+    }
+
+    #[ORM\PreUpdate]
+    public function onPreUpdate(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();  // Lors de la mise à jour, on met à jour la date de modification
+    }
+
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
     public function getUsers(): Collection
     {
         return $this->users;
     }
 
-    public function addUser(User $user): static
+    public function addVeterinaire(User $user): static
     {
         if (!$this->users->contains($user)) {
             $this->users->add($user);
-            $user->setRapportsVeterinaires($this);
+            $user->addRapportVeterinaire($this);  // Ajoute ce rapport vétérinaire à l'utilisateur
         }
 
         return $this;
     }
 
-    public function removeUser(User $user): static
+    public function removeVeterinaire(User $user): static
     {
         if ($this->users->removeElement($user)) {
-            // set the owning side to null (unless already changed)
-            if ($user->getRapportsVeterinaires() === $this) {
-                $user->setRapportsVeterinaires(null);
-            }
+            $user->removeRapportVeterinaire($this);  // Enlève ce rapport vétérinaire de l'utilisateur
         }
-
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    public function getUpdatedAt(): ?\DateTimeImmutable
-    {
-        return $this->updatedAt;
-    }
-
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
-    {
-        $this->updatedAt = $updatedAt;
 
         return $this;
     }

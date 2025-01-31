@@ -53,6 +53,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\NotBlank]
     #[Assert\Length(min: 2, max: 50)]
     #[ORM\Column(length: 50)]
+    #[Groups(['user_read', 'user_write'])]  // Exemple de groupes
     private ?string $username = null;
 
     #[Assert\NotBlank]
@@ -87,8 +88,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\JoinColumn(nullable: true)]
     private ?Role $role = null;
 
-    #[ORM\ManyToOne(inversedBy: 'users')]
-    private ?RapportVeterinaire $rapportsVeterinaires = null;
+    #[ORM\OneToMany(mappedBy: 'veterinaire', targetEntity: RapportVeterinaire::class)]
+    private Collection $rapportsVeterinaires;
 
     /**
      * @var Collection<int, Service>
@@ -142,7 +143,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $roles = $this->roles;
         // guarantee every user at least has ROLE_USER
-        // $roles[] = 'ROLE_USER';
+        $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
     }
@@ -257,14 +258,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getRapportsVeterinaires(): ?RapportVeterinaire
+    public function addRapportVeterinaire(RapportVeterinaire $rapport): static
     {
-        return $this->rapportsVeterinaires;
+        if (!$this->rapportsVeterinaires->contains($rapport)) {
+            $this->rapportsVeterinaires->add($rapport);
+            $rapport->setVeterinaire($this);  // Assure la liaison inverse
+        }
+
+        return $this;
     }
 
-    public function setRapportsVeterinaires(?RapportVeterinaire $rapportsVeterinaires): static
+    public function removeRapportVeterinaire(RapportVeterinaire $rapport): static
     {
-        $this->rapportsVeterinaires = $rapportsVeterinaires;
+        if ($this->rapportsVeterinaires->removeElement($rapport)) {
+            if ($rapport->getVeterinaire() === $this) {
+                $rapport->setVeterinaire(null);  // Enlève la liaison inverse
+            }
+        }
 
         return $this;
     }

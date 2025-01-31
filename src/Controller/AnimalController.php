@@ -123,26 +123,4 @@ final class AnimalController extends AbstractController
             Response::HTTP_NOT_FOUND
         );
     }
-
-    // #[Route('/api/consommation', name: 'app_consommation', methods: 'POST')]
-    // #[IsGranted('ROLE_EMPLOYE')]
-    // public function enregistrerConsommation(
-    //     Request $request,
-    //     LoggerInterface $logger
-    // ): JsonResponse {
-    //     $data = json_decode($request->getContent(), true);
-
-    //     $consommation = new Consommation();
-    //     $consommation->setDate(new \DateTimeImmutable());
-    //     $consommation->setNourriture($data['nourriture']);
-    //     $consommation->setQuantite($data['quantite']);
-    //     $consommation->setUser($this->getUser());
-
-    //     $this->manager->persist($consommation);
-    //     $this->manager->flush();
-
-    //     $logger->info('Consommation enregistrée', ['user' => $this->getUser()->getEmail()]);
-
-    //     return new JsonResponse(['message' => 'Consommation enregistrée'], Response::HTTP_CREATED);
-    // }
 }

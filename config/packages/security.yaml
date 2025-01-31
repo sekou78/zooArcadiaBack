@@ -42,6 +42,7 @@ security:
         path: ^/api/account,
         roles: [ROLE_ADMIN, ROLE_EMPLOYE, ROLE_VETERINAIRE],
       }
+    - { path: ^/api, roles: ROLE_USER }
 
 when@test:
   security:
