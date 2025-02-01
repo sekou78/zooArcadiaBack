@@ -26,7 +26,7 @@ class RapportVeterinaire
     #[ORM\ManyToOne(inversedBy: 'rapportVeterinaires')]
     private ?Animal $animal = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'rapportsVeterinaires')]
     #[Groups(["rapportVeterinaire:write", "rapportVeterinaire:read"])] // Ajout de groupes de sérialisation
     private ?User $veterinaire = null;
 
@@ -44,14 +44,6 @@ class RapportVeterinaire
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
-
-    #[ORM\OneToMany(mappedBy: 'veterinaire', targetEntity: RapportVeterinaire::class)]
-    private Collection $users;
-
-    public function __construct()
-    {
-        $this->users = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -160,30 +152,6 @@ class RapportVeterinaire
     public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
-
-        return $this;
-    }
-
-    public function getUsers(): Collection
-    {
-        return $this->users;
-    }
-
-    public function addVeterinaire(User $user): static
-    {
-        if (!$this->users->contains($user)) {
-            $this->users->add($user);
-            $user->addRapportVeterinaire($this);  // Ajoute ce rapport vétérinaire à l'utilisateur
-        }
-
-        return $this;
-    }
-
-    public function removeVeterinaire(User $user): static
-    {
-        if ($this->users->removeElement($user)) {
-            $user->removeRapportVeterinaire($this);  // Enlève ce rapport vétérinaire de l'utilisateur
-        }
 
         return $this;
     }

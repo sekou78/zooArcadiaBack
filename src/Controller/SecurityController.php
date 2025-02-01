@@ -150,13 +150,13 @@ class SecurityController extends AbstractController
             return new JsonResponse(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
         }
 
-        // Vérification de l'e-mail dans la base de donnée
+        // Vérification de l'existence d'un utilisateur avec cet email
         $existingUser = $this->manager->getRepository(User::class)->findOneBy(
             ['email' => $user->getEmail()]
         );
         if ($existingUser) {
             return new JsonResponse(
-                ['error' => 'Email is already in use'],
+                ['error' => 'Cet email est déjà utlisé'],
                 Response::HTTP_BAD_REQUEST
             );
         }
@@ -166,7 +166,7 @@ class SecurityController extends AbstractController
             $existingAdmin = $this->manager->getRepository(User::class)->findOneByRole('ROLE_ADMIN');
             if ($existingAdmin) {
                 return new JsonResponse(
-                    ['error' => 'An admin account already exists. Only one admin can be created.'],
+                    ['error' => 'Un compte administrateur existe déjà. Un seul administrateur peut être créé.'],
                     Response::HTTP_FORBIDDEN
                 );
             }
@@ -226,22 +226,6 @@ class SecurityController extends AbstractController
             ['message' => 'Feedback validated successfully']
         );
     }
-
-    // #[Route('/veterinarian/reports', name: 'veterinarian_reports', methods: 'GET')]
-    // #[IsGranted('ROLE_VETERINAIRE')]
-    // public function getVeterinarianReports(): JsonResponse
-    // {
-    //     $user = $this->getUser();
-    //     $reports = $user->getRapportsVeterinaires();
-
-    //     // Serialisation des rapports
-    //     $responseData = $this->serializer->serialize(
-    //         $reports,
-    //         'json'
-    //     );
-
-    //     return new JsonResponse($responseData, Response::HTTP_OK, [], true);
-    // }
 
     #[Route('/login', name: 'login', methods: 'POST')]
     public function login(
@@ -330,6 +314,7 @@ class SecurityController extends AbstractController
         );
         $user->setUpdatedAt(new \DateTimeImmutable());
 
+        // Vérification si l'utilisateur tente de modifier ses rôles
         $data = $request->toArray();
         if (isset($data['roles']) && !$this->isGranted('ROLE_ADMIN')) {
             return new JsonResponse(
@@ -338,6 +323,7 @@ class SecurityController extends AbstractController
             );
         }
 
+        // Hachage du mot de passe si modifié
         if (isset($request->toArray()['password'])) {
             $user->setPassword($this->passwordHasher->hashPassword($user, $user->getPassword()));
         }
@@ -346,7 +332,7 @@ class SecurityController extends AbstractController
             $existingAdmin = $this->manager->getRepository(User::class)->findOneByRole('ROLE_ADMIN');
             if ($existingAdmin) {
                 return new JsonResponse(
-                    ['error' => 'An admin account already exists.'],
+                    ['error' => 'Un compte administrateur existe déjà.'],
                     Response::HTTP_FORBIDDEN
                 );
             }
@@ -356,6 +342,7 @@ class SecurityController extends AbstractController
 
         $logger->info('New user registered', ['email' => $user->getEmail()]);
 
+        // Retourner la réponse JSON avec les informations mises à jour
         $responseData = $this->serializer->serialize(
             $user,
             'json',

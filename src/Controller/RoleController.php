@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Role;
+use App\Entity\User;
 use App\Repository\RoleRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -69,37 +70,110 @@ final class RoleController extends AbstractController
         );
     }
 
-    #[Route('/{id}', name: 'edit', methods: 'PUT')]
-    public function edit(int $id, Request $request): JsonResponse
+    // #[Route('/{id}', name: 'edit', methods: 'PUT')]
+    // public function edit(int $id, Request $request): JsonResponse
+    // {
+    // $role = $this->repository->findOneBy(['id' => $id]);
+
+    // if ($role) {
+    //     $role = $this->serializer->deserialize(
+    //         $request->getContent(),
+    //         role::class,
+    //         'json',
+    //         [AbstractNormalizer::OBJECT_TO_POPULATE => $role]
+    //     );
+
+    //     $role->setUpdatedAt(new DateTimeImmutable());
+
+    //     $this->manager->flush();
+
+    //     $modify = $this->serializer->serialize($role, 'json');
+
+    //     return new JsonResponse(
+    //         $modify,
+    //         Response::HTTP_OK,
+    //         [],
+    //         true
+    //     );
+    // }
+
+    // return new JsonResponse(
+    //     null,
+    //     Response::HTTP_NOT_FOUND
+    // );
+
+    // $user = $this->manager->getRepository(User::class)->find($id);
+
+    // if (!$user) {
+    //     return new JsonResponse(
+    //         ['message' => 'User not found'],
+    //         Response::HTTP_NOT_FOUND
+    //     );
+    // }
+
+    // // Récupérer le rôle à affecter
+    // $role = $this->repository->findOneBy(['label' => $request->get('roles')]);
+
+    // if (!$role) {
+    //     return new JsonResponse(
+    //         ['message' => 'Role not found'],
+    //         Response::HTTP_NOT_FOUND
+    //     );
+    // }
+
+    // // Affecter le rôle à l'utilisateur
+    // $user->setRole($role);
+    // $user->setUpdatedAt(new \DateTimeImmutable());
+
+    // $this->manager->flush();
+
+    // $responseData = $this->serializer->serialize($user, 'json');
+    // return new JsonResponse(
+    //     $responseData,
+    //     Response::HTTP_OK,
+    //     [],
+    //     true
+    // );
+
+
+
+    #[Route("/assign-role/{userId}/{roleId}", name: "assign_role", methods: "PUT")]
+    public function assignRoleToUser(int $userId, int $roleId): JsonResponse
     {
-        $role = $this->repository->findOneBy(['id' => $id]);
+        // Trouver l'utilisateur et le rôle
+        $user = $this->manager->getRepository(User::class)->find($userId);
+        $role = $this->manager->getRepository(Role::class)->find($roleId);
 
-        if ($role) {
-            $role = $this->serializer->deserialize(
-                $request->getContent(),
-                role::class,
-                'json',
-                [AbstractNormalizer::OBJECT_TO_POPULATE => $role]
-            );
-
-            $role->setUpdatedAt(new DateTimeImmutable());
-
-            $this->manager->flush();
-
-            $modify = $this->serializer->serialize($role, 'json');
-
-            return new JsonResponse(
-                $modify,
-                Response::HTTP_OK,
-                [],
-                true
-            );
+        if (!$user) {
+            return new JsonResponse(['message' => 'Utilisateur non trouvé'], JsonResponse::HTTP_NOT_FOUND);
         }
 
-        return new JsonResponse(
-            null,
-            Response::HTTP_NOT_FOUND
-        );
+        if (!$role) {
+            return new JsonResponse(['message' => 'Rôle non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        // Affecter le rôle à l'utilisateur
+        $user->setRole($role);
+
+        // Mettre à jour la collection 'users' du rôle
+        $role->addUser($user); // Ajoute l'utilisateur à la collection 'users' du rôle
+
+        // Sauvegarder les modifications dans la base de données
+        $this->manager->flush();
+
+        return new JsonResponse([
+            'message' => 'Rôle attribué à l\'utilisateur avec succès.',
+            'user' => [
+                'id' => $user->getId(),
+                'email' => $user->getEmail(),
+                'role' => $role->getLabel(),
+            ],
+            'role' => [
+                'id' => $role->getId(),
+                'label' => $role->getLabel(),
+                'users_count' => count($role->getUsers()), // Nombre d'utilisateurs associés au rôle
+            ]
+        ], JsonResponse::HTTP_OK);
     }
 
 
