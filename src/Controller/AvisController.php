@@ -27,8 +27,14 @@ final class AvisController extends AbstractController
     #[Route(name: 'new', methods: 'POST')]
     public function new(Request $request): JsonResponse
     {
-        $avis = $this->serializer->deserialize($request->getContent(), Avis::class, 'json');
+        $avis = $this->serializer->deserialize(
+            $request->getContent(),
+            Avis::class,
+            'json'
+        );
+
         $avis->setCreatedAt(new DateTimeImmutable());
+
         $avis->setVisible(false); // Définit une valeur par défaut pour `isVisible`
 
         $this->manager->persist($avis);
@@ -72,11 +78,17 @@ final class AvisController extends AbstractController
     }
 
     #[Route('/{id}', name: 'delete', methods: 'DELETE')]
-    #[IsGranted('ROLE_EMPLOYE')]
-    #[IsGranted('ROLE_ADMIN')]
     public function delete(int $id): JsonResponse
     {
         $avis = $this->repository->findOneBy(['id' => $id]);
+
+        // Vérification si l'utilisateur a l'un des rôles requis
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_EMPLOYE')) {
+            return new JsonResponse(
+                ['message' => 'Access denied'],
+                Response::HTTP_FORBIDDEN
+            );
+        }
 
         if ($avis) {
             $this->manager->remove($avis);

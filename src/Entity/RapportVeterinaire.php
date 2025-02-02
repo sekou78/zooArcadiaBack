@@ -134,25 +134,26 @@ class RapportVeterinaire
         return $this;
     }
 
-    #[ORM\PrePersist]
-    public function onPrePersist(): void
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
-        if (!$this->createdAt) {
-            $this->createdAt = new \DateTimeImmutable();  // Lors de la création, on définit la date de création
-        }
-        $this->updatedAt = $this->createdAt;  // "updatedAt" est défini en même temps que "createdAt"
+        return $this->createdAt;
     }
 
-    #[ORM\PreUpdate]
-    public function onPreUpdate(): void
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
-        $this->updatedAt = new \DateTimeImmutable();  // Lors de la mise à jour, on met à jour la date de modification
+        $this->createdAt = $createdAt;
+        return $this;
+    }
+
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
     }
 
     public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
-
         return $this;
     }
 }

@@ -77,7 +77,8 @@ final class ServiceAnimauxController extends AbstractController
         // Sérialiser l'objet ServiceAnimaux et renvoyer une réponse JSON
         $responseData = $this->serializer->serialize(
             $serviceAnimal,
-            'json'
+            'json',
+            ['groups' => ['service_animaux_read']]
         );
 
         $location = $this->urlGenerator->generate(

@@ -204,12 +204,19 @@ class SecurityController extends AbstractController
     }
 
     #[Route('/employee/validate-avis/{avisId}', name: 'employee_validate_avis', methods: 'PUT')]
-    #[IsGranted('ROLE_EMPLOYE')]
     public function validateAvis(
         int $avisId,
         EntityManagerInterface $manager
     ): JsonResponse {
         $avis = $manager->getRepository(Avis::class)->find($avisId);
+
+        // Vérification si l'utilisateur a l'un des rôles requis
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_EMPLOYE')) {
+            return new JsonResponse(
+                ['message' => 'Access denied'],
+                Response::HTTP_FORBIDDEN
+            );
+        }
 
         if (!$avis) {
             return new JsonResponse(

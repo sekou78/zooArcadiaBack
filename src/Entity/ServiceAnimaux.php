@@ -47,7 +47,7 @@ class ServiceAnimaux
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'serviceAnimaux')]
-    // #[Groups(['service_animaux_read'])]
+    #[Groups(['service_animaux_read'])]
     private Collection $users;
 
     public function __construct()

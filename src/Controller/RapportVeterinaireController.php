@@ -57,11 +57,20 @@ final class RapportVeterinaireController extends AbstractController
         $rapportVeterinaire = $this->serializer->deserialize(
             $request->getContent(),
             RapportVeterinaire::class,
-            'json'
+            'json',
+            ['groups' => ['service_animaux_read']]
         );
 
+        $data = json_decode($request->getContent(), true);
+
+        $rapportVeterinaire->setDate(new \DateTimeImmutable($data['date'] ?? 'now'));
+        $rapportVeterinaire->setEtat($data['etat'] ?? null);
+        $rapportVeterinaire->setNourritureProposee($data['nourritureProposee'] ?? null);
+        $rapportVeterinaire->setQuantiteNourriture($data['quantiteNourriture'] ?? null);
+        $rapportVeterinaire->setCommentaireHabitat($data['commentaireHabitat'] ?? null);
+
         // Assigner l'utilisateur au rapport vétérinaire via la méthode addUser()
-        $rapportVeterinaire->addUser($user);
+        $rapportVeterinaire->setVeterinaire($user);
 
         $rapportVeterinaire->setCreatedAt(new DateTimeImmutable());
 

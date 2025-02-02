@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -25,6 +26,7 @@ final class RoleController extends AbstractController
     ) {}
 
     #[Route(name: 'new', methods: 'POST')]
+    #[IsGranted('ROLE_ADMIN')]
     public function new(Request $request): JsonResponse
     {
         $role = $this->serializer->deserialize($request->getContent(), Role::class, 'json');
@@ -49,6 +51,7 @@ final class RoleController extends AbstractController
     }
 
     #[Route('/{id}', name: 'show', methods: 'GET')]
+    #[IsGranted('ROLE_ADMIN')]
     public function show(int $id): JsonResponse
     {
         $role = $this->repository->findOneBy(['id' => $id]);
@@ -138,6 +141,7 @@ final class RoleController extends AbstractController
 
 
     #[Route("/assign-role/{userId}/{roleId}", name: "assign_role", methods: "PUT")]
+    #[IsGranted('ROLE_ADMIN')]
     public function assignRoleToUser(int $userId, int $roleId): JsonResponse
     {
         // Trouver l'utilisateur et le rôle
@@ -178,6 +182,7 @@ final class RoleController extends AbstractController
 
 
     #[Route('/{id}', name: 'delete', methods: 'DELETE')]
+    #[IsGranted('ROLE_ADMIN')]
     public function delete(int $id): JsonResponse
     {
         $role = $this->repository->findOneBy(['id' => $id]);
