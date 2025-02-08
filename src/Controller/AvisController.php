@@ -10,8 +10,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
 #[Route('api/avis', name: 'app_api_avis_')]
@@ -35,7 +33,8 @@ final class AvisController extends AbstractController
 
         $avis->setCreatedAt(new DateTimeImmutable());
 
-        $avis->setVisible(false); // Définit une valeur par défaut pour `isVisible`
+        // Définit une valeur par défaut pour `isVisible`
+        $avis->setVisible(false);
 
         $this->manager->persist($avis);
         $this->manager->flush();
@@ -52,6 +51,37 @@ final class AvisController extends AbstractController
             Response::HTTP_CREATED,
             ["location" => $location],
             true
+        );
+    }
+
+    #[Route('/employee/validate-avis/{avisId}', name: 'employee_validate_avis', methods: 'PUT')]
+    public function validateAvis(
+        int $avisId,
+        EntityManagerInterface $manager
+    ): JsonResponse {
+        $avis = $manager->getRepository(Avis::class)->find($avisId);
+
+        // Vérification si l'utilisateur a l'un des rôles requis
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_EMPLOYE')) {
+            return new JsonResponse(
+                ['message' => 'Accès réfusé'],
+                Response::HTTP_FORBIDDEN
+            );
+        }
+
+        if (!$avis) {
+            return new JsonResponse(
+                ['error' => 'Avis non trouvé'],
+                Response::HTTP_NOT_FOUND
+            );
+        }
+
+        // Valider l'avis du visiteur
+        $avis->setVisible(true);
+        $manager->flush();
+
+        return new JsonResponse(
+            ['message' => 'Avis validé avec succès']
         );
     }
 
@@ -85,7 +115,7 @@ final class AvisController extends AbstractController
         // Vérification si l'utilisateur a l'un des rôles requis
         if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_EMPLOYE')) {
             return new JsonResponse(
-                ['message' => 'Access denied'],
+                ['message' => 'Accès réfusé'],
                 Response::HTTP_FORBIDDEN
             );
         }
@@ -95,7 +125,7 @@ final class AvisController extends AbstractController
             $this->manager->flush();
 
             return new JsonResponse(
-                ['message' => 'Avis deleted successfully'],
+                ['message' => 'Avis supprimé avec succès'],
                 Response::HTTP_OK
             );
         }
@@ -103,38 +133,6 @@ final class AvisController extends AbstractController
         return new JsonResponse(
             null,
             Response::HTTP_NOT_FOUND
-        );
-    }
-
-
-    #[Route('/employee/validate-avis/{avisId}', name: 'employee_validate_avis', methods: 'PUT')]
-    public function validateAvis(
-        int $avisId,
-        EntityManagerInterface $manager
-    ): JsonResponse {
-        $avis = $manager->getRepository(Avis::class)->find($avisId);
-
-        // Vérification si l'utilisateur a l'un des rôles requis
-        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_EMPLOYE')) {
-            return new JsonResponse(
-                ['message' => 'Access denied'],
-                Response::HTTP_FORBIDDEN
-            );
-        }
-
-        if (!$avis) {
-            return new JsonResponse(
-                ['error' => 'Feedback not found'],
-                Response::HTTP_NOT_FOUND
-            );
-        }
-
-        // Valider l'avis du visiteur
-        $avis->setVisible(true);
-        $manager->flush();
-
-        return new JsonResponse(
-            ['message' => 'Feedback validated successfully']
         );
     }
 }
