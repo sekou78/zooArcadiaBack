@@ -107,6 +107,30 @@ final class AvisController extends AbstractController
         );
     }
 
+    #[Route('/', name: 'index', methods: ['GET'])]
+    public function index(): JsonResponse
+    {
+        $avisList = $this->repository->findBy(
+            ['isVisible' => true]
+        );
+
+        $data = array_map(
+            function (Avis $avis) {
+                return [
+                    'pseudo' => $avis->getPseudo(),
+                    'commentaire' => $avis->getComments(),
+                    'createdAt' => $avis->getCreatedAt()->format("d-m-Y"),
+                ];
+            },
+            $avisList
+        );
+
+        return new JsonResponse(
+            $data,
+            JsonResponse::HTTP_OK
+        );
+    }
+
     #[Route('/{id}', name: 'delete', methods: 'DELETE')]
     public function delete(int $id): JsonResponse
     {

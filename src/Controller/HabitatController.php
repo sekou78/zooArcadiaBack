@@ -27,7 +27,20 @@ final class HabitatController extends AbstractController
     #[Route(name: 'new', methods: 'POST')]
     public function new(Request $request): JsonResponse
     {
-        $habitat = $this->serializer->deserialize($request->getContent(), Habitat::class, 'json');
+        $habitat = $this->serializer->deserialize(
+            $request->getContent(),
+            Habitat::class,
+            'json'
+        );
+
+        // Vérification si l'utilisateur a l'un des rôles requis
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_VETERINAIRE')) {
+            return new JsonResponse(
+                ['message' => 'Accès réfusé'],
+                Response::HTTP_FORBIDDEN
+            );
+        }
+
         $habitat->setCreatedAt(new DateTimeImmutable());
 
         $this->manager->persist($habitat);
@@ -70,10 +83,42 @@ final class HabitatController extends AbstractController
         );
     }
 
+    #[Route('/', name: 'index', methods: ['GET'])]
+    public function index(): JsonResponse
+    {
+        $habitats = $this->repository->findAll();
+
+        $data = array_map(
+            function (Habitat $habitat) {
+                return [
+                    'name' => $habitat->getName(),
+                    'description' => $habitat->getDescription(),
+                    'commentHabitat' => $habitat->getCommentHabitat(),
+                    'animals' => $habitat->getAnimals(),
+                    'images' => $habitat->getImages(),
+                ];
+            },
+            $habitats
+        );
+
+        return new JsonResponse(
+            $data,
+            JsonResponse::HTTP_OK
+        );
+    }
+
     #[Route('/{id}', name: 'edit', methods: 'PUT')]
     public function edit(int $id, Request $request): JsonResponse
     {
         $habitat = $this->repository->findOneBy(['id' => $id]);
+
+        // Vérification si l'utilisateur a l'un des rôles requis
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_VETERINAIRE')) {
+            return new JsonResponse(
+                ['message' => 'Accès réfusé'],
+                Response::HTTP_FORBIDDEN
+            );
+        }
 
         if ($habitat) {
             $habitat = $this->serializer->deserialize(
@@ -109,12 +154,20 @@ final class HabitatController extends AbstractController
     {
         $habitat = $this->repository->findOneBy(['id' => $id]);
 
+        // Vérification si l'utilisateur a l'un des rôles requis
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_VETERINAIRE')) {
+            return new JsonResponse(
+                ['message' => 'Accès réfusé'],
+                Response::HTTP_FORBIDDEN
+            );
+        }
+
         if ($habitat) {
             $this->manager->remove($habitat);
             $this->manager->flush();
 
             return new JsonResponse(
-                ['message' => 'Habitat deleted successfully'],
+                ['message' => 'Habitat supprimé avec succès'],
                 Response::HTTP_OK
             );
         }
@@ -127,17 +180,68 @@ final class HabitatController extends AbstractController
 
     // Pagination des habitats
     #[Route('/api/rapports', name: 'list', methods: ['GET'])]
-    public function list(Request $request, PaginatorInterface $paginator): JsonResponse
-    {
-        // Création de la requête pour récupérer tous les habitats
-        $queryBuilder = $this->manager->getRepository(Habitat::class)->createQueryBuilder('s');
+    public function list(
+        Request $request,
+        PaginatorInterface $paginator
+    ): JsonResponse {
+        // Récupérer les paramètres de filtre
+        $nameFilter = $request->query->get('name');
+        $descriptionFilter = $request->query->get('description');
+        $commentHabitatFilter = $request->query->get('commentHabitat');
+        $animalsFilter = $request->query->get('animals');
+        $imagesFilter = $request->query->get('images');
 
+        // Création de la requête pour récupérer tous les animaux
+        $queryBuilder = $this->manager->getRepository(Habitat::class)->createQueryBuilder('a');
+
+        // Appliquer le filtre sur 'name' si le paramètre est présent
+        if ($nameFilter) {
+            $queryBuilder->andWhere('a.name LIKE :name')
+                ->setParameter('name', '%' . $nameFilter . '%');
+        }
+
+        // Appliquer le filtre sur 'description' si le paramètre est présent
+        if ($descriptionFilter) {
+            $queryBuilder->andWhere('a.description LIKE :description')
+                ->setParameter('description', '%' . $descriptionFilter . '%');
+        }
+
+        // Appliquer le filtre sur 'commentaire habitat' si le paramètre est présent
+        if ($commentHabitatFilter) {
+            $queryBuilder->andWhere('a.commentHabitat LIKE :commentHabitat')
+                ->setParameter('commentHabitat', '%' . $commentHabitatFilter . '%');
+        }
+
+        // Appliquer le filtre sur 'animals' si le paramètre est présent
+        if ($animalsFilter) {
+            $queryBuilder->andWhere('a.animals LIKE :animals')
+                ->setParameter('animals', '%' . $animalsFilter . '%');
+        }
+
+        // Appliquer le filtre sur 'images' si le paramètre est présent
+        if ($imagesFilter) {
+            $queryBuilder->andWhere('a.images LIKE :images')
+                ->setParameter('images', '%' . $imagesFilter . '%');
+        }
         // Pagination avec le paginator
         $pagination = $paginator->paginate(
             $queryBuilder,
             $request->query->getInt('page', 1), // Page actuelle (par défaut 1)
-            10 // Nombre d'éléments par page
+            5 // Nombre d'éléments par page
         );
+
+        // Formater les résultats
+        $items = array_map(function ($animal) {
+            return [
+                'id' => $animal->getId(),
+                'name' => $animal->getName(),
+                'description' => $animal->getDescription(),
+                'commentaire habitat' => $animal->getCommentHabitat(),
+                'animals' => $animal->getAnimals(),
+                'images' => $animal->getImages(),
+                'createdAt' => $animal->getCreatedAt()->format("d-m-Y"),
+            ];
+        }, (array) $pagination->getItems());
 
         // Structure de réponse avec les informations de pagination
         $data = [
@@ -145,7 +249,7 @@ final class HabitatController extends AbstractController
             'totalItems' => $pagination->getTotalItemCount(),
             'itemsPerPage' => $pagination->getItemNumberPerPage(),
             'totalPages' => ceil($pagination->getTotalItemCount() / $pagination->getItemNumberPerPage()),
-            'items' => $pagination->getItems(), // Les éléments paginés
+            'items' => $items, // Les éléments paginés formatés
         ];
 
         // Retourner la réponse JSON avec les données paginées

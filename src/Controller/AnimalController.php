@@ -131,8 +131,10 @@ final class AnimalController extends AbstractController
 
     // Pagination des animaux
     #[Route('/api/rapports', name: 'list', methods: ['GET'])]
-    public function list(Request $request, PaginatorInterface $paginator): JsonResponse
-    {
+    public function list(
+        Request $request,
+        PaginatorInterface $paginator
+    ): JsonResponse {
         // Récupérer les paramètres de filtre
         $firstnameFilter = $request->query->get('firstname');
         $etatFilter = $request->query->get('etat');
@@ -144,10 +146,10 @@ final class AnimalController extends AbstractController
         // Création de la requête pour récupérer tous les animaux
         $queryBuilder = $this->manager->getRepository(Animal::class)->createQueryBuilder('a');
 
-        // Appliquer le filtre sur 'title' si le paramètre est présent
+        // Appliquer le filtre sur 'firstname' si le paramètre est présent
         if ($firstnameFilter) {
-            $queryBuilder->andWhere('a.title LIKE :title')
-                ->setParameter('title', '%' . $firstnameFilter . '%');
+            $queryBuilder->andWhere('a.firstname LIKE :firstname')
+                ->setParameter('firstname', '%' . $firstnameFilter . '%');
         }
 
         // Appliquer le filtre sur 'etat' si le paramètre est présent
@@ -158,7 +160,7 @@ final class AnimalController extends AbstractController
 
         // Appliquer le filtre sur 'habitat' si le paramètre est présent
         if ($habitatFilter) {
-            $queryBuilder->andWhere('a.habitat LIKE :etat')
+            $queryBuilder->andWhere('a.habitat LIKE :habitat')
                 ->setParameter('habitat', '%' . $habitatFilter . '%');
         }
 
@@ -174,9 +176,9 @@ final class AnimalController extends AbstractController
                 ->setParameter('rapportVeterinaire', '%' . $rapportVeterinaireFilter . '%');
         }
 
-        // Appliquer le filtre sur 'etat' si le paramètre est présent
+        // Appliquer le filtre sur 'avis' si le paramètre est présent
         if ($avisFilter) {
-            $queryBuilder->andWhere('a.avis LIKE :etat')
+            $queryBuilder->andWhere('a.avis LIKE :avis')
                 ->setParameter('avis', '%' . $avisFilter . '%');
         }
 
@@ -191,7 +193,7 @@ final class AnimalController extends AbstractController
         $items = array_map(function ($animal) {
             return [
                 'id' => $animal->getId(),
-                'firstmane' => $animal->getFirstname(),
+                'firstname' => $animal->getFirstname(),
                 'etat' => $animal->getEtat(),
                 'habitat' => $animal->getHabitat(),
                 'race' => $animal->getRace(),
