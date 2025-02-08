@@ -113,7 +113,7 @@ final class RaceController extends AbstractController
             $this->manager->flush();
 
             return new JsonResponse(
-                ['message' => 'Race deleted successfully'],
+                ['message' => 'Race supprimé avec succès'],
                 Response::HTTP_OK
             );
         }
