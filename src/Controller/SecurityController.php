@@ -203,37 +203,6 @@ class SecurityController extends AbstractController
         );
     }
 
-    #[Route('/employee/validate-avis/{avisId}', name: 'employee_validate_avis', methods: 'PUT')]
-    public function validateAvis(
-        int $avisId,
-        EntityManagerInterface $manager
-    ): JsonResponse {
-        $avis = $manager->getRepository(Avis::class)->find($avisId);
-
-        // Vérification si l'utilisateur a l'un des rôles requis
-        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_EMPLOYE')) {
-            return new JsonResponse(
-                ['message' => 'Access denied'],
-                Response::HTTP_FORBIDDEN
-            );
-        }
-
-        if (!$avis) {
-            return new JsonResponse(
-                ['error' => 'Feedback not found'],
-                Response::HTTP_NOT_FOUND
-            );
-        }
-
-        // Valider l'avis du visiteur
-        $avis->setVisible(true);
-        $manager->flush();
-
-        return new JsonResponse(
-            ['message' => 'Feedback validated successfully']
-        );
-    }
-
     #[Route('/login', name: 'login', methods: 'POST')]
     public function login(
         #[CurrentUser] ?User $user,
