@@ -20,7 +20,6 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class ImageController extends AbstractController
 {
     private string $uploadDir;
-    private KernelInterface $kernel;
 
     public function __construct(
         private EntityManagerInterface $manager,
@@ -28,11 +27,10 @@ final class ImageController extends AbstractController
         private SerializerInterface $serializer,
         private UrlGeneratorInterface $urlGenerator,
         private ImageUploaderService $imageUploader,
-        KernelInterface $kernel // Injection du kernel pour obtenir le répertoire
+        private KernelInterface $kernel // Injection du kernel pour obtenir le répertoire
     ) {
         // Initialisation du répertoire d'upload à partir du kernel
-        $this->kernel = $kernel;
-        $this->uploadDir = $kernel->getProjectDir() . '/public/uploads/images/';
+        $this->uploadDir = $this->kernel->getProjectDir() . '/public/uploads/images/';
     }
 
     // Ajouter une image
@@ -99,7 +97,6 @@ final class ImageController extends AbstractController
         $image = new Image();
         $image->setFilePath('/uploads/images/' . $fileName);
         $image->setCreatedAt(new \DateTimeImmutable());
-        $image->setUpdatedAt(new \DateTimeImmutable());
 
         $this->manager->persist($image);
         $this->manager->flush();
@@ -273,14 +270,51 @@ final class ImageController extends AbstractController
     #[Route('/api/rapports', name: 'list', methods: ['GET'])]
     public function list(Request $request, PaginatorInterface $paginator): JsonResponse
     {
-        // Création de la requête pour récupérer tous les images
-        $queryBuilder = $this->manager->getRepository(Image::class)->createQueryBuilder('s');
+        // Récupérer les paramètres de filtre
+        $habitatFilter = $request->query->get('habitat');
+        $animalFilter = $request->query->get('animal');
+
+        // Création de la requête pour récupérer tous les animaux
+        $queryBuilder = $this->manager->getRepository(Image::class)->createQueryBuilder('a');
+
+        // Appliquer le filtre sur 'habitat' si le paramètre est présent
+        if ($habitatFilter) {
+            $queryBuilder->andWhere('a.habitat LIKE :habitat')
+                ->setParameter('habitat', '%' . $habitatFilter . '%');
+        }
+
+        // Appliquer le filtre sur 'animal' si le paramètre est présent
+        if ($animalFilter) {
+            $queryBuilder->andWhere('a.animal LIKE :animal')
+                ->setParameter('animal', '%' . $animalFilter . '%');
+        }
 
         // Pagination avec le paginator
         $pagination = $paginator->paginate(
             $queryBuilder,
             $request->query->getInt('page', 1), // Page actuelle (par défaut 1)
-            10 // Nombre d'éléments par page
+            5 // Nombre d'éléments par page
+        );
+
+        // Formater les résultats
+        $items = array_map(
+            function ($animal) {
+                $formattedItem = [
+                    'id' => $animal->getId(),
+                    'habitat' => $animal->getHabitat(),
+                    'animal' => $animal->getAnimal(),
+                    'Image data' => $animal->getImageData(),
+                    'file path' => $animal->getFilePath(),
+                    'createdAt' => $animal->getCreatedAt()->format("d-m-Y"),
+                ];
+
+                // Ajouter updatedAt uniquement si non null
+                if ($animal->getUpdatedAt() !== null) {
+                    $formattedItem['updatedAt'] = $animal->getUpdatedAt()->format("d-m-Y H:i:s");
+                }
+                return $formattedItem;
+            },
+            (array) $pagination->getItems()
         );
 
         // Structure de réponse avec les informations de pagination
@@ -289,7 +323,7 @@ final class ImageController extends AbstractController
             'totalItems' => $pagination->getTotalItemCount(),
             'itemsPerPage' => $pagination->getItemNumberPerPage(),
             'totalPages' => ceil($pagination->getTotalItemCount() / $pagination->getItemNumberPerPage()),
-            'items' => $pagination->getItems(), // Les éléments paginés
+            'items' => $items, // Les éléments paginés formatés
         ];
 
         // Retourner la réponse JSON avec les données paginées
