@@ -254,10 +254,48 @@ final class RapportVeterinaireController extends AbstractController
         Request $request,
         PaginatorInterface $paginator
     ): JsonResponse {
-        // Création de la requête pour récupérer tous les rapports vétérinaires
-        $queryBuilder = $this->manager->getRepository(
-            RapportVeterinaire::class
-        )->createQueryBuilder('s');
+        // Récupérer les paramètres de filtre
+        $dateFilter = $request->query->get('date');
+        $etatFilter = $request->query->get('etat');
+        $animalFilter = $request->query->get('animal');
+        $nourritureProposeeFilter = $request->query->get('nourriture proposee');
+        $quantiteNourritureFilter = $request->query->get('quantiteNourriture');
+
+        // Création de la requête avec jointure sur Animal
+        $queryBuilder = $this->manager->getRepository(RapportVeterinaire::class)
+            ->createQueryBuilder('a')
+            ->leftJoin('a.animal', 'animal') // Jointure avec l'entité Animal
+            ->addSelect('animal'); // Sélectionner aussi les données de l'animal
+
+        // Appliquer le filtre sur 'date' si le paramètre est présent
+        if ($dateFilter) {
+            $queryBuilder->andWhere('a.date LIKE :date')
+                ->setParameter('date', '%' . $dateFilter . '%');
+        }
+
+        // Appliquer le filtre sur 'etat' si le paramètre est présent
+        if ($etatFilter) {
+            $queryBuilder->andWhere('a.etat LIKE :etat')
+                ->setParameter('etat', '%' . $etatFilter . '%');
+        }
+
+        // Appliquer le filtre sur 'animal' si le paramètre est présent
+        if ($animalFilter) {
+            $queryBuilder->andWhere('a.animal LIKE :animal')
+                ->setParameter('animal', '%' . $animalFilter . '%');
+        }
+
+        // Appliquer le filtre sur 'nourriture proposee' si le paramètre est présent
+        if ($nourritureProposeeFilter) {
+            $queryBuilder->andWhere('a.nourritureProposee LIKE :nourritureProposee')
+                ->setParameter('nourritureProposee', '%' . $nourritureProposeeFilter . '%');
+        }
+
+        // Appliquer le filtre sur 'quantiteNourriture' si le paramètre est présent
+        if ($quantiteNourritureFilter) {
+            $queryBuilder->andWhere('a.quantiteNourriture LIKE :quantiteNourriture')
+                ->setParameter('quantiteNourriture', '%' . $quantiteNourritureFilter . '%');
+        }
 
         // Pagination avec le paginator
         $pagination = $paginator->paginate(
@@ -265,6 +303,27 @@ final class RapportVeterinaireController extends AbstractController
             $request->query->getInt('page', 1), // Page actuelle (par défaut 1)
             10 // Nombre d'éléments par page
         );
+
+        // Formater les résultats
+        $items = array_map(function ($rapportVeterinaire) {
+            $animal = $rapportVeterinaire->getAnimal(); // Récupération de l'animal
+            $updatedAt = $rapportVeterinaire->getUpdatedAt(); // Récupération de updatedAt
+            return [
+                'id' => $rapportVeterinaire->getId(),
+                'date' => $rapportVeterinaire->getDate()->format("d-m-Y"),
+                'etat' => $rapportVeterinaire->getEtat(),
+                'nourriture proposee' => $rapportVeterinaire->getNourritureProposee(),
+                'quantite nourriture' => $rapportVeterinaire->getquantiteNourriture(),
+                'animal' => $animal ? [ // Vérification avant d'accéder aux données de l'animal
+                    'id' => $animal->getId(),
+                    'nom' => $animal->getFirstname(),
+                    'race' => $animal->getRace(),
+                ] : null, // Si aucun animal n'est associé, retourne `null`
+                'commentaire habitat' => $rapportVeterinaire->getCommentaireHabitat(),
+                'createdAt' => $rapportVeterinaire->getCreatedAt()->format("d-m-Y"),
+                'updatedAt' => $updatedAt ? $updatedAt->format("d-m-Y") : null, // Vérification avant d'ajouter
+            ];
+        }, (array) $pagination->getItems());
 
         // Structure de réponse avec les informations de pagination
         $data = [
@@ -274,7 +333,7 @@ final class RapportVeterinaireController extends AbstractController
             'totalPages' => ceil(
                 $pagination->getTotalItemCount() / $pagination->getItemNumberPerPage()
             ),
-            'items' => $pagination->getItems(), // Les éléments paginés
+            'items' => $items, // Les éléments paginés formatés
         ];
 
         // Retourner la réponse JSON avec les données paginées

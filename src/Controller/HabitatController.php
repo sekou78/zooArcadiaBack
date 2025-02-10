@@ -223,6 +223,7 @@ final class HabitatController extends AbstractController
             $queryBuilder->andWhere('a.images LIKE :images')
                 ->setParameter('images', '%' . $imagesFilter . '%');
         }
+
         // Pagination avec le paginator
         $pagination = $paginator->paginate(
             $queryBuilder,
@@ -231,15 +232,14 @@ final class HabitatController extends AbstractController
         );
 
         // Formater les résultats
-        $items = array_map(function ($animal) {
+        $items = array_map(function ($habitat) {
             return [
-                'id' => $animal->getId(),
-                'name' => $animal->getName(),
-                'description' => $animal->getDescription(),
-                'commentaire habitat' => $animal->getCommentHabitat(),
-                'animals' => $animal->getAnimals(),
-                'images' => $animal->getImages(),
-                'createdAt' => $animal->getCreatedAt()->format("d-m-Y"),
+                'id' => $habitat->getId(),
+                'name' => $habitat->getName(),
+                'description' => $habitat->getDescription(),
+                'commentaire habitat' => $habitat->getCommentHabitat(),
+                'animals' => $habitat->getAnimals(),
+                'createdAt' => $habitat->getCreatedAt()->format("d-m-Y"),
             ];
         }, (array) $pagination->getItems());
 

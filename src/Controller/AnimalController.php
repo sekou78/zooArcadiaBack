@@ -191,13 +191,39 @@ final class AnimalController extends AbstractController
 
         // Formater les résultats
         $items = array_map(function ($animal) {
+            // Utilise la méthode getRapportVeterinaires()
+            $rapportsVeterinaires = $animal->getRapportVeterinaires();
+            $rapportVeterinaireData = [];
+
+            // Si l'animal a des rapports vétérinaires associés, formate-les
+            foreach ($rapportsVeterinaires as $rapportVeterinaire) {
+                $rapportVeterinaireData[] = [
+                    'id' => $rapportVeterinaire->getId(),
+                    'veterinaire' => $rapportVeterinaire->getVeterinaire() ? [
+                        'id' => $rapportVeterinaire->getVeterinaire()->getId(),
+                        'nom' => $rapportVeterinaire->getVeterinaire()->getNom(),
+                    ] : null,
+                    'date' => $rapportVeterinaire->getDate()->format("d-m-Y"),
+                    'etat' => $rapportVeterinaire->getEtat(),
+                    'nourriture proposee' => $rapportVeterinaire->getNourritureProposee(),
+                    'quantite nourriture' => $rapportVeterinaire->getQuantiteNourriture(),
+                    'commentaire habitat' => $rapportVeterinaire->getCommentaireHabitat(),
+                    'createdAt' => $rapportVeterinaire->getCreatedAt()->format("d-m-Y"),
+                    'updatedAt' =>
+                    $rapportVeterinaire->getUpdatedAt() ? $rapportVeterinaire
+                        ->getUpdatedAt()
+                        ->format("d-m-Y")
+                        : null,
+                ];
+            }
+
             return [
                 'id' => $animal->getId(),
                 'firstname' => $animal->getFirstname(),
                 'etat' => $animal->getEtat(),
                 'habitat' => $animal->getHabitat(),
                 'race' => $animal->getRace(),
-                'rapport veterinaires' => $animal->getRapportVeterinaires(),
+                'rapport veterinaires' => $rapportVeterinaireData,
                 'avis' => $animal->getAvis(),
                 'images' => $animal->getImages(),
                 'createdAt' => $animal->getCreatedAt()->format("d-m-Y"),
