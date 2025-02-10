@@ -15,31 +15,39 @@ class RapportVeterinaire
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['rapport:read'])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['rapport:read'])]
     private ?\DateTimeInterface $date = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['rapport:read'])]
     private ?string $etat = null;
 
     #[ORM\ManyToOne(inversedBy: 'rapportVeterinaires')]
+    #[Groups(['rapport:read', 'rapportVeterinaire:write'])] // Vérifie bien ces groupes
     private ?Animal $animal = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'rapportsVeterinaires')]
-    #[Groups(["rapportVeterinaire:write", "rapportVeterinaire:read"])] // Ajout de groupes de sérialisation
+    #[Groups(["rapportVeterinaire:write"])] // Groupe pour éviter la sérialisation de User côté lecture
     private ?User $veterinaire = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['rapport:read'])]
     private ?string $nourritureProposee = null;
 
     #[ORM\Column(type: "float")]
+    #[Groups(['rapport:read'])]
     private ?float $quantiteNourriture = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['rapport:read'])]
     private ?string $commentaireHabitat = null;
 
     #[ORM\Column]
+    #[Groups(['rapport:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]

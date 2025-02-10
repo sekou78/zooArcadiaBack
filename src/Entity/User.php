@@ -89,6 +89,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?Role $role = null;
 
     #[ORM\OneToMany(mappedBy: 'veterinaire', targetEntity: RapportVeterinaire::class)]
+    #[Groups(['user_read'])]
     private Collection $rapportsVeterinaires;
 
     /**

@@ -6,6 +6,7 @@ use App\Repository\AnimalRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AnimalRepository::class)]
@@ -15,11 +16,13 @@ class Animal
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['rapport:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank]
     #[Assert\Length(min: 2, max: 50)]
+    #[Groups(['rapport:read'])]
     private ?string $firstname = null;
 
     #[ORM\Column(length: 50, nullable: true)]
@@ -27,18 +30,23 @@ class Animal
         choices: ['malade', 'en bonne santé', 'en observation'],
         message: "L'état doit être 'malade', 'en bonne santé' ou 'en observation'."
     )]
+    #[Groups(['rapport:read'])]
     private ?string $etat = null;
 
     #[ORM\ManyToOne(inversedBy: 'animals')]
+    #[Groups(['rapport:read'])]
     private ?Habitat $habitat = null;
 
     #[ORM\ManyToOne(inversedBy: 'animals')]
+    #[Groups(['rapport:read'])]
     private ?Race $race = null;
 
     #[ORM\Column]
+    #[Groups(['rapport:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['rapport:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\OneToMany(targetEntity: RapportVeterinaire::class, mappedBy: 'animal', cascade: ['persist', 'remove'])]
