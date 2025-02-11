@@ -120,6 +120,11 @@ class SecurityController extends AbstractController
                                 property: "prenom",
                                 type: "string",
                                 example: "Alpha"
+                            ),
+                            new OA\Property(
+                                property: "createdAt",
+                                type: "string",
+                                format: "date-time"
                             )
                         ]
                     )
@@ -309,6 +314,11 @@ class SecurityController extends AbstractController
                                 property: "prenom",
                                 type: "string",
                                 example: "Alpha"
+                            ),
+                            new OA\Property(
+                                property: "createdAt",
+                                type: "string",
+                                format: "date-time"
                             )
                         ]
                     )
@@ -662,6 +672,11 @@ class SecurityController extends AbstractController
                                 property: "prenom",
                                 type: "string",
                                 example: "Alpha"
+                            ),
+                            new OA\Property(
+                                property: "updatedAt",
+                                type: "string",
+                                format: "date-time"
                             )
                         ]
                     )
