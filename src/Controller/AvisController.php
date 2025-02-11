@@ -275,7 +275,7 @@ final class AvisController extends AbstractController
             ),
             new OA\Response(
                 response: 404,
-                description: "Animal non trouvé"
+                description: "Avis non trouvé"
             )
         ]
     )]
