@@ -12,11 +12,12 @@ use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use OpenApi\Attributes as OA;
 
 #[Route('api/role', name: 'app_api_role_')]
+#[IsGranted('ROLE_ADMIN')]
 final class RoleController extends AbstractController
 {
     public function __construct(
@@ -27,7 +28,55 @@ final class RoleController extends AbstractController
     ) {}
 
     #[Route(name: 'new', methods: 'POST')]
-    #[IsGranted('ROLE_ADMIN')]
+    #[OA\Post(
+        path: "/api/role",
+        summary: "Créer un rôle",
+        description: "Créer un rôle dans le système",
+        requestBody: new OA\RequestBody(
+            description: "Les données pour créer un rôle",
+            required: true,
+            content: new OA\JsonContent(
+                required: ["label"],
+                properties: [
+                    new OA\Property(
+                        property: "label",
+                        type: "string",
+                        example: "ROLE_TESTE"
+                    )
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: "Rôle créer avec succès",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(
+                            property: "id",
+                            type: "integer",
+                            example: 1
+                        ),
+                        new OA\Property(
+                            property: "label",
+                            type: "string",
+                            example: "ROLE_TESTE"
+                        ),
+                        new OA\Property(
+                            property: "createdAt",
+                            type: "string",
+                            format: "date-time",
+                            example: "10-10-2025"
+                        )
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 400,
+                description: "Requête invalide"
+            )
+        ]
+    )]
     public function new(Request $request): JsonResponse
     {
         $role = $this->serializer->deserialize($request->getContent(), Role::class, 'json');
@@ -53,6 +102,51 @@ final class RoleController extends AbstractController
 
     #[Route('/{id}', name: 'show', methods: 'GET')]
     #[IsGranted('ROLE_ADMIN')]
+    #[OA\Get(
+        path: "/api/role/{id}",
+        summary: "Afficher un role par son ID",
+        parameters: [
+            new OA\Parameter(
+                name: "id",
+                in: "path",
+                required: true,
+                description: "ID du role à afficher",
+                schema: new OA\Schema(
+                    type: "integer"
+                )
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: "Rôle créer avec succès",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(
+                            property: "id",
+                            type: "integer",
+                            example: 1
+                        ),
+                        new OA\Property(
+                            property: "label",
+                            type: "string",
+                            example: "ROLE_TESTE"
+                        ),
+                        new OA\Property(
+                            property: "createdAt",
+                            type: "string",
+                            format: "date-time",
+                            example: "10-10-2025"
+                        )
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Rôle non trouvé"
+            )
+        ],
+    )]
     public function show(int $id): JsonResponse
     {
         $role = $this->repository->findOneBy(['id' => $id]);
@@ -75,7 +169,95 @@ final class RoleController extends AbstractController
     }
 
     #[Route("/assign-role", name: "assign_role", methods: "PUT")]
-    #[IsGranted('ROLE_ADMIN')]
+    #[OA\Put(
+        path: "/api/role/assign-role",
+        summary: "Assigner un rôle à un utilisateur",
+        description: "Assigner un rôle à un utilisateur via son email",
+        requestBody: new OA\RequestBody(
+            description: "Affecter un rôle à un utilisateur.",
+            required: true,
+            content: new OA\JsonContent(
+                required: ["email", "role_id"],
+                properties: [
+                    new OA\Property(
+                        property: "email",
+                        type: "string",
+                        example: "teste@test.fr"
+                    ),
+                    new OA\Property(
+                        property: "role_id",
+                        type: "integer",
+                        example: 3
+                    )
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Rôle assigné à l'utilisateur avec succès",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                            example: "Rôle attribué avec succès"
+                        ),
+                        new OA\Property(
+                            property: "user",
+                            type: "object",
+                            properties: [
+                                new OA\Property(
+                                    property: "id",
+                                    type: "integer",
+                                    example: 3
+                                ),
+                                new OA\Property(
+                                    property: "email",
+                                    type: "string",
+                                    example: "teste@test.fr"
+                                ),
+                                new OA\Property(
+                                    property: "role",
+                                    type: "string",
+                                    example: "ROLE_TESTE"
+                                )
+                            ]
+                        ),
+                        new OA\Property(
+                            property: "role",
+                            type: "object",
+                            properties: [
+                                new OA\Property(
+                                    property: "id",
+                                    type: "integer",
+                                    example: 3
+                                ),
+                                new OA\Property(
+                                    property: "label",
+                                    type: "string",
+                                    example: "ROLE_TESTE"
+                                ),
+                                new OA\Property(
+                                    property: "users_count",
+                                    type: "integer",
+                                    example: 1
+                                )
+                            ]
+                        )
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 400,
+                description: "Données invalides"
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Utilisateur ou rôle non trouvé"
+            )
+        ]
+    )]
     public function assignRoleToUser(
         Request $request,
         EntityManagerInterface $manager,
@@ -163,7 +345,53 @@ final class RoleController extends AbstractController
 
     //Suppression d'un role en BDD via son label
     #[Route("/delete-role-by-label", name: "delete_role_by_label", methods: "DELETE")]
-    #[IsGranted('ROLE_ADMIN')]
+    #[OA\Delete(
+        path: "/api/role/delete-role-by-label",
+        summary: "Supprimer un rôle par son label",
+        description: "Supprimer un rôle en spécifiant son label",
+        requestBody: new OA\RequestBody(
+            description: "Les données pour supprimer un rôle",
+            required: true,
+            content: new OA\JsonContent(
+                required: ["email", "label"],
+                properties: [
+                    new OA\Property(
+                        property: "email",
+                        type: "string",
+                        example: "teste@test.fr"
+                    ),
+                    new OA\Property(
+                        property: "label",
+                        type: "string",
+                        example: "ROLE_TESTE"
+                    )
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Rôle supprimé avec succès",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                            example: "Rôle supprimé avec succès"
+                        )
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 400,
+                description: "Label ou Email manquant"
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Rôle ou Email non trouvé"
+            )
+        ]
+    )]
     public function deleteRoleByLabel(Request $request, EntityManagerInterface $manager): JsonResponse
     {
         // Récupérer le contenu JSON
@@ -200,7 +428,48 @@ final class RoleController extends AbstractController
 
     //Suppression du role attribuer à un utilisateur via son email
     #[Route("/delete-role", name: "delete_role_by_email", methods: "DELETE")]
-    #[IsGranted('ROLE_ADMIN')]
+    #[OA\Delete(
+        path: "/api/role/delete-role",
+        summary: "Supprimer un rôle d'un utilisateur par son email",
+        description: "Retirer un rôle d'un utilisateur en spécifiant son email",
+        requestBody: new OA\RequestBody(
+            description: "Les données pour retirer un rôle d'un utilisateur.",
+            required: true,
+            content: new OA\JsonContent(
+                required: ["email"],
+                properties: [
+                    new OA\Property(
+                        property: "email",
+                        type: "string",
+                        example: "teste@test.fr"
+                    )
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Rôle retiré avec succès",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(
+                            property: "message",
+                            type: "string",
+                            example: "Rôle retiré avec succès"
+                        )
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 400,
+                description: "Email manquant"
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Utilisateur non trouvé"
+            )
+        ]
+    )]
     public function deleteRoleByEmail(
         Request $request,
         EntityManagerInterface $manager
