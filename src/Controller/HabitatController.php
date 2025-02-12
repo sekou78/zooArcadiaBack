@@ -364,7 +364,7 @@ final class HabitatController extends AbstractController
         responses: [
             new OA\Response(
                 response: 204,
-                description: "Booking modifé avec succès",
+                description: "Habitat modifé avec succès",
                 content: new OA\MediaType(
                     mediaType: "application/json",
                     schema: new OA\Schema(
