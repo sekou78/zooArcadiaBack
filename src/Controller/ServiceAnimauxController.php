@@ -3,10 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\ServiceAnimaux;
-use App\Form\ServiceAnimauxType;
 use App\Repository\ServiceAnimauxRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -17,6 +15,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
+use OpenApi\Attributes as OA;
 
 #[Route('api/serviceAnimaux', name: 'app_api_serviceAnimaux_')]
 final class ServiceAnimauxController extends AbstractController
@@ -30,6 +29,114 @@ final class ServiceAnimauxController extends AbstractController
 
     #[Route(name: 'new', methods: 'POST')]
     #[IsGranted('ROLE_EMPLOYE')]
+    #[OA\Post(
+        path: '/api/serviceAnimaux',
+        summary: 'Créer un service animal',
+        description: 'Créer un nouveau service pour un animal',
+        requestBody: new OA\RequestBody(
+            content: new OA\MediaType(
+                mediaType: 'application/json',
+                schema: new OA\Schema(
+                    type: 'object',
+                    required: ['nom', 'description', 'nourriture', 'quantite'],
+                    properties: [
+                        new OA\Property(
+                            property: 'nom',
+                            type: 'string',
+                            example: "Service 6"
+                        ),
+                        new OA\Property(
+                            property: 'description',
+                            type: 'string',
+                            example: "Nourriture des animaux"
+                        ),
+                        new OA\Property(
+                            property: 'nourriture',
+                            type: 'string',
+                            example: "Carottes"
+                        ),
+                        new OA\Property(
+                            property: 'quantite',
+                            type: 'integer',
+                            example: 12.5
+                        ),
+                    ]
+                )
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: "Service animal crée avec succès",
+                content: new OA\MediaType(
+                    mediaType: "application/json",
+                    schema: new OA\Schema(
+                        type: "object",
+                        properties: [
+                            new OA\Property(
+                                property: "id",
+                                type: "integer",
+                                example: 1
+                            ),
+                            new OA\Property(
+                                property: 'nom',
+                                type: 'string',
+                                example: "Service 6"
+                            ),
+                            new OA\Property(
+                                property: 'description',
+                                type: 'string',
+                                example: "Nourriture des animaux"
+                            ),
+                            new OA\Property(
+                                property: 'nourriture',
+                                type: 'string',
+                                example: "Carottes"
+                            ),
+                            new OA\Property(
+                                property: 'quantite',
+                                type: 'integer',
+                                example: 12.5
+                            ),
+                            new OA\Property(
+                                property: 'date',
+                                type: "string",
+                                format: "date-time",
+                                example: "10-10-2025"
+                            ),
+                            new OA\Property(
+                                property: 'users',
+                                type: 'array',
+                                items: new OA\Items(
+                                    properties: [
+                                        new OA\Property(
+                                            property: "username",
+                                            type: "string",
+                                            example: "BOBOLO"
+                                        )
+                                    ]
+                                )
+                            ),
+                            new OA\Property(
+                                property: "createdAt",
+                                type: "string",
+                                format: "date-time",
+                                example: "10-10-2025"
+                            )
+                        ]
+                    )
+                )
+            ),
+            new OA\Response(
+                response: 400,
+                description: "Mauvaise requête"
+            ),
+            new OA\Response(
+                response: 403,
+                description: "Accès interdit"
+            )
+        ]
+    )]
     public function new(
         Request $request,
         Security $security,
@@ -98,6 +205,90 @@ final class ServiceAnimauxController extends AbstractController
     }
 
     #[Route('/{id}', name: 'show', methods: 'GET')]
+    #[OA\Get(
+        path: '/api/serviceAnimaux/{id}',
+        summary: 'Obtenir un service par son ID',
+        description: 'Service pour un animal via son ID',
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                in: 'path',
+                required: true,
+                description: 'ID du service animal',
+                schema: new OA\Schema(
+                    type: 'integer'
+                )
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Service pour l'animal trouvé",
+                content: new OA\MediaType(
+                    mediaType: "application/json",
+                    schema: new OA\Schema(
+                        type: "object",
+                        properties: [
+                            new OA\Property(
+                                property: "id",
+                                type: "integer",
+                                example: 1
+                            ),
+                            new OA\Property(
+                                property: 'nom',
+                                type: 'string',
+                                example: "Service 6"
+                            ),
+                            new OA\Property(
+                                property: 'description',
+                                type: 'string',
+                                example: "Nourriture des animaux"
+                            ),
+                            new OA\Property(
+                                property: 'nourriture',
+                                type: 'string',
+                                example: "Carottes"
+                            ),
+                            new OA\Property(
+                                property: 'quantite',
+                                type: 'integer',
+                                example: 12.5
+                            ),
+                            new OA\Property(
+                                property: 'date',
+                                type: "string",
+                                format: "date-time",
+                                example: "10-10-2025"
+                            ),
+                            new OA\Property(
+                                property: 'users',
+                                type: 'array',
+                                items: new OA\Items(
+                                    properties: [
+                                        new OA\Property(
+                                            property: "username",
+                                            type: "string",
+                                            example: "BOBOLO"
+                                        )
+                                    ]
+                                )
+                            ),
+                            new OA\Property(
+                                property: "createdAt",
+                                type: "string",
+                                format: "date-time",
+                                example: "10-10-2025"
+                            )
+                        ]
+                    )
+                )
+            ),
+            new OA\Response(
+                response: 404,
+                description: 'Service non trouvé'
+            )
+        ]
+    )]
     public function show(int $id): JsonResponse
     {
         $serviceAnimal = $this->repository->findOneBy(['id' => $id]);
@@ -105,7 +296,8 @@ final class ServiceAnimauxController extends AbstractController
         if ($serviceAnimal) {
             $responseData = $this->serializer->serialize(
                 $serviceAnimal,
-                'json'
+                'json',
+                ['groups' => ['service_animaux_read', 'user_read']]
             );
 
             return new JsonResponse(
@@ -124,6 +316,142 @@ final class ServiceAnimauxController extends AbstractController
 
     #[Route('/{id}', name: 'edit', methods: 'PUT')]
     #[IsGranted('ROLE_EMPLOYE')]
+    #[OA\Put(
+        path: '/api/serviceAnimaux/{id}',
+        summary: 'Modifier un service pour un animal',
+        description: "Mettre à jour les informations d'un service animal",
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                in: 'path',
+                required: true,
+                description: 'ID du service animal',
+                schema: new OA\Schema(
+                    type: 'integer'
+                )
+            )
+        ],
+        requestBody: new OA\RequestBody(
+            content: new OA\MediaType(
+                mediaType: 'application/json',
+                schema: new OA\Schema(
+                    type: 'object',
+                    required: ['nom', 'description', 'nourriture', 'quantite'],
+                    properties: [
+                        new OA\Property(
+                            property: "id",
+                            type: "integer",
+                            example: 1
+                        ),
+                        new OA\Property(
+                            property: 'nom',
+                            type: 'string',
+                            example: "Service 6 modifié"
+                        ),
+                        new OA\Property(
+                            property: 'description',
+                            type: 'string',
+                            example: "Mise à jour de la nourriture"
+                        ),
+                        new OA\Property(
+                            property: 'nourriture',
+                            type: 'string',
+                            example: "Légumes"
+                        ),
+                        new OA\Property(
+                            property: 'quantite',
+                            type: 'integer',
+                            example: 18.24
+                        ),
+                        new OA\Property(
+                            property: 'date',
+                            type: "string",
+                            format: "date-time",
+                            example: "10-10-2025"
+                        ),
+                        new OA\Property(
+                            property: "updatedAt",
+                            type: "string",
+                            format: "date-time",
+                            example: "10-10-2025"
+                        )
+                    ]
+                )
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Service animal mis à jour avec succès",
+                content: new OA\MediaType(
+                    mediaType: "application/json",
+                    schema: new OA\Schema(
+                        type: "object",
+                        properties: [
+                            new OA\Property(
+                                property: "id",
+                                type: "integer",
+                                example: 1
+                            ),
+                            new OA\Property(
+                                property: 'nom',
+                                type: 'string',
+                                example: "Service 6 modifié"
+                            ),
+                            new OA\Property(
+                                property: 'description',
+                                type: 'string',
+                                example: "Mise à jour de la nourriture"
+                            ),
+                            new OA\Property(
+                                property: 'nourriture',
+                                type: 'string',
+                                example: "Légumes"
+                            ),
+                            new OA\Property(
+                                property: 'quantite',
+                                type: 'integer',
+                                example: 18.24
+                            ),
+                            new OA\Property(
+                                property: 'date',
+                                type: "string",
+                                format: "date-time",
+                                example: "10-10-2025"
+                            ),
+                            new OA\Property(
+                                property: 'users',
+                                type: 'array',
+                                items: new OA\Items(
+                                    properties: [
+                                        new OA\Property(
+                                            property: "username",
+                                            type: "string",
+                                            example: "BOBOLO"
+                                        )
+                                    ]
+                                )
+                            ),
+                            new OA\Property(
+                                property: "updatedAt",
+                                type: "string",
+                                format: "date-time",
+                                example: "10-10-2025"
+                            )
+                        ]
+                    )
+                )
+            ),
+            new OA\Response(
+                response: 404,
+                description: 'Service non trouvé'
+            ),
+            new OA\Response(
+                response: 400,
+                description: 'Mauvaise requête'
+            )
+        ]
+    )]
     public function edit(
         int $id,
         Request $request,
@@ -134,7 +462,10 @@ final class ServiceAnimauxController extends AbstractController
 
         // Vérifier si l'utilisateur est valide
         if (!$user) {
-            return new JsonResponse(['error' => 'User not found'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(
+                ['error' => 'User not found'],
+                Response::HTTP_BAD_REQUEST
+            );
         }
 
         // Trouver le service d'animaux existant par son ID
@@ -154,7 +485,11 @@ final class ServiceAnimauxController extends AbstractController
 
             $this->manager->flush();
 
-            $modify = $this->serializer->serialize($serviceAnimal, 'json');
+            $modify = $this->serializer->serialize(
+                $serviceAnimal,
+                'json',
+                ['groups' => ['service_animaux_read', 'user_read']]
+            );
 
             return new JsonResponse(
                 // ['message' => 'Service Animal modify successfully']

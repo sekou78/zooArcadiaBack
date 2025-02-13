@@ -105,7 +105,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var Collection<int, ServiceAnimaux>
      */
     #[ORM\ManyToMany(targetEntity: ServiceAnimaux::class, mappedBy: 'users')]
-    #[Groups(['user_read'])]
     private Collection $serviceAnimaux;
 
     public function getId(): ?int
