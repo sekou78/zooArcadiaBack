@@ -8,6 +8,8 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -18,27 +20,49 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Assert\NotBlank]
+    #[Assert\Email]
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
     /**
      * @var list<string> The user roles
      */
+    #[Assert\NotBlank]
+    #[Assert\All([
+        new Assert\Choice(
+            choices: [
+                'ROLE_ADMIN',
+                'ROLE_EMPLOYE',
+                'ROLE_VETERINAIRE'
+            ],
+            message: 'Choisissez un rôle valide.'
+        )
+    ])]
     #[ORM\Column]
-    private array $roles = [];
+    private array $roles = ['ROLE_USER'];
 
     /**
      * @var string The hashed password
      */
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 8)]
     #[ORM\Column]
     private ?string $password = null;
 
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 2, max: 50)]
     #[ORM\Column(length: 50)]
+    #[Groups(['user_read', 'user_write'])]  // Exemple de groupes
     private ?string $username = null;
 
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 2, max: 50)]
     #[ORM\Column(length: 50)]
     private ?string $nom = null;
 
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 2, max: 50)]
     #[ORM\Column(length: 50)]
     private ?string $prenom = null;
 
@@ -50,17 +74,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->apiToken = bin2hex(random_bytes(50));
         $this->services = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
+        if (empty($this->roles)) {
+            $this->roles = ['ROLE_USER'];
+        }
+        $this->serviceAnimaux = new ArrayCollection();
     }
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'users')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Role $role = null;
 
-    #[ORM\ManyToOne(inversedBy: 'users')]
-    private ?RapportVeterinaire $rapportsVeterinaires = null;
+    #[ORM\OneToMany(mappedBy: 'veterinaire', targetEntity: RapportVeterinaire::class)]
+    #[Groups(['user_read'])]
+    private Collection $rapportsVeterinaires;
 
     /**
      * @var Collection<int, Service>
@@ -70,6 +100,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
+
+    /**
+     * @var Collection<int, ServiceAnimaux>
+     */
+    #[ORM\ManyToMany(targetEntity: ServiceAnimaux::class, mappedBy: 'users')]
+    private Collection $serviceAnimaux;
 
     public function getId(): ?int
     {
@@ -118,8 +154,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
-
         return $this;
+    }
+
+    public function setAsAdmin(): void
+    {
+        $this->roles = ['ROLE_ADMIN'];
     }
 
     /**
@@ -218,14 +258,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getRapportsVeterinaires(): ?RapportVeterinaire
+    public function addRapportVeterinaire(RapportVeterinaire $rapport): static
     {
-        return $this->rapportsVeterinaires;
+        if (!$this->rapportsVeterinaires->contains($rapport)) {
+            $this->rapportsVeterinaires->add($rapport);
+            $rapport->setVeterinaire($this);  // Assure la liaison inverse
+        }
+
+        return $this;
     }
 
-    public function setRapportsVeterinaires(?RapportVeterinaire $rapportsVeterinaires): static
+    public function removeRapportVeterinaire(RapportVeterinaire $rapport): static
     {
-        $this->rapportsVeterinaires = $rapportsVeterinaires;
+        if ($this->rapportsVeterinaires->removeElement($rapport)) {
+            if ($rapport->getVeterinaire() === $this) {
+                $rapport->setVeterinaire(null);  // Enlève la liaison inverse
+            }
+        }
 
         return $this;
     }
@@ -266,6 +315,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->updatedAt = $updatedAt;
 
+        return $this;
+    }
+
+    public function getServiceAnimaux(): Collection
+    {
+        return $this->serviceAnimaux;
+    }
+
+    public function addServiceAnimaux(ServiceAnimaux $serviceAnimaux): static
+    {
+        if (!$this->serviceAnimaux->contains($serviceAnimaux)) {
+            $this->serviceAnimaux->add($serviceAnimaux);
+            $serviceAnimaux->addUser($this);
+        }
+        return $this;
+    }
+
+    public function removeServiceAnimaux(ServiceAnimaux $serviceAnimaux): static
+    {
+        if ($this->serviceAnimaux->removeElement($serviceAnimaux)) {
+            $serviceAnimaux->removeUser($this);
+        }
         return $this;
     }
 }

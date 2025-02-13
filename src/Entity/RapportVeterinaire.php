@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: RapportVeterinaireRepository::class)]
 class RapportVeterinaire
@@ -14,33 +15,43 @@ class RapportVeterinaire
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['rapport:read'])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['rapport:read'])]
     private ?\DateTimeInterface $date = null;
 
-    #[ORM\Column(length: 50, nullable: true)]
-    private ?string $detail = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['rapport:read'])]
+    private ?string $etat = null;
 
     #[ORM\ManyToOne(inversedBy: 'rapportVeterinaires')]
+    #[Groups(['rapport:read', 'rapportVeterinaire:write'])] // Vérifie bien ces groupes
     private ?Animal $animal = null;
 
-    /**
-     * @var Collection<int, User>
-     */
-    #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'rapportsVeterinaires')]
-    private Collection $users;
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'rapportsVeterinaires')]
+    #[Groups(["rapportVeterinaire:write"])] // Groupe pour éviter la sérialisation de User côté lecture
+    private ?User $veterinaire = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['rapport:read'])]
+    private ?string $nourritureProposee = null;
+
+    #[ORM\Column(type: "float")]
+    #[Groups(['rapport:read'])]
+    private ?float $quantiteNourriture = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['rapport:read'])]
+    private ?string $commentaireHabitat = null;
 
     #[ORM\Column]
+    #[Groups(['rapport:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
-
-    public function __construct()
-    {
-        $this->users = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -59,14 +70,14 @@ class RapportVeterinaire
         return $this;
     }
 
-    public function getDetail(): ?string
+    public function getEtat(): ?string
     {
-        return $this->detail;
+        return $this->etat;
     }
 
-    public function setDetail(?string $detail): static
+    public function setEtat(?string $etat): static
     {
-        $this->detail = $detail;
+        $this->etat = $etat;
 
         return $this;
     }
@@ -83,32 +94,50 @@ class RapportVeterinaire
         return $this;
     }
 
-    /**
-     * @return Collection<int, User>
-     */
-    public function getUsers(): Collection
+    public function getVeterinaire(): ?User
     {
-        return $this->users;
+        return $this->veterinaire;
     }
 
-    public function addUser(User $user): static
+    public function setVeterinaire(?User $veterinaire): static
     {
-        if (!$this->users->contains($user)) {
-            $this->users->add($user);
-            $user->setRapportsVeterinaires($this);
-        }
+        $this->veterinaire = $veterinaire;
 
         return $this;
     }
 
-    public function removeUser(User $user): static
+    public function getNourritureProposee(): ?string
     {
-        if ($this->users->removeElement($user)) {
-            // set the owning side to null (unless already changed)
-            if ($user->getRapportsVeterinaires() === $this) {
-                $user->setRapportsVeterinaires(null);
-            }
-        }
+        return $this->nourritureProposee;
+    }
+
+    public function setNourritureProposee(string $nourritureProposee): static
+    {
+        $this->nourritureProposee = $nourritureProposee;
+
+        return $this;
+    }
+
+    public function getQuantiteNourriture(): ?float
+    {
+        return $this->quantiteNourriture;
+    }
+
+    public function setQuantiteNourriture(float $quantiteNourriture): static
+    {
+        $this->quantiteNourriture = $quantiteNourriture;
+
+        return $this;
+    }
+
+    public function getCommentaireHabitat(): ?string
+    {
+        return $this->commentaireHabitat;
+    }
+
+    public function setCommentaireHabitat(?string $commentaireHabitat): static
+    {
+        $this->commentaireHabitat = $commentaireHabitat;
 
         return $this;
     }
@@ -121,19 +150,18 @@ class RapportVeterinaire
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
-
         return $this;
     }
+
 
     public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
-
         return $this;
     }
 }

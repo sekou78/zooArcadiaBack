@@ -6,49 +6,64 @@ use App\Repository\AnimalRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AnimalRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Animal
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['rapport:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
-    private ?string $lastname = null;
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 2, max: 50)]
+    #[Groups(['rapport:read'])]
+    private ?string $firstname = null;
 
     #[ORM\Column(length: 50, nullable: true)]
+    #[Assert\Choice(
+        choices: ['malade', 'en bonne santé', 'en observation'],
+        message: "L'état doit être 'malade', 'en bonne santé' ou 'en observation'."
+    )]
+    #[Groups(['rapport:read'])]
     private ?string $etat = null;
 
     #[ORM\ManyToOne(inversedBy: 'animals')]
+    #[Groups(['rapport:read'])]
     private ?Habitat $habitat = null;
 
-    /**
-     * @var Collection<int, RapportVeterinaire>
-     */
-    #[ORM\OneToMany(targetEntity: RapportVeterinaire::class, mappedBy: 'animal')]
-    private Collection $rapportVeterinaires;
-
-    /**
-     * @var Collection<int, Avis>
-     */
-    #[ORM\OneToMany(targetEntity: Avis::class, mappedBy: 'animal')]
-    private Collection $avis;
-
     #[ORM\ManyToOne(inversedBy: 'animals')]
+    #[Groups(['rapport:read'])]
     private ?Race $race = null;
 
     #[ORM\Column]
+    #[Groups(['rapport:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['rapport:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\OneToMany(targetEntity: RapportVeterinaire::class, mappedBy: 'animal', cascade: ['persist', 'remove'])]
+    private Collection $rapportVeterinaires;
+
+    #[ORM\OneToMany(targetEntity: Avis::class, mappedBy: 'animal', cascade: ['persist', 'remove'])]
+    private Collection $avis;
+
+    #[ORM\OneToMany(targetEntity: Image::class, mappedBy: 'animal', cascade: ['persist', 'remove'])]
+    private Collection $images;
 
     public function __construct()
     {
         $this->rapportVeterinaires = new ArrayCollection();
         $this->avis = new ArrayCollection();
+        $this->images = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable(); // Date de création automatique
     }
 
     public function getId(): ?int
@@ -56,15 +71,14 @@ class Animal
         return $this->id;
     }
 
-    public function getLastname(): ?string
+    public function getFirstname(): ?string
     {
-        return $this->lastname;
+        return $this->firstname;
     }
 
-    public function setLastname(string $lastname): static
+    public function setFirstname(string $firstname): static
     {
-        $this->lastname = $lastname;
-
+        $this->firstname = $firstname;
         return $this;
     }
 
@@ -76,7 +90,6 @@ class Animal
     public function setEtat(?string $etat): static
     {
         $this->etat = $etat;
-
         return $this;
     }
 
@@ -88,67 +101,6 @@ class Animal
     public function setHabitat(?Habitat $habitat): static
     {
         $this->habitat = $habitat;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, RapportVeterinaire>
-     */
-    public function getRapportVeterinaires(): Collection
-    {
-        return $this->rapportVeterinaires;
-    }
-
-    public function addRapportVeterinaire(RapportVeterinaire $rapportVeterinaire): static
-    {
-        if (!$this->rapportVeterinaires->contains($rapportVeterinaire)) {
-            $this->rapportVeterinaires->add($rapportVeterinaire);
-            $rapportVeterinaire->setAnimal($this);
-        }
-
-        return $this;
-    }
-
-    public function removeRapportVeterinaire(RapportVeterinaire $rapportVeterinaire): static
-    {
-        if ($this->rapportVeterinaires->removeElement($rapportVeterinaire)) {
-            // set the owning side to null (unless already changed)
-            if ($rapportVeterinaire->getAnimal() === $this) {
-                $rapportVeterinaire->setAnimal(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Avis>
-     */
-    public function getAvis(): Collection
-    {
-        return $this->avis;
-    }
-
-    public function addAvi(Avis $avi): static
-    {
-        if (!$this->avis->contains($avi)) {
-            $this->avis->add($avi);
-            $avi->setAnimal($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAvi(Avis $avi): static
-    {
-        if ($this->avis->removeElement($avi)) {
-            // set the owning side to null (unless already changed)
-            if ($avi->getAnimal() === $this) {
-                $avi->setAnimal(null);
-            }
-        }
-
         return $this;
     }
 
@@ -160,7 +112,6 @@ class Animal
     public function setRace(?Race $race): static
     {
         $this->race = $race;
-
         return $this;
     }
 
@@ -172,7 +123,6 @@ class Animal
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
-
         return $this;
     }
 
@@ -184,7 +134,78 @@ class Animal
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+        return $this;
+    }
 
+    public function getRapportVeterinaires(): Collection
+    {
+        return $this->rapportVeterinaires;
+    }
+
+    public function addRapportVeterinaire(RapportVeterinaire $rapportVeterinaire): static
+    {
+        if (!$this->rapportVeterinaires->contains($rapportVeterinaire)) {
+            $this->rapportVeterinaires->add($rapportVeterinaire);
+            $rapportVeterinaire->setAnimal($this);
+        }
+        return $this;
+    }
+
+    public function removeRapportVeterinaire(RapportVeterinaire $rapportVeterinaire): static
+    {
+        if ($this->rapportVeterinaires->removeElement($rapportVeterinaire)) {
+            if ($rapportVeterinaire->getAnimal() === $this) {
+                $rapportVeterinaire->setAnimal(null);
+            }
+        }
+        return $this;
+    }
+
+    public function getAvis(): Collection
+    {
+        return $this->avis;
+    }
+
+    public function addAvis(Avis $avis): static
+    {
+        if (!$this->avis->contains($avis)) {
+            $this->avis->add($avis);
+            $avis->setAnimal($this);
+        }
+        return $this;
+    }
+
+    public function removeAvis(Avis $avis): static
+    {
+        if ($this->avis->removeElement($avis)) {
+            if ($avis->getAnimal() === $this) {
+                $avis->setAnimal(null);
+            }
+        }
+        return $this;
+    }
+
+    public function getImages(): Collection
+    {
+        return $this->images;
+    }
+
+    public function addImage(Image $image): static
+    {
+        if (!$this->images->contains($image)) {
+            $this->images->add($image);
+            $image->setAnimal($this);
+        }
+        return $this;
+    }
+
+    public function removeImage(Image $image): static
+    {
+        if ($this->images->removeElement($image)) {
+            if ($image->getAnimal() === $this) {
+                $image->setAnimal(null);
+            }
+        }
         return $this;
     }
 }

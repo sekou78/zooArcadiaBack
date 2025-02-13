@@ -7,6 +7,7 @@ use App\Repository\ImageRepository;
 use App\Service\ImageUploaderService;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{BinaryFileResponse, JsonResponse, Request, Response};
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -14,12 +15,12 @@ use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use OpenApi\Attributes as OA;
 
 #[Route('api/image', name: 'app_api_image_')]
 final class ImageController extends AbstractController
 {
     private string $uploadDir;
-    private KernelInterface $kernel;
 
     public function __construct(
         private EntityManagerInterface $manager,
@@ -27,15 +28,100 @@ final class ImageController extends AbstractController
         private SerializerInterface $serializer,
         private UrlGeneratorInterface $urlGenerator,
         private ImageUploaderService $imageUploader,
-        KernelInterface $kernel // Injection du kernel pour obtenir le répertoire
+        private KernelInterface $kernel // Injection du kernel pour obtenir le répertoire
     ) {
         // Initialisation du répertoire d'upload à partir du kernel
-        $this->kernel = $kernel;
-        $this->uploadDir = $kernel->getProjectDir() . '/public/uploads/images/';
+        $this->uploadDir = $this->kernel->getProjectDir() . '/public/uploads/images/';
     }
 
     // Ajouter une image
     #[Route(name: 'new', methods: ['POST'])]
+    #[OA\Post(
+        summary: "Ajouter une nouvelle image",
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\MediaType(
+                mediaType: "multipart/form-data",
+                schema: new OA\Schema(
+                    properties: [
+                        new OA\Property(
+                            property: "image",
+                            type: "string",
+                            format: "binary"
+                        ),
+                        new OA\Property(
+                            property: "habitat",
+                            type: "string",
+                            example: "Marais"
+                        ),
+                        new OA\Property(
+                            property: "animal",
+                            type: "string",
+                            example: "Sama"
+                        )
+                    ]
+                )
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: "Image ajoutée avec succès",
+                content: new OA\MediaType(
+                    mediaType: "application/json",
+                    schema: new OA\Schema(
+                        type: "object",
+                        properties: [
+                            new OA\Property(
+                                property: "id",
+                                type: "integer",
+                                example: 1
+                            ),
+                            new OA\Property(
+                                property: "image",
+                                type: "string",
+                                format: "binary"
+                            ),
+                            new OA\Property(
+                                property: "imageData",
+                                type: "string",
+                                format: "byte"
+                            ),
+                            new OA\Property(
+                                property: "habitat",
+                                type: "string",
+                                example: "Marais"
+                            ),
+                            new OA\Property(
+                                property: "animal",
+                                type: "string",
+                                example: "Sama"
+                            ),
+                            new OA\Property(
+                                property: "filePath",
+                                type: "string",
+                                format: "uri"
+                            ),
+                            new OA\Property(
+                                property: "createdAt",
+                                type: "string",
+                                format: "date-time",
+                                example: "10-10-2025"
+                            )
+                        ]
+                    )
+                )
+            ),
+            new OA\Response(
+                response: 400,
+                description: "Données invalides"
+            ),
+            new OA\Response(
+                response: 500,
+                description: "Erreur interne du serveur"
+            )
+        ]
+    )]
     public function new(Request $request): JsonResponse
     {
         // Vérifier si c'est une requête multipart (fichier normal)
@@ -98,7 +184,6 @@ final class ImageController extends AbstractController
         $image = new Image();
         $image->setFilePath('/uploads/images/' . $fileName);
         $image->setCreatedAt(new \DateTimeImmutable());
-        $image->setUpdatedAt(new \DateTimeImmutable());
 
         $this->manager->persist($image);
         $this->manager->flush();
@@ -113,6 +198,68 @@ final class ImageController extends AbstractController
 
     //Afficher une image
     #[Route('/{id}', name: 'show', methods: ['GET'])]
+    #[OA\Get(
+        summary: "Récupèrer une image par son ID",
+        parameters: [
+            new OA\Parameter(
+                name: "id",
+                in: "path",
+                required: true,
+                schema: new OA\Schema(
+                    type: "integer"
+                )
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Image retournée avec succès",
+                content: new OA\MediaType(
+                    mediaType: "application/json",
+                    schema: new OA\Schema(
+                        type: "object",
+                        properties: [
+                            new OA\Property(
+                                property: "image",
+                                type: "string",
+                                format: "binary"
+                            ),
+                            new OA\Property(
+                                property: "imageData",
+                                type: "string",
+                                format: "byte"
+                            ),
+                            new OA\Property(
+                                property: "habitat",
+                                type: "string",
+                                example: "Marais"
+                            ),
+                            new OA\Property(
+                                property: "animal",
+                                type: "string",
+                                example: "Sama"
+                            ),
+                            new OA\Property(
+                                property: "filePath",
+                                type: "string",
+                                format: "uri"
+                            ),
+                            new OA\Property(
+                                property: "createdAt",
+                                type: "string",
+                                format: "date-time",
+                                example: "10-10-2025"
+                            )
+                        ]
+                    )
+                )
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Image non trouvée"
+            )
+        ]
+    )]
     public function show(int $id): BinaryFileResponse
     {
         // Récupération de l'image en base de données
@@ -137,6 +284,102 @@ final class ImageController extends AbstractController
 
     //Modifier une image
     #[Route('/{id}', name: 'edit', methods: ['POST'])]
+    #[OA\Post(
+        summary: "Mettre à jour une image existante",
+        parameters: [
+            new OA\Parameter(
+                name: "id",
+                in: "path",
+                required: true,
+                schema: new OA\Schema(
+                    type: "integer"
+                )
+            )
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\MediaType(
+                mediaType: "multipart/form-data",
+                schema: new OA\Schema(
+                    properties: [
+                        new OA\Property(
+                            property: "image",
+                            type: "string",
+                            format: "binary"
+                        ),
+                        new OA\Property(
+                            property: "habitat",
+                            type: "string",
+                            example: "Marais"
+                        ),
+                        new OA\Property(
+                            property: "animal",
+                            type: "string",
+                            example: "Sama"
+                        )
+                    ]
+                )
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Image mise à jour",
+                content: new OA\MediaType(
+                    mediaType: "application/json",
+                    schema: new OA\Schema(
+                        type: "object",
+                        properties: [
+                            new OA\Property(
+                                property: "id",
+                                type: "integer",
+                                example: 1
+                            ),
+                            new OA\Property(
+                                property: "image",
+                                type: "string",
+                                format: "binary"
+                            ),
+                            new OA\Property(
+                                property: "imageData",
+                                type: "string",
+                                format: "byte"
+                            ),
+                            new OA\Property(
+                                property: "habitat",
+                                type: "string",
+                                example: "Marais"
+                            ),
+                            new OA\Property(
+                                property: "animal",
+                                type: "string",
+                                example: "Sama"
+                            ),
+                            new OA\Property(
+                                property: "filePath",
+                                type: "string",
+                                format: "uri"
+                            ),
+                            new OA\Property(
+                                property: "updatedAt",
+                                type: "string",
+                                format: "date-time",
+                                example: "10-10-2025"
+                            )
+                        ]
+                    )
+                )
+            ),
+            new OA\Response(
+                response: 400,
+                description: "Fichier invalide"
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Image non trouvée"
+            )
+        ]
+    )]
     public function edit(int $id, Request $request): Response
     {
         // Récupération de l'image en base de données
@@ -241,6 +484,29 @@ final class ImageController extends AbstractController
 
     //Supprimer une image
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
+    #[OA\Delete(
+        summary: "Supprimer une image",
+        parameters: [
+            new OA\Parameter(
+                name: "id",
+                in: "path",
+                required: true,
+                schema: new OA\Schema(
+                    type: "integer"
+                )
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Image supprimée"
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Image non trouvée"
+            )
+        ]
+    )]
     public function delete(int $id): JsonResponse
     {
         // Récupérer l'image depuis la base de données
@@ -262,6 +528,111 @@ final class ImageController extends AbstractController
         $this->manager->remove($image);
         $this->manager->flush();
 
-        return new JsonResponse(['message' => 'Image deleted successfully'], Response::HTTP_OK);
+        return new JsonResponse(
+            ['message' => 'Image deleted successfully'],
+            Response::HTTP_OK
+        );
+    }
+
+    // Pagination des images
+    #[Route('/api/rapports', name: 'list', methods: ['GET'])]
+    #[OA\Get(
+        summary: "Liste paginée des images",
+        parameters: [
+            new OA\Parameter(
+                name: "page",
+                in: "query",
+                schema: new OA\Schema(
+                    type: "integer"
+                )
+            ),
+            new OA\Parameter(
+                name: "habitat",
+                in: "query",
+                schema: new OA\Schema(
+                    type: "string"
+                )
+            ),
+            new OA\Parameter(
+                name: "animal",
+                in: "query",
+                schema: new OA\Schema(
+                    type: "string"
+                )
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Liste paginée des images"
+            ),
+            new OA\Response(
+                response: 400,
+                description: "Requête invalide"
+            )
+        ]
+    )]
+    public function list(
+        Request $request,
+        PaginatorInterface $paginator
+    ): JsonResponse {
+        // Récupérer les paramètres de filtre
+        $habitatFilter = $request->query->get('habitat');
+        $animalFilter = $request->query->get('animal');
+
+        // Création de la requête pour récupérer tous les animaux
+        $queryBuilder = $this->manager->getRepository(Image::class)->createQueryBuilder('a');
+
+        // Appliquer le filtre sur 'habitat' si le paramètre est présent
+        if ($habitatFilter) {
+            $queryBuilder->andWhere('a.habitat LIKE :habitat')
+                ->setParameter('habitat', '%' . $habitatFilter . '%');
+        }
+
+        // Appliquer le filtre sur 'animal' si le paramètre est présent
+        if ($animalFilter) {
+            $queryBuilder->andWhere('a.animal LIKE :animal')
+                ->setParameter('animal', '%' . $animalFilter . '%');
+        }
+
+        // Pagination avec le paginator
+        $pagination = $paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1), // Page actuelle (par défaut 1)
+            5 // Nombre d'éléments par page
+        );
+
+        // Formater les résultats
+        $items = array_map(
+            function ($animal) {
+                $formattedItem = [
+                    'id' => $animal->getId(),
+                    'habitat' => $animal->getHabitat(),
+                    'animal' => $animal->getAnimal(),
+                    'Image data' => $animal->getImageData(),
+                    'file path' => $animal->getFilePath(),
+                    'createdAt' => $animal->getCreatedAt()->format("d-m-Y"),
+                ];
+
+                // Ajouter updatedAt uniquement si non null
+                if ($animal->getUpdatedAt() !== null) {
+                    $formattedItem['updatedAt'] = $animal->getUpdatedAt()->format("d-m-Y H:i:s");
+                }
+                return $formattedItem;
+            },
+            (array) $pagination->getItems()
+        );
+
+        // Structure de réponse avec les informations de pagination
+        $data = [
+            'currentPage' => $pagination->getCurrentPageNumber(),
+            'totalItems' => $pagination->getTotalItemCount(),
+            'itemsPerPage' => $pagination->getItemNumberPerPage(),
+            'totalPages' => ceil($pagination->getTotalItemCount() / $pagination->getItemNumberPerPage()),
+            'items' => $items, // Les éléments paginés formatés
+        ];
+
+        // Retourner la réponse JSON avec les données paginées
+        return new JsonResponse($data, JsonResponse::HTTP_OK);
     }
 }

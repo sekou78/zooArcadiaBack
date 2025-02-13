@@ -16,6 +16,18 @@ class AnimalRepository extends ServiceEntityRepository
         parent::__construct($registry, Animal::class);
     }
 
+    public function findByCriteria(array $criteria)
+    {
+        $qb = $this->createQueryBuilder('r');
+        if (isset($criteria['animal'])) {
+            $qb->andWhere('r.animal = :animal')->setParameter('animal', $criteria['animal']);
+        }
+        if (isset($criteria['date'])) {
+            $qb->andWhere('r.date = :date')->setParameter('date', $criteria['date']);
+        }
+        return $qb->getQuery()->getResult();
+    }
+
     //    /**
     //     * @return Animal[] Returns an array of Animal objects
     //     */

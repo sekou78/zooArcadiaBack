@@ -16,6 +16,19 @@ class RapportVeterinaireRepository extends ServiceEntityRepository
         parent::__construct($registry, RapportVeterinaire::class);
     }
 
+    public function findByCriteria(array $criteria)
+    {
+        $qb = $this->createQueryBuilder('r');
+        if (isset($criteria['animal'])) {
+            $qb->andWhere('r.animal = :animal')->setParameter('animal', $criteria['animal']);
+        }
+        if (isset($criteria['date'])) {
+            $qb->andWhere('r.date = :date')->setParameter('date', $criteria['date']);
+        }
+        return $qb->getQuery()->getResult();
+    }
+
+
     //    /**
     //     * @return RapportVeterinaire[] Returns an array of RapportVeterinaire objects
     //     */
