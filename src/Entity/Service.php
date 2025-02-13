@@ -6,6 +6,7 @@ use App\Repository\ServiceRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ServiceRepository::class)]
 class Service
@@ -16,9 +17,11 @@ class Service
     private ?int $id = null;
 
     #[ORM\Column(length: 50, nullable: true)]
+    #[Assert\NotBlank]
     private ?string $nom = null;
 
     #[ORM\Column(length: 250, nullable: true)]
+    #[Assert\NotBlank]
     private ?string $description = null;
 
     /**
@@ -27,11 +30,11 @@ class Service
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'services')]
     private Collection $utilisateurs;
 
-    #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $createdAt;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?\DateTimeImmutable $updatedAt;
 
     public function __construct()
     {
