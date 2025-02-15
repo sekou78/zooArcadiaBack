@@ -34,9 +34,11 @@ class ServiceRestaurant
     private ?\DateTimeInterface $heureFin = null;
 
     #[ORM\Column]
+    #[Groups(['service_visite_petit_train:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['service_visite_petit_train:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(targetEntity: Service::class, inversedBy: 'serviceRestaurants')]

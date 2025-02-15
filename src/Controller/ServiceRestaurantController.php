@@ -143,7 +143,6 @@ final class ServiceRestaurantController extends AbstractController
             true
         );
 
-        // Fusionner les heures de début et de fin en une seule clé 'heureService'
         // Retirer les champs heureDebut et heureFin pour ne garder que 'heureService'
         unset($serviceRestaurantArray['heureDebut']);
         unset($serviceRestaurantArray['heureFin']);
@@ -153,6 +152,22 @@ final class ServiceRestaurantController extends AbstractController
             ->getHeureDebut()
             ->format('H:i') . ' - ' . $serviceRestaurant
             ->getHeureFin()->format('H:i');
+
+        // Ajouter createdAt uniquement s'il n'est pas null
+        if ($serviceRestaurant->getCreatedAt()) {
+            $serviceRestaurantArray['createdAt'] = $serviceRestaurant
+                ->getCreatedAt()
+                ->format('d-m-Y H:i:s');
+        }
+
+        // Supprimer updatedAt s'il est null
+        if ($serviceRestaurant->getUpdatedAt()) {
+            $serviceRestaurantArray['updatedAt'] = $serviceRestaurant
+                ->getUpdatedAt()
+                ->format('d-m-Y H:i:s');
+        } else {
+            unset($serviceRestaurantArray['updatedAt']);
+        }
 
         $location = $this->urlGenerator->generate(
             'app_api_serviceRestaurant_show',
@@ -194,6 +209,22 @@ final class ServiceRestaurantController extends AbstractController
             $serviceRestaurantArray['heureService'] = $heureService;
             unset($serviceRestaurantArray['heureDebut']);
             unset($serviceRestaurantArray['heureFin']);
+
+            // Ajouter createdAt uniquement s'il n'est pas null
+            if ($serviceRestaurant->getCreatedAt()) {
+                $serviceRestaurantArray['createdAt'] = $serviceRestaurant
+                    ->getCreatedAt()
+                    ->format('d-m-Y H:i:s');
+            }
+
+            // Supprimer updatedAt s'il est null
+            if ($serviceRestaurant->getUpdatedAt()) {
+                $serviceRestaurantArray['updatedAt'] = $serviceRestaurant
+                    ->getUpdatedAt()
+                    ->format('d-m-Y H:i:s');
+            } else {
+                unset($serviceRestaurantArray['updatedAt']);
+            }
 
             return new JsonResponse(
                 $serviceRestaurantArray,
@@ -317,6 +348,22 @@ final class ServiceRestaurantController extends AbstractController
             ->format('H:i');
         unset($serviceRestaurantArray['heureDebut']);
         unset($serviceRestaurantArray['heureFin']);
+
+        // Ajouter createdAt uniquement s'il n'est pas null
+        if ($serviceRestaurant->getCreatedAt()) {
+            $serviceRestaurantArray['createdAt'] = $serviceRestaurant
+                ->getCreatedAt()
+                ->format('d-m-Y H:i:s');
+        }
+
+        // Supprimer updatedAt s'il est null
+        if ($serviceRestaurant->getUpdatedAt()) {
+            $serviceRestaurantArray['updatedAt'] = $serviceRestaurant
+                ->getUpdatedAt()
+                ->format('d-m-Y H:i:s');
+        } else {
+            unset($serviceRestaurantArray['updatedAt']);
+        }
 
         return new JsonResponse(
             $serviceRestaurantArray,

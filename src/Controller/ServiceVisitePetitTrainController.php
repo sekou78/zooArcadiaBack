@@ -79,12 +79,28 @@ final class ServiceVisitePetitTrainController extends AbstractController
         $this->manager->persist($serviceVisitePetitTrain);
         $this->manager->flush();
 
-        $responseData = $this->serializer
-            ->serialize(
-                $serviceVisitePetitTrain,
-                'json',
-                ['groups' => 'service_visite_petit_train:read']
-            );
+        // Sérialisation en tableau pour modification
+        $responseData = json_decode($this->serializer->serialize(
+            $serviceVisitePetitTrain,
+            'json',
+            ['groups' => 'service_visite_petit_train:read']
+        ), true);
+
+        // Ajouter createdAt uniquement s'il n'est pas null
+        if ($serviceVisitePetitTrain->getCreatedAt()) {
+            $responseData['createdAt'] = $serviceVisitePetitTrain
+                ->getCreatedAt()
+                ->format('d-m-Y H:i:s');
+        }
+
+        // Supprimer updatedAt s'il est null
+        if ($serviceVisitePetitTrain->getUpdatedAt()) {
+            $responseData['updatedAt'] = $serviceVisitePetitTrain
+                ->getUpdatedAt()
+                ->format('d-m-Y H:i:s');
+        } else {
+            unset($responseData['updatedAt']);
+        }
 
         $location = $this->urlGenerator->generate(
             'app_api_serviceVisitePetitTrain_show',
@@ -93,10 +109,7 @@ final class ServiceVisitePetitTrainController extends AbstractController
         );
 
         return new JsonResponse(
-            json_decode(
-                $responseData,
-                true
-            ),
+            $responseData,
             JsonResponse::HTTP_CREATED,
             ["location" => $location]
         );
@@ -105,7 +118,8 @@ final class ServiceVisitePetitTrainController extends AbstractController
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(int $id): JsonResponse
     {
-        $serviceVisitePetitTrain = $this->repository->find($id);
+        $serviceVisitePetitTrain = $this->repository->findOneBy(['id' => $id]);
+
         if (!$serviceVisitePetitTrain) {
             return new JsonResponse(
                 ['error' => "Service de visite non trouvé"],
@@ -113,21 +127,41 @@ final class ServiceVisitePetitTrainController extends AbstractController
             );
         }
 
-        $responseData = $this->serializer
-            ->serialize(
-                $serviceVisitePetitTrain,
-                'json',
-                ['groups' => 'service_visite_petit_train:read']
+        // Désérialiser en tableau pour modification
+        $responseData = json_decode(
+            $this->serializer
+                ->serialize(
+                    $serviceVisitePetitTrain,
+                    'json',
+                    ['groups' => 'service_visite_petit_train:read']
+                ),
+            true
+        );
+
+        // Ajouter createdAt uniquement s'il n'est pas null
+        if ($serviceVisitePetitTrain->getCreatedAt()) {
+            $responseData['createdAt'] = $serviceVisitePetitTrain
+                ->getCreatedAt()
+                ->format('d-m-Y H:i:s');
+        }
+
+        // Supprimer updatedAt s'il est null
+        if ($serviceVisitePetitTrain->getUpdatedAt()) {
+            $responseData['updatedAt'] = $serviceVisitePetitTrain
+                ->getUpdatedAt()
+                ->format('d-m-Y H:i:s');
+        } else {
+            unset(
+                $responseData['updatedAt']
             );
+        }
 
         return new JsonResponse(
-            json_decode(
-                $responseData,
-                true
-            ),
+            $responseData,
             JsonResponse::HTTP_OK
         );
     }
+
 
     #[Route('/{id}', name: 'edit', methods: ['PUT'])]
     public function edit(
@@ -197,18 +231,37 @@ final class ServiceVisitePetitTrainController extends AbstractController
 
         $this->manager->flush();
 
-        $responseData = $this->serializer
-            ->serialize(
-                $serviceVisitePetitTrain,
-                'json',
-                ['groups' => 'service_visite_petit_train:read']
+        // Désérialiser en tableau pour modification
+        $responseData = json_decode(
+            $this->serializer
+                ->serialize(
+                    $serviceVisitePetitTrain,
+                    'json',
+                    ['groups' => 'service_visite_petit_train:read']
+                ),
+            true
+        );
+
+        // Ajouter createdAt uniquement s'il n'est pas null
+        if ($serviceVisitePetitTrain->getCreatedAt()) {
+            $responseData['createdAt'] = $serviceVisitePetitTrain
+                ->getCreatedAt()
+                ->format('d-m-Y H:i:s');
+        }
+
+        // Supprimer updatedAt s'il est null
+        if ($serviceVisitePetitTrain->getUpdatedAt()) {
+            $responseData['updatedAt'] = $serviceVisitePetitTrain
+                ->getUpdatedAt()
+                ->format('d-m-Y H:i:s');
+        } else {
+            unset(
+                $responseData['updatedAt']
             );
+        }
 
         return new JsonResponse(
-            json_decode(
-                $responseData,
-                true
-            ),
+            $responseData,
             JsonResponse::HTTP_OK
         );
     }
