@@ -91,7 +91,7 @@ final class ServiceController extends AbstractController
         }
 
         return new JsonResponse(
-            ['error' => 'Service not found'],
+            ['error' => 'Service non trouvé'],
             Response::HTTP_NOT_FOUND
         );
     }
@@ -127,7 +127,7 @@ final class ServiceController extends AbstractController
         }
 
         return new JsonResponse(
-            ['error' => 'Service not found'],
+            ['error' => 'Service non trouvé'],
             Response::HTTP_NOT_FOUND
         );
     }
@@ -143,13 +143,13 @@ final class ServiceController extends AbstractController
             $this->manager->flush();
 
             return new JsonResponse(
-                ['message' => 'Service deleted successfully'],
+                ['message' => 'Service supprimer avec succès'],
                 Response::HTTP_OK
             );
         }
 
         return new JsonResponse(
-            ['error' => 'Service not found'],
+            ['error' => 'Service non trouvé'],
             Response::HTTP_NOT_FOUND
         );
     }
