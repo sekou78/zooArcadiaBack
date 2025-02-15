@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -25,6 +26,7 @@ final class ServiceRestaurantController extends AbstractController
         private UrlGeneratorInterface $urlGenerator
     ) {}
     #[Route(name: 'new', methods: 'POST')]
+    #[IsGranted('ROLE_ADMIN')]
     public function new(
         Request $request,
         ValidatorInterface $validator
@@ -238,7 +240,8 @@ final class ServiceRestaurantController extends AbstractController
         );
     }
 
-    #[Route('/{id}', name: 'edit', methods: ['PUT'])]
+    #[Route('/{id}', name: 'edit', methods: 'PUT')]
+    #[IsGranted('ROLE_ADMIN')]
     public function edit(
         int $id,
         Request $request,
@@ -371,8 +374,8 @@ final class ServiceRestaurantController extends AbstractController
         );
     }
 
-
     #[Route('/{id}', name: 'delete', methods: 'DELETE')]
+    #[IsGranted('ROLE_ADMIN')]
     public function delete(int $id): JsonResponse
     {
         $serviceRestaurant = $this->repository->findOneBy(['id' => $id]);
