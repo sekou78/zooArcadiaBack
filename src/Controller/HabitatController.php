@@ -14,6 +14,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('api/habitat', name: 'app_api_habitat_')]
 final class HabitatController extends AbstractController
@@ -26,6 +27,7 @@ final class HabitatController extends AbstractController
     ) {}
 
     #[Route(name: 'new', methods: 'POST')]
+    #[IsGranted('ROLE_ADMIN')]
     #[OA\Post(
         path: "/api/habitat",
         summary: "Créer un habitat",

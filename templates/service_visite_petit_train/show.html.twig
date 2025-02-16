@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ServiceVisitePetitTrain{% endblock %}
+
+{% block body %}
+    <h1>ServiceVisitePetitTrain</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ service_visite_petit_train.id }}</td>
+            </tr>
+            <tr>
+                <th>Parcours</th>
+                <td>{{ service_visite_petit_train.parcours }}</td>
+            </tr>
+            <tr>
+                <th>Description</th>
+                <td>{{ service_visite_petit_train.description }}</td>
+            </tr>
+            <tr>
+                <th>Disponibilite</th>
+                <td>{{ service_visite_petit_train.disponibilite ? service_visite_petit_train.disponibilite|join(', ') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Duree</th>
+                <td>{{ service_visite_petit_train.duree }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_service_visite_petit_train_index') }}">back to list</a>
+
+    <a href="{{ path('app_service_visite_petit_train_edit', {'id': service_visite_petit_train.id}) }}">edit</a>
+
+    {{ include('service_visite_petit_train/_delete_form.html.twig') }}
+{% endblock %}

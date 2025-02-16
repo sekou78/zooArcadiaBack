@@ -29,6 +29,7 @@ final class RapportVeterinaireController extends AbstractController
     ) {}
 
     #[Route(name: 'new', methods: 'POST')]
+    #[IsGranted('ROLE_VETERINAIRE')]
     #[OA\Post(
         path: "/api/rapportVeterinaire",
         summary: "Créer un rapport vétérinaire",
@@ -578,6 +579,14 @@ final class RapportVeterinaireController extends AbstractController
         // Recherche du rapport vétérinaire à supprimer
         $rapportVeterinaire = $this->repository->findOneBy(['id' => $id]);
 
+        // Vérification si l'utilisateur a l'un des rôles requis
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_VETERINAIRE')) {
+            return new JsonResponse(
+                ['message' => 'Accès réfusé'],
+                Response::HTTP_FORBIDDEN
+            );
+        }
+
         // Si le rapport existe, on le supprime
         if ($rapportVeterinaire) {
             $this->manager->remove($rapportVeterinaire);
@@ -599,6 +608,7 @@ final class RapportVeterinaireController extends AbstractController
 
     // Pagination des rapports vétérinaires
     #[Route('/api/rapports', name: 'list', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
     #[OA\Get(
         path: "/api/rapportVeterinaire/api/rapports",
         summary: 'Liste des rapports vétérinaires avec pagination et filtrage',
@@ -625,39 +635,12 @@ final class RapportVeterinaireController extends AbstractController
         )
     )]
     #[OA\Parameter(
-        name: 'etat',
-        in: 'query',
-        description: 'Filtrer par état du rapport vétérinaire',
-        required: false,
-        schema: new OA\Schema(
-            type: 'string'
-        )
-    )]
-    #[OA\Parameter(
         name: 'animal',
         in: 'query',
         description: "Filtrer par ID de l'animal lié au rapport vétérinaire",
         required: false,
         schema: new OA\Schema(
             type: 'integer'
-        )
-    )]
-    #[OA\Parameter(
-        name: 'nourriture_proposee',
-        in: 'query',
-        description: 'Filtrer par type de nourriture proposée',
-        required: false,
-        schema: new OA\Schema(
-            type: 'string'
-        )
-    )]
-    #[OA\Parameter(
-        name: 'quantiteNourriture',
-        in: 'query',
-        description: 'Filtrer par quantité de nourriture proposée',
-        required: false,
-        schema: new OA\Schema(
-            type: 'string'
         )
     )]
     #[OA\Response(
@@ -777,10 +760,7 @@ final class RapportVeterinaireController extends AbstractController
     ): JsonResponse {
         // Récupérer les paramètres de filtre
         $dateFilter = $request->query->get('date');
-        $etatFilter = $request->query->get('etat');
         $animalFilter = $request->query->get('animal');
-        $nourritureProposeeFilter = $request->query->get('nourriture proposee');
-        $quantiteNourritureFilter = $request->query->get('quantiteNourriture');
 
         // Création de la requête avec jointure sur Animal
         $queryBuilder = $this->manager->getRepository(RapportVeterinaire::class)
@@ -788,34 +768,19 @@ final class RapportVeterinaireController extends AbstractController
             ->leftJoin('a.animal', 'animal') // Jointure avec l'entité Animal
             ->addSelect('animal'); // Sélectionner aussi les données de l'animal
 
-        // Appliquer le filtre sur 'date' si le paramètre est présent
+        // Appliquer le filtre sur 'date'
         if ($dateFilter) {
-            $queryBuilder->andWhere('a.date LIKE :date')
-                ->setParameter('date', '%' . $dateFilter . '%');
+            $date = \DateTime::createFromFormat('d-m-Y', $dateFilter);
+            if ($date) {
+                $queryBuilder->andWhere('a.date = :date')
+                    ->setParameter('date', $date->format('d-m-Y'));
+            }
         }
 
-        // Appliquer le filtre sur 'etat' si le paramètre est présent
-        if ($etatFilter) {
-            $queryBuilder->andWhere('a.etat LIKE :etat')
-                ->setParameter('etat', '%' . $etatFilter . '%');
-        }
-
-        // Appliquer le filtre sur 'animal' si le paramètre est présent
+        // Appliquer le filtre sur 'animal'
         if ($animalFilter) {
-            $queryBuilder->andWhere('a.animal LIKE :animal')
+            $queryBuilder->andWhere('animal.firstname LIKE :animal')
                 ->setParameter('animal', '%' . $animalFilter . '%');
-        }
-
-        // Appliquer le filtre sur 'nourriture proposee' si le paramètre est présent
-        if ($nourritureProposeeFilter) {
-            $queryBuilder->andWhere('a.nourritureProposee LIKE :nourritureProposee')
-                ->setParameter('nourritureProposee', '%' . $nourritureProposeeFilter . '%');
-        }
-
-        // Appliquer le filtre sur 'quantiteNourriture' si le paramètre est présent
-        if ($quantiteNourritureFilter) {
-            $queryBuilder->andWhere('a.quantiteNourriture LIKE :quantiteNourriture')
-                ->setParameter('quantiteNourriture', '%' . $quantiteNourritureFilter . '%');
         }
 
         // Pagination avec le paginator
@@ -844,7 +809,7 @@ final class RapportVeterinaireController extends AbstractController
                 'createdAt' => $rapportVeterinaire->getCreatedAt()->format("d-m-Y"),
                 'updatedAt' => $updatedAt ? $updatedAt->format("d-m-Y") : null, // Vérification avant d'ajouter
             ];
-        }, (array) $pagination->getItems());
+        }, $pagination->getItems());
 
         // Structure de réponse avec les informations de pagination
         $data = [

@@ -42,6 +42,9 @@ class Habitat
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[ORM\ManyToOne(inversedBy: 'habitats')]
+    private ?Service $service = null;
+
     public function __construct()
     {
         $this->animals = new ArrayCollection();
@@ -169,6 +172,18 @@ class Habitat
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getService(): ?Service
+    {
+        return $this->service;
+    }
+
+    public function setService(?Service $service): static
+    {
+        $this->service = $service;
 
         return $this;
     }

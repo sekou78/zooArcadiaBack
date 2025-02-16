@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ServiceVisitePetitTrain index{% endblock %}
+
+{% block body %}
+    <h1>ServiceVisitePetitTrain index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Parcours</th>
+                <th>Description</th>
+                <th>Disponibilite</th>
+                <th>Duree</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for service_visite_petit_train in service_visite_petit_trains %}
+            <tr>
+                <td>{{ service_visite_petit_train.id }}</td>
+                <td>{{ service_visite_petit_train.parcours }}</td>
+                <td>{{ service_visite_petit_train.description }}</td>
+                <td>{{ service_visite_petit_train.disponibilite ? service_visite_petit_train.disponibilite|join(', ') : '' }}</td>
+                <td>{{ service_visite_petit_train.duree }}</td>
+                <td>
+                    <a href="{{ path('app_service_visite_petit_train_show', {'id': service_visite_petit_train.id}) }}">show</a>
+                    <a href="{{ path('app_service_visite_petit_train_edit', {'id': service_visite_petit_train.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="6">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_service_visite_petit_train_new') }}">Create new</a>
+{% endblock %}

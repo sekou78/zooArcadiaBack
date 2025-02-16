@@ -91,12 +91,13 @@ final class ServiceController extends AbstractController
         }
 
         return new JsonResponse(
-            ['error' => 'Service not found'],
+            ['error' => 'Service non trouvé'],
             Response::HTTP_NOT_FOUND
         );
     }
 
     #[Route('/{id}', name: 'edit', methods: 'PUT')]
+    #[IsGranted('ROLE_ADMIN')]
     public function edit(int $id, Request $request): JsonResponse
     {
         $service = $this->repository->findOneBy(['id' => $id]);
@@ -127,13 +128,14 @@ final class ServiceController extends AbstractController
         }
 
         return new JsonResponse(
-            ['error' => 'Service not found'],
+            ['error' => 'Service non trouvé'],
             Response::HTTP_NOT_FOUND
         );
     }
 
 
     #[Route('/{id}', name: 'delete', methods: 'DELETE')]
+    #[IsGranted('ROLE_ADMIN')]
     public function delete(int $id): JsonResponse
     {
         $service = $this->repository->findOneBy(['id' => $id]);
@@ -143,13 +145,13 @@ final class ServiceController extends AbstractController
             $this->manager->flush();
 
             return new JsonResponse(
-                ['message' => 'Service deleted successfully'],
+                ['message' => 'Service supprimer avec succès'],
                 Response::HTTP_OK
             );
         }
 
         return new JsonResponse(
-            ['error' => 'Service not found'],
+            ['error' => 'Service non trouvé'],
             Response::HTTP_NOT_FOUND
         );
     }
