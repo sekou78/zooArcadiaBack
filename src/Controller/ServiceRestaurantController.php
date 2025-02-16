@@ -26,7 +26,6 @@ final class ServiceRestaurantController extends AbstractController
         private UrlGeneratorInterface $urlGenerator
     ) {}
     #[Route(name: 'new', methods: 'POST')]
-    #[IsGranted('ROLE_ADMIN')]
     public function new(
         Request $request,
         ValidatorInterface $validator
@@ -35,6 +34,14 @@ final class ServiceRestaurantController extends AbstractController
             $request->getContent(),
             true
         );
+
+        // Vérification si l'utilisateur a l'un des rôles requis
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_EMPLOYE')) {
+            return new JsonResponse(
+                ['message' => 'Accès réfusé'],
+                Response::HTTP_FORBIDDEN
+            );
+        }
 
         // Vérifier si l'ID du service est présent
         if (!isset($data['service'])) {
@@ -241,13 +248,20 @@ final class ServiceRestaurantController extends AbstractController
     }
 
     #[Route('/{id}', name: 'edit', methods: 'PUT')]
-    #[IsGranted('ROLE_ADMIN')]
     public function edit(
         int $id,
         Request $request,
         ValidatorInterface $validator
     ): JsonResponse {
-        $serviceRestaurant = $this->repository->find($id);
+        $serviceRestaurant = $this->repository->findOneBy(['id' => $id]);
+
+        // Vérification si l'utilisateur a l'un des rôles requis
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_EMPLOYE')) {
+            return new JsonResponse(
+                ['message' => 'Accès réfusé'],
+                Response::HTTP_FORBIDDEN
+            );
+        }
 
         if (!$serviceRestaurant) {
             return new JsonResponse(
@@ -375,10 +389,17 @@ final class ServiceRestaurantController extends AbstractController
     }
 
     #[Route('/{id}', name: 'delete', methods: 'DELETE')]
-    #[IsGranted('ROLE_ADMIN')]
     public function delete(int $id): JsonResponse
     {
         $serviceRestaurant = $this->repository->findOneBy(['id' => $id]);
+
+        // Vérification si l'utilisateur a l'un des rôles requis
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_EMPLOYE')) {
+            return new JsonResponse(
+                ['message' => 'Accès réfusé'],
+                Response::HTTP_FORBIDDEN
+            );
+        }
 
         if ($serviceRestaurant) {
             $this->manager->remove($serviceRestaurant);

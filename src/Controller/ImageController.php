@@ -16,8 +16,10 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('api/image', name: 'app_api_image_')]
+#[IsGranted('ROLE_ADMIN')]
 final class ImageController extends AbstractController
 {
     private string $uploadDir;

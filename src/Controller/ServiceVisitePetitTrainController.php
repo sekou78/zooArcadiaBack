@@ -28,7 +28,6 @@ final class ServiceVisitePetitTrainController extends AbstractController
     ) {}
 
     #[Route(name: 'new', methods: 'POST')]
-    #[IsGranted('ROLE_ADMIN')]
     public function new(
         Request $request,
         ValidatorInterface $validator
@@ -37,6 +36,14 @@ final class ServiceVisitePetitTrainController extends AbstractController
             $request->getContent(),
             true
         );
+
+        // Vérification si l'utilisateur a l'un des rôles requis
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_EMPLOYE')) {
+            return new JsonResponse(
+                ['message' => 'Accès réfusé'],
+                Response::HTTP_FORBIDDEN
+            );
+        }
 
         if (!isset($data['service'])) {
             return new JsonResponse(
@@ -172,7 +179,16 @@ final class ServiceVisitePetitTrainController extends AbstractController
         Request $request,
         ValidatorInterface $validator
     ): JsonResponse {
-        $serviceVisitePetitTrain = $this->repository->find($id);
+        $serviceVisitePetitTrain = $this->repository->findOneBy(['id' => $id]);
+
+        // Vérification si l'utilisateur a l'un des rôles requis
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_EMPLOYE')) {
+            return new JsonResponse(
+                ['message' => 'Accès réfusé'],
+                Response::HTTP_FORBIDDEN
+            );
+        }
+
         if (!$serviceVisitePetitTrain) {
             return new JsonResponse(
                 ['error' => "Service de visite non trouvé"],
@@ -270,10 +286,17 @@ final class ServiceVisitePetitTrainController extends AbstractController
     }
 
     #[Route('/{id}', name: 'delete', methods: 'DELETE')]
-    #[IsGranted('ROLE_ADMIN')]
     public function delete(int $id): JsonResponse
     {
         $serviceVisitePetitTrain = $this->repository->findOneBy(['id' => $id]);
+
+        // Vérification si l'utilisateur a l'un des rôles requis
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_EMPLOYE')) {
+            return new JsonResponse(
+                ['message' => 'Accès réfusé'],
+                Response::HTTP_FORBIDDEN
+            );
+        }
 
         if ($serviceVisitePetitTrain) {
             $this->manager->remove($serviceVisitePetitTrain);

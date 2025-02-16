@@ -17,6 +17,7 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('api/habitat', name: 'app_api_habitat_')]
+#[IsGranted('ROLE_ADMIN')]
 final class HabitatController extends AbstractController
 {
     public function __construct(
@@ -27,7 +28,6 @@ final class HabitatController extends AbstractController
     ) {}
 
     #[Route(name: 'new', methods: 'POST')]
-    #[IsGranted('ROLE_ADMIN')]
     #[OA\Post(
         path: "/api/habitat",
         summary: "Créer un habitat",
@@ -123,14 +123,6 @@ final class HabitatController extends AbstractController
             Habitat::class,
             'json'
         );
-
-        // Vérification si l'utilisateur a l'un des rôles requis
-        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_VETERINAIRE')) {
-            return new JsonResponse(
-                ['message' => 'Accès réfusé'],
-                Response::HTTP_FORBIDDEN
-            );
-        }
 
         $habitat->setCreatedAt(new DateTimeImmutable());
 
@@ -351,14 +343,6 @@ final class HabitatController extends AbstractController
     {
         $habitat = $this->repository->findOneBy(['id' => $id]);
 
-        // Vérification si l'utilisateur a l'un des rôles requis
-        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_VETERINAIRE')) {
-            return new JsonResponse(
-                ['message' => 'Accès réfusé'],
-                Response::HTTP_FORBIDDEN
-            );
-        }
-
         if ($habitat) {
             $habitat = $this->serializer->deserialize(
                 $request->getContent(),
@@ -386,7 +370,6 @@ final class HabitatController extends AbstractController
             Response::HTTP_NOT_FOUND
         );
     }
-
 
     #[Route('/{id}', name: 'delete', methods: 'DELETE')]
     #[OA\Delete(
@@ -417,14 +400,6 @@ final class HabitatController extends AbstractController
     public function delete(int $id): JsonResponse
     {
         $habitat = $this->repository->findOneBy(['id' => $id]);
-
-        // Vérification si l'utilisateur a l'un des rôles requis
-        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_VETERINAIRE')) {
-            return new JsonResponse(
-                ['message' => 'Accès réfusé'],
-                Response::HTTP_FORBIDDEN
-            );
-        }
 
         if ($habitat) {
             $this->manager->remove($habitat);

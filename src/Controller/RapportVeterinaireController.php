@@ -246,7 +246,6 @@ final class RapportVeterinaireController extends AbstractController
     }
 
     #[Route('/{id}', name: 'show', methods: 'GET')]
-    // #[IsGranted('ROLE_ADMIN')]
     #[OA\Get(
         path: "/api/rapportVeterinaire/{id}",
         summary: "Afficher un rapport vétérinaire",
@@ -368,6 +367,7 @@ final class RapportVeterinaireController extends AbstractController
     }
 
     #[Route('/{id}', name: 'edit', methods: 'PUT')]
+    #[IsGranted('ROLE_VETERINAIRE')]
     #[OA\Put(
         path: "/api/rapportVeterinaire/{id}",
         summary: "Mettre à jour un rapport vétérinaire",
@@ -470,8 +470,10 @@ final class RapportVeterinaireController extends AbstractController
             )
         ]
     )]
-    public function edit(int $id, Request $request): JsonResponse
-    {
+    public function edit(
+        int $id,
+        Request $request
+    ): JsonResponse {
         // Recherche du rapport vétérinaire existant
         $rapportVeterinaire = $this->repository->findOneBy(['id' => $id]);
 
@@ -548,6 +550,7 @@ final class RapportVeterinaireController extends AbstractController
 
 
     #[Route('/{id}', name: 'delete', methods: 'DELETE')]
+    #[IsGranted('ROLE_VETERINAIRE')]
     #[OA\Delete(
         path: "/api/rapportVeterinaire/{id}",
         summary: "Supprimer un rapport vétérinaire",
@@ -608,7 +611,6 @@ final class RapportVeterinaireController extends AbstractController
 
     // Pagination des rapports vétérinaires
     #[Route('/api/rapports', name: 'list', methods: ['GET'])]
-    #[IsGranted('ROLE_ADMIN')]
     #[OA\Get(
         path: "/api/rapportVeterinaire/api/rapports",
         summary: 'Liste des rapports vétérinaires avec pagination et filtrage',

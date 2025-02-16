@@ -12,6 +12,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('api/avis', name: 'app_api_avis_')]
 final class AvisController extends AbstractController
@@ -130,6 +131,7 @@ final class AvisController extends AbstractController
 
 
     #[Route('/employee/validate-avis/{avisId}', name: 'employee_validate_avis', methods: 'PUT')]
+    #[IsGranted('ROLE_EMPLOYE')]
     #[OA\Put(
         path: "/api/avis/employee/validate-avis/{avisId}",
         summary: "Valider un avis de visiteur",
@@ -215,6 +217,7 @@ final class AvisController extends AbstractController
     }
 
     #[Route('/{id}', name: 'show', methods: 'GET')]
+    #[IsGranted('ROLE_EMPLOYE')]
     #[OA\Get(
         path: "/api/avis/{id}",
         summary: "Afficher un avis par son ID",
