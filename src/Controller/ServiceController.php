@@ -97,6 +97,7 @@ final class ServiceController extends AbstractController
     }
 
     #[Route('/{id}', name: 'edit', methods: 'PUT')]
+    #[IsGranted('ROLE_ADMIN')]
     public function edit(int $id, Request $request): JsonResponse
     {
         $service = $this->repository->findOneBy(['id' => $id]);
@@ -134,6 +135,7 @@ final class ServiceController extends AbstractController
 
 
     #[Route('/{id}', name: 'delete', methods: 'DELETE')]
+    #[IsGranted('ROLE_ADMIN')]
     public function delete(int $id): JsonResponse
     {
         $service = $this->repository->findOneBy(['id' => $id]);
