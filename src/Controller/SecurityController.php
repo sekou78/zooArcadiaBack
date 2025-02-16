@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\Animal;
 use App\Entity\User;
+use App\Service\ConsultationService;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -892,6 +894,46 @@ class SecurityController extends AbstractController
                                 et envoyé par email"
             ],
             Response::HTTP_OK
+        );
+    }
+
+    //le Dashboard pour visualiser quels animaux plaisent le plus
+    #[Route('/admin/dashboardAnimal', name: 'dashboardAnimal', methods: 'GET')]
+    public function dashboardAnimal(
+        ConsultationService $consultationService
+    ): JsonResponse {
+        // Récupérer tous les animaux
+        $animaux = $this->manager
+            ->getRepository(Animal::class)
+            ->findAll();
+
+        // Trier les animaux par nombre de consultations
+        usort($animaux, function ($a, $b) use ($consultationService) {
+            $consultationA = $consultationService
+                ->getConsultationCount(
+                    $a->getFirstname()
+                );
+            $consultationB = $consultationService
+                ->getConsultationCount(
+                    $b->getFirstname()
+                );
+            return $consultationB - $consultationA; // Tri décroissant
+        });
+
+        // Structurer les données à retourner
+        $data = array_map(function ($animal) use ($consultationService) {
+            return [
+                'nom' => $animal->getFirstname(),
+                'consultations' => $consultationService
+                    ->getConsultationCount(
+                        $animal->getFirstname()
+                    )
+            ];
+        }, $animaux);
+
+        return new JsonResponse(
+            $data,
+            JsonResponse::HTTP_OK
         );
     }
 }

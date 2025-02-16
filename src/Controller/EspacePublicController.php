@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Animal;
 use App\Entity\Habitat;
 use App\Repository\HabitatRepository;
+use App\Service\ConsultationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
@@ -19,34 +20,45 @@ final class EspacePublicController extends AbstractController
         private HabitatRepository $habitatRepository
     ) {}
 
-    #[Route('/animaux', name: 'animaux', methods: 'GET')]
-    public function listAnimals(): JsonResponse
-    {
-        $animaux = $this->manager
+    #[Route('/animaux/{nom}', name: 'animauxDetail', methods: 'GET')]
+    public function AnimauxDetail(
+        string $nom,
+        ConsultationService $consultationService
+    ): JsonResponse {
+        // Récupérer l'animal depuis la base de données relationnelle (MySQL/PostgreSQL)
+        $animal = $this->manager
             ->getRepository(Animal::class)
-            ->findAll();
+            ->findOneBy(
+                ['firstname' => $nom]
+            );
 
-        $data = array_map(function ($animal) {
-            // Récupérer le dernier rapport vétérinaire s'il existe
-            $rapport = $animal->getRapportsVeterinaires()->last();
+        if (!$animal) {
+            return new JsonResponse(
+                ['error' => 'Animal non trouvé'],
+                JsonResponse::HTTP_NOT_FOUND
+            );
+        }
 
-            return [
-                'nom' => $animal->getFirstname(),
-                'race' => $animal->getRace(),
-                'image' => $animal->getImages(),
-                'habitat' => $animal->getHabitat(),
-                'rapport_veterinaire' => $rapport ? [
-                    'date' => $rapport->getDate()->format("d-m-Y"),
-                    'etat' => $rapport->getEtat(),
-                    'commentaire' => $rapport->getCommentaireHabitat()
-                ] : null // Si aucun rapport, renvoie null
-            ];
-        }, $animaux);
+        // Incrémenter le compteur de consultations dans MongoDB
+        $consultationService->incrementConsultation($animal->getFirstname());
 
-        return new JsonResponse(
-            $data,
-            JsonResponse::HTTP_OK
-        );
+        // Récupérer le dernier rapport vétérinaire
+        $rapport = $animal->getRapportVeterinaires()->last();
+
+        // Structurer les données à retourner
+        $data = [
+            'nom' => $animal->getFirstname(),
+            'race' => $animal->getRace(),
+            'image' => $animal->getImages(),
+            'habitat' => $animal->getHabitat(),
+            'rapport_veterinaire' => $rapport ? [
+                'date' => $rapport->getDate()->format("d-m-Y"),
+                'etat' => $rapport->getEtat(),
+                'commentaire' => $rapport->getCommentaireHabitat()
+            ] : null
+        ];
+
+        return new JsonResponse($data, JsonResponse::HTTP_OK);
     }
 
     #[Route('/habitats', name: 'habitats', methods: 'GET')]
