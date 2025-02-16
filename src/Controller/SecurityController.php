@@ -17,6 +17,8 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 
 #[Route('/api', name: 'app_api_')]
 class SecurityController extends AbstractController
@@ -755,6 +757,141 @@ class SecurityController extends AbstractController
             Response::HTTP_OK,
             [],
             true
+        );
+    }
+
+    #[Route('/admin/reset-password/{username}', name: 'admin_reset_password', methods: 'POST')]
+    #[IsGranted('ROLE_ADMIN')]
+    #[OA\Post(
+        path: "/api/admin/reset-password/{username}",
+        summary: "Réinitialisation du mot de passe d'un utilisateur",
+        description: "Permet de réinitialiser le mot de passe d'un utilisateur
+            et de lui envoyer un nouveau mot de passe par email",
+        parameters: [
+            new OA\Parameter(
+                name: "username",
+                in: "path",
+                required: true,
+                description: "Username de l'utilisateur dont 
+                    le mot de passe doit être réinitialisé",
+                schema: new OA\Schema(
+                    type: "string",
+                    example: "Dinga"
+                )
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Le mot de passe a été réinitialisé 
+                    et envoyé par email",
+                content: new OA\MediaType(
+                    mediaType: "application/json",
+                    schema: new OA\Schema(
+                        type: "object",
+                        properties: [
+                            new OA\Property(
+                                property: "message",
+                                type: "string",
+                                example: "Le mot de passe a été réinitialisé et envoyé par email"
+                            )
+                        ]
+                    )
+                )
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Utilisateur non trouvé",
+                content: new OA\MediaType(
+                    mediaType: "application/json",
+                    schema: new OA\Schema(
+                        type: "object",
+                        properties: [
+                            new OA\Property(
+                                property: "error",
+                                type: "string",
+                                example: "Cet utilisateur n'existe pas"
+                            )
+                        ]
+                    )
+                )
+            ),
+            new OA\Response(
+                response: 403,
+                description: "Accès refusé",
+                content: new OA\MediaType(
+                    mediaType: "application/json",
+                    schema: new OA\Schema(
+                        type: "object",
+                        properties: [
+                            new OA\Property(
+                                property: "error",
+                                type: "string",
+                                example: "Accès refusé"
+                            )
+                        ]
+                    )
+                )
+            )
+        ]
+    )]
+    public function resetPassword(
+        string $username,
+        UserPasswordHasherInterface $passwordHasher,
+        LoggerInterface $logger,
+        MailerInterface $mailer // Service de mail pour notifier l'utilisateur
+    ): JsonResponse {
+        // Trouver l'utilisateur par son nom d'utilisateur (username)
+        $user = $this->manager
+            ->getRepository(User::class)
+            ->findOneBy(
+                ['username' => $username]
+            );
+
+        if (!$user) {
+            return new JsonResponse(
+                ['error' => 'Utilisateur non trouvé'],
+                Response::HTTP_NOT_FOUND
+            );
+        }
+
+        // Générer un nouveau mot de passe aléatoire
+        $newPassword = bin2hex(random_bytes(8));
+        $user->setPassword(
+            $passwordHasher->hashPassword(
+                $user,
+                $newPassword
+            )
+        );
+
+        // Sauvegarder l'utilisateur avec le nouveau mot de passe
+        $this->manager->persist($user);
+        $this->manager->flush();
+
+        // Créer l'email
+        $email = (new Email())
+            ->from('no-reply@example.com')  // L'adresse d'expéditeur
+            ->to($user->getEmail())        // L'adresse du destinataire
+            ->subject('Votre mot de passe a été réinitialisé') // Sujet de l'email
+            ->text('Votre nouveau mot de passe est : ' . $newPassword); // Contenu texte
+
+        // Envoyer l'email
+        $mailer->send($email);
+
+        // Log l'action
+        $logger->info(
+            "Mot de passe réinitialisé pour l'utilisateur",
+            [
+                'username' => $username
+            ]
+        );
+
+        return new JsonResponse(
+            [
+                "message" => "Le mot de passe a été réinitialisé 
+                                et envoyé par email"
+            ],
+            Response::HTTP_OK
         );
     }
 }
