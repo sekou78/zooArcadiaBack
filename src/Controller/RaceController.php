@@ -13,8 +13,10 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('api/race', name: 'app_api_race_')]
+#[IsGranted('ROLE_ADMIN')]
 final class RaceController extends AbstractController
 {
     public function __construct(
@@ -79,13 +81,23 @@ final class RaceController extends AbstractController
     )]
     public function new(Request $request): JsonResponse
     {
-        $race = $this->serializer->deserialize($request->getContent(), Race::class, 'json');
+        $race = $this->serializer->deserialize(
+            $request->getContent(),
+            Race::class,
+            '
+            json'
+        );
+
         $race->setCreatedAt(new DateTimeImmutable());
 
         $this->manager->persist($race);
         $this->manager->flush();
 
-        $responseData = $this->serializer->serialize($race, 'json');
+        $responseData = $this->serializer
+            ->serialize(
+                $race,
+                'json'
+            );
         $location = $this->urlGenerator->generate(
             'app_api_race_show',
             ['id' => $race->getId()],
@@ -155,7 +167,11 @@ final class RaceController extends AbstractController
         $race = $this->repository->findOneBy(['id' => $id]);
 
         if ($race) {
-            $responseData = $this->serializer->serialize($race, 'json');
+            $responseData = $this->serializer
+                ->serialize(
+                    $race,
+                    'json'
+                );
 
             return new JsonResponse(
                 $responseData,

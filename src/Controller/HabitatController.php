@@ -17,6 +17,7 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('api/habitat', name: 'app_api_habitat_')]
+#[IsGranted('ROLE_ADMIN')]
 final class HabitatController extends AbstractController
 {
     public function __construct(
@@ -27,7 +28,6 @@ final class HabitatController extends AbstractController
     ) {}
 
     #[Route(name: 'new', methods: 'POST')]
-    #[IsGranted('ROLE_ADMIN')]
     #[OA\Post(
         path: "/api/habitat",
         summary: "Créer un habitat",
@@ -123,14 +123,6 @@ final class HabitatController extends AbstractController
             Habitat::class,
             'json'
         );
-
-        // Vérification si l'utilisateur a l'un des rôles requis
-        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_VETERINAIRE')) {
-            return new JsonResponse(
-                ['message' => 'Accès réfusé'],
-                Response::HTTP_FORBIDDEN
-            );
-        }
 
         $habitat->setCreatedAt(new DateTimeImmutable());
 
@@ -243,77 +235,6 @@ final class HabitatController extends AbstractController
         );
     }
 
-    #[Route('/', name: 'index', methods: ['GET'])]
-    #[OA\Get(
-        path: "/api/habitat/",
-        summary: "Récupérer la liste des habitat visibles",
-        description: "Cette route retourne tous les habitats"
-    )]
-    #[OA\Response(
-        response: 200,
-        description: "Liste des habitat visibles",
-        content: new OA\JsonContent(
-            type: 'array',
-            items: new OA\Items(
-                properties: [
-                    new OA\Property(
-                        property: "name",
-                        type: "string",
-                        example: "Marais"
-                    ),
-                    new OA\Property(
-                        property: "description",
-                        type: "string",
-                        example: "Un habitat riche"
-                    ),
-                    new OA\Property(
-                        property: "CommentHabitat",
-                        type: "string",
-                        example: "C'est un environnement humide et froid"
-                    ),
-                    new OA\Property(
-                        property: "animal",
-                        type: "string",
-                        example: "Sama"
-                    ),
-                    new OA\Property(
-                        property: "imageUrl",
-                        type: "string",
-                        example: "https://example.com/uploads/marais.jpg"
-                    ),
-                    new OA\Property(
-                        property: "createdAt",
-                        type: "string",
-                        format: "date-time",
-                        example: "10-10-2025"
-                    )
-                ]
-            )
-        )
-    )]
-    public function index(): JsonResponse
-    {
-        $habitats = $this->repository->findAll();
-
-        $data = array_map(
-            function (Habitat $habitat) {
-                return [
-                    'name' => $habitat->getName(),
-                    'description' => $habitat->getDescription(),
-                    'commentHabitat' => $habitat->getCommentHabitat(),
-                    'animals' => $habitat->getAnimals(),
-                    'images' => $habitat->getImages(),
-                ];
-            },
-            $habitats
-        );
-
-        return new JsonResponse(
-            $data,
-            JsonResponse::HTTP_OK
-        );
-    }
-
     #[Route('/{id}', name: 'edit', methods: 'PUT')]
     #[OA\Put(
         path: "/api/habitat/{id}",
@@ -422,14 +343,6 @@ final class HabitatController extends AbstractController
     {
         $habitat = $this->repository->findOneBy(['id' => $id]);
 
-        // Vérification si l'utilisateur a l'un des rôles requis
-        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_VETERINAIRE')) {
-            return new JsonResponse(
-                ['message' => 'Accès réfusé'],
-                Response::HTTP_FORBIDDEN
-            );
-        }
-
         if ($habitat) {
             $habitat = $this->serializer->deserialize(
                 $request->getContent(),
@@ -457,7 +370,6 @@ final class HabitatController extends AbstractController
             Response::HTTP_NOT_FOUND
         );
     }
-
 
     #[Route('/{id}', name: 'delete', methods: 'DELETE')]
     #[OA\Delete(
@@ -488,14 +400,6 @@ final class HabitatController extends AbstractController
     public function delete(int $id): JsonResponse
     {
         $habitat = $this->repository->findOneBy(['id' => $id]);
-
-        // Vérification si l'utilisateur a l'un des rôles requis
-        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_VETERINAIRE')) {
-            return new JsonResponse(
-                ['message' => 'Accès réfusé'],
-                Response::HTTP_FORBIDDEN
-            );
-        }
 
         if ($habitat) {
             $this->manager->remove($habitat);

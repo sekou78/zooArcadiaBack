@@ -14,6 +14,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('api/animal', name: 'app_api_animal_')]
 final class AnimalController extends AbstractController
@@ -26,6 +27,7 @@ final class AnimalController extends AbstractController
     ) {}
 
     #[Route(name: 'new', methods: 'POST')]
+    #[IsGranted('ROLE_ADMIN')]
     #[OA\Post(
         path: "/api/animal",
         summary: "Créer un animal",
@@ -233,6 +235,7 @@ final class AnimalController extends AbstractController
     }
 
     #[Route('/{id}', name: 'edit', methods: 'PUT')]
+    #[IsGranted('ROLE_ADMIN')]
     #[OA\Put(
         path: "/api/animal/{id}",
         summary: "Mise à jour du animal",
@@ -363,6 +366,7 @@ final class AnimalController extends AbstractController
     }
 
     #[Route('/{id}', name: 'delete', methods: 'DELETE')]
+    #[IsGranted('ROLE_ADMIN')]
     #[OA\Delete(
         path: "/api/animal/{id}",
         summary: "Suppression de l'animal",
