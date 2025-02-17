@@ -136,7 +136,6 @@ class SecurityController extends AbstractController
             )
         ]
     )]
-    #[Route('/registration', name: 'registration', methods: 'POST')]
     public function register(
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
@@ -224,6 +223,7 @@ class SecurityController extends AbstractController
     }
 
     #[Route('/admin/create-user', name: 'admin_create_user', methods: 'POST')]
+    #[IsGranted('ROLE_ADMIN')]
     #[OA\Post(
         path: "/api/admin/create-user",
         summary: "Inscription d'un Utilisateur par Administrateur",
@@ -330,7 +330,6 @@ class SecurityController extends AbstractController
             )
         ]
     )]
-    #[IsGranted('ROLE_ADMIN')]
     public function createUser(
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
@@ -897,8 +896,9 @@ class SecurityController extends AbstractController
         );
     }
 
-    //le Dashboard pour visualiser quels animaux plaisent le plus
+    //le Dashboard pour visualiser quels animaux qui plaisent le plus
     #[Route('/admin/dashboardAnimal', name: 'dashboardAnimal', methods: 'GET')]
+    #[IsGranted('ROLE_ADMIN')]
     public function dashboardAnimal(
         ConsultationService $consultationService
     ): JsonResponse {
