@@ -479,7 +479,7 @@ final class ServiceAnimauxController extends AbstractController
             $serviceAnimal->setDescription($data['description'] ?? null);
             $serviceAnimal->setNourriture($data['nourriture'] ?? null);
             $serviceAnimal->setQuantite($data['quantite'] ?? null);
-            $serviceAnimal->setDateHeure(new \DateTimeImmutable()); // Mettre à jour la date et l'heure
+            $serviceAnimal->setDateHeure(new \DateTimeImmutable());
 
             $serviceAnimal->setUpdatedAt(new \DateTimeImmutable());
 

@@ -163,13 +163,18 @@ class SecurityController extends AbstractController
             foreach ($errors as $error) {
                 $errorMessages[$error->getPropertyPath()] = $error->getMessage();
             }
-            return new JsonResponse(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(
+                ['errors' => $errorMessages],
+                Response::HTTP_BAD_REQUEST
+            );
         }
 
         // Vérification de l'e-mail dans la base de donnée
-        $existingUser = $this->manager->getRepository(User::class)->findOneBy(
-            ['email' => $user->getEmail()]
-        );
+        $existingUser = $this->manager
+            ->getRepository(User::class)
+            ->findOneBy(
+                ['email' => $user->getEmail()]
+            );
         if ($existingUser) {
             return new JsonResponse(
                 ['error' => 'Email déjà utilisé'],
@@ -179,10 +184,15 @@ class SecurityController extends AbstractController
 
         // Si l'utilisateur tente de créer un administrateur, vérifiez s'il existe déjà un administrateur
         if (in_array("ROLE_ADMIN", $user->getRoles())) {
-            $existingAdmin = $this->manager->getRepository(User::class)->findOneByRole('ROLE_ADMIN');
+            $existingAdmin = $this->manager
+                ->getRepository(User::class)
+                ->findOneByRole('ROLE_ADMIN');
             if ($existingAdmin) {
                 return new JsonResponse(
-                    ['error' => 'Un compte administrateur existe déjà. Un seul administrateur peut être créé.'],
+                    [
+                        'error' => 'Un compte administrateur existe déjà. 
+                            Un seul administrateur peut être créé.'
+                    ],
                     Response::HTTP_FORBIDDEN
                 );
             }
@@ -203,7 +213,11 @@ class SecurityController extends AbstractController
 
         $logger->info(
             'New user registered',
-            ['email' => substr($user->getEmail(), 0, 3) . '***']
+            ['email' => substr(
+                $user->getEmail(),
+                0,
+                3
+            ) . '***']
         );
 
 
@@ -220,6 +234,7 @@ class SecurityController extends AbstractController
     }
 
     #[Route('/admin/create-user', name: 'admin_create_user', methods: 'POST')]
+    #[IsGranted('ROLE_ADMIN')]
     #[OA\Post(
         path: "/api/admin/create-user",
         summary: "Inscription d'un Utilisateur par Administrateur",
@@ -326,7 +341,6 @@ class SecurityController extends AbstractController
             )
         ]
     )]
-    #[IsGranted('ROLE_ADMIN')]
     public function createUser(
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
@@ -357,7 +371,10 @@ class SecurityController extends AbstractController
             foreach ($errors as $error) {
                 $errorMessages[$error->getPropertyPath()] = $error->getMessage();
             }
-            return new JsonResponse(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(
+                ['errors' => $errorMessages],
+                Response::HTTP_BAD_REQUEST
+            );
         }
 
         // Vérification de l'existence d'un utilisateur avec cet email
@@ -373,10 +390,16 @@ class SecurityController extends AbstractController
 
         // Si l'utilisateur tente de créer un administrateur, vérifiez s'il existe déjà un administrateur
         if (in_array("ROLE_ADMIN", $user->getRoles())) {
-            $existingAdmin = $this->manager->getRepository(User::class)->findOneByRole('ROLE_ADMIN');
+            $existingAdmin = $this->manager
+                ->getRepository(User::class)
+                ->findOneByRole('ROLE_ADMIN');
             if ($existingAdmin) {
                 return new JsonResponse(
-                    ['error' => 'Un compte administrateur existe déjà. Un seul administrateur peut être créé.'],
+                    [
+                        'error' => 'Un compte administrateur 
+                            existe déjà. Un seul administrateur 
+                            peut être créé.'
+                    ],
                     Response::HTTP_FORBIDDEN
                 );
             }
@@ -719,14 +742,22 @@ class SecurityController extends AbstractController
 
         // Hachage du mot de passe si modifié
         if (isset($request->toArray()['password'])) {
-            $user->setPassword($this->passwordHasher->hashPassword($user, $user->getPassword()));
+            $user->setPassword(
+                $this->passwordHasher
+                    ->hashPassword(
+                        $user,
+                        $user->getPassword()
+                    )
+            );
         }
 
         if (in_array('ROLE_ADMIN', $user->getRoles())) {
-            $existingAdmin = $this->manager->getRepository(User::class)->findOneByRole('ROLE_ADMIN');
+            $existingAdmin = $this->manager
+                ->getRepository(User::class)
+                ->findOneByRole('ROLE_ADMIN');
             if ($existingAdmin) {
                 return new JsonResponse(
-                    ['error' => 'Un compte administrateur existe déjà.'],
+                    ['error' => 'Un compte administrateur existe déjà'],
                     Response::HTTP_FORBIDDEN
                 );
             }
@@ -734,7 +765,10 @@ class SecurityController extends AbstractController
 
         $this->manager->flush();
 
-        $logger->info('New user registered', ['email' => $user->getEmail()]);
+        $logger->info(
+            'New user registered',
+            ['email' => $user->getEmail()]
+        );
 
         // Retourner la réponse JSON avec les informations mises à jour
         $responseData = $this->serializer->serialize(

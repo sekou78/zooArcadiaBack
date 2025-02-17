@@ -245,7 +245,6 @@ final class RapportVeterinaireController extends AbstractController
     }
 
     #[Route('/{id}', name: 'show', methods: 'GET')]
-    // #[IsGranted('ROLE_ADMIN')]
     #[OA\Get(
         path: "/api/rapportVeterinaire/{id}",
         summary: "Afficher un rapport vétérinaire",

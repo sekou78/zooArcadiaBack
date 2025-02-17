@@ -6,6 +6,7 @@ use App\Repository\ServiceRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ServiceRepository::class)]
@@ -14,20 +15,24 @@ class Service
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['service_user_read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50, nullable: true)]
     #[Assert\NotBlank]
+    #[Groups(['service_user_read'])]
     private ?string $nom = null;
 
     #[ORM\Column(length: 250, nullable: true)]
     #[Assert\NotBlank]
+    #[Groups(['service_user_read'])]
     private ?string $description = null;
 
     /**
      * @var Collection<int, User>
      */
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'services')]
+    #[Groups(['service_user_read'])]
     private Collection $utilisateurs;
 
     #[ORM\Column(nullable: true)]
