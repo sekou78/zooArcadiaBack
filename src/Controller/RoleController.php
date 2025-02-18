@@ -79,18 +79,29 @@ final class RoleController extends AbstractController
     )]
     public function new(Request $request): JsonResponse
     {
-        $role = $this->serializer->deserialize($request->getContent(), Role::class, 'json');
+        $role = $this->serializer
+            ->deserialize(
+                $request->getContent(),
+                Role::class,
+                'json'
+            );
+
         $role->setCreatedAt(new DateTimeImmutable());
 
         $this->manager->persist($role);
         $this->manager->flush();
 
-        $responseData = $this->serializer->serialize($role, 'json');
-        $location = $this->urlGenerator->generate(
-            'app_api_role_show',
-            ['id' => $role->getId()],
-            UrlGeneratorInterface::ABSOLUTE_URL,
-        );
+        $responseData = $this->serializer
+            ->serialize(
+                $role,
+                'json'
+            );
+        $location = $this->urlGenerator
+            ->generate(
+                'app_api_role_show',
+                ['id' => $role->getId()],
+                UrlGeneratorInterface::ABSOLUTE_URL,
+            );
 
         return new JsonResponse(
             $responseData,
@@ -152,7 +163,11 @@ final class RoleController extends AbstractController
         $role = $this->repository->findOneBy(['id' => $id]);
 
         if ($role) {
-            $responseData = $this->serializer->serialize($role, 'json');
+            $responseData = $this->serializer
+                ->serialize(
+                    $role,
+                    'json'
+                );
 
             return new JsonResponse(
                 $responseData,
@@ -263,9 +278,12 @@ final class RoleController extends AbstractController
         EntityManagerInterface $manager,
         Security $security
     ): JsonResponse {
-        // Vérifier que l'utilisateur actuel est un administrateur (juste une sécurité supplémentaire)
+        // Vérifier que l'utilisateur actuel est un administrateur
         if (!$security->isGranted('ROLE_ADMIN')) {
-            return new JsonResponse(['message' => 'Accès refusé'], JsonResponse::HTTP_FORBIDDEN);
+            return new JsonResponse(
+                ['message' => 'Accès refusé'],
+                JsonResponse::HTTP_FORBIDDEN
+            );
         }
 
         // Récupérer le contenu JSON
@@ -274,7 +292,10 @@ final class RoleController extends AbstractController
             true
         );
 
-        if (!$data || !isset($data['email'], $data['role_id'])) {
+        if (!$data || !isset(
+            $data['email'],
+            $data['role_id']
+        )) {
             return new JsonResponse(
                 [
                     'message' => 'Données invalides. Un email et un role_id sont requis.'
@@ -287,8 +308,10 @@ final class RoleController extends AbstractController
         $roleId = $data['role_id'];
 
         // Trouver l'utilisateur via son email
-        $user = $manager->getRepository(User::class)->findOneBy(['email' => $email]);
-        $role = $manager->getRepository(Role::class)->find($roleId);
+        $user = $manager->getRepository(User::class)
+            ->findOneBy(['email' => $email]);
+        $role = $manager->getRepository(Role::class)
+            ->find($roleId);
 
         if (!$user) {
             return new JsonResponse(
@@ -306,13 +329,17 @@ final class RoleController extends AbstractController
 
         // Si l'utilisateur tente de créer un administrateur, vérifiez s'il existe déjà un administrateur
         if ($role->getLabel() === 'ROLE_ADMIN') {
-            $existingAdmin = $manager->getRepository(User::class)->findOneBy(['role' => $role]);
+            $existingAdmin = $manager
+                ->getRepository(User::class)
+                ->findOneBy(
+                    ['role' => $role]
+                );
 
             // Si un administrateur existe déjà
             if ($existingAdmin) {
                 return new JsonResponse(
                     [
-                        'error' => 'Un administrateur existe déjà. Un seul administrateur peut être assigné.'
+                        'error' => 'Un administrateur existe déjà'
                     ],
                     JsonResponse::HTTP_FORBIDDEN
                 );
@@ -371,7 +398,7 @@ final class RoleController extends AbstractController
         responses: [
             new OA\Response(
                 response: 200,
-                description: "Rôle supprimé avec succès",
+                description: "Supprimer un rôle",
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(
@@ -392,10 +419,15 @@ final class RoleController extends AbstractController
             )
         ]
     )]
-    public function deleteRoleByLabel(Request $request, EntityManagerInterface $manager): JsonResponse
-    {
+    public function deleteRoleByLabel(
+        Request $request,
+        EntityManagerInterface $manager
+    ): JsonResponse {
         // Récupérer le contenu JSON
-        $data = json_decode($request->getContent(), true);
+        $data = json_decode(
+            $request->getContent(),
+            true
+        );
 
         if (!$data || !isset($data['label'])) {
             return new JsonResponse(
@@ -407,7 +439,8 @@ final class RoleController extends AbstractController
         $label = $data['label'];
 
         // Trouver le rôle par son label
-        $role = $manager->getRepository(Role::class)->findOneBy(['label' => $label]);
+        $role = $manager->getRepository(Role::class)
+            ->findOneBy(['label' => $label]);
 
         if (!$role) {
             return new JsonResponse(
@@ -475,7 +508,10 @@ final class RoleController extends AbstractController
         EntityManagerInterface $manager
     ): JsonResponse {
         // Récupérer le contenu JSON
-        $data = json_decode($request->getContent(), true);
+        $data = json_decode(
+            $request->getContent(),
+            true
+        );
 
         if (!$data || !isset($data['email'])) {
             return new JsonResponse(
@@ -486,7 +522,10 @@ final class RoleController extends AbstractController
 
         // Trouver l'utilisateur par email
         $email = $data['email'];
-        $user = $manager->getRepository(User::class)->findOneBy(['email' => $email]);
+        $user = $manager->getRepository(User::class)
+            ->findOneBy(
+                ['email' => $email]
+            );
 
         if (!$user) {
             return new JsonResponse(
@@ -511,7 +550,7 @@ final class RoleController extends AbstractController
         $manager->flush();
 
         return new JsonResponse(
-            ['message' => 'Rôle retiré avec succès de l\'utilisateur.'],
+            ['message' => "Rôle retiré avec succès de l'utilisateur"],
             JsonResponse::HTTP_OK
         );
     }

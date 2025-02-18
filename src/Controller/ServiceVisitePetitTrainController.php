@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Service;
 use App\Entity\ServiceVisitePetitTrain;
-use App\Form\ServiceVisitePetitTrainType;
 use App\Repository\ServiceVisitePetitTrainRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -89,11 +88,15 @@ final class ServiceVisitePetitTrainController extends AbstractController
         $this->manager->flush();
 
         // Sérialisation en tableau pour modification
-        $responseData = json_decode($this->serializer->serialize(
-            $serviceVisitePetitTrain,
-            'json',
-            ['groups' => 'service_visite_petit_train:read']
-        ), true);
+        $responseData = json_decode(
+            $this->serializer
+                ->serialize(
+                    $serviceVisitePetitTrain,
+                    'json',
+                    ['groups' => 'service_visite_petit_train:read']
+                ),
+            true
+        );
 
         // Ajouter createdAt uniquement s'il n'est pas null
         if ($serviceVisitePetitTrain->getCreatedAt()) {
@@ -243,7 +246,10 @@ final class ServiceVisitePetitTrainController extends AbstractController
 
         $errors = $validator->validate($serviceVisitePetitTrain);
         if (count($errors) > 0) {
-            return new JsonResponse(['error' => (string) $errors], JsonResponse::HTTP_BAD_REQUEST);
+            return new JsonResponse(
+                ['error' => (string) $errors],
+                JsonResponse::HTTP_BAD_REQUEST
+            );
         }
 
         $serviceVisitePetitTrain->setUpdatedAt(new DateTimeImmutable());

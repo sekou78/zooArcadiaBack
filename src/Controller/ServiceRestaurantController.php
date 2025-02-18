@@ -11,7 +11,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -111,11 +110,12 @@ final class ServiceRestaurantController extends AbstractController
         }
 
         // Désérialisation de l'objet ServiceRestaurant
-        $serviceRestaurant = $this->serializer->deserialize(
-            $request->getContent(),
-            ServiceRestaurant::class,
-            'json'
-        );
+        $serviceRestaurant = $this->serializer
+            ->deserialize(
+                $request->getContent(),
+                ServiceRestaurant::class,
+                'json'
+            );
 
         // Associer le Service récupéré
         $serviceRestaurant->setService($service);
@@ -140,11 +140,12 @@ final class ServiceRestaurantController extends AbstractController
         $this->manager->persist($serviceRestaurant);
         $this->manager->flush();
 
-        $responseData = $this->serializer->serialize(
-            $serviceRestaurant,
-            'json',
-            ['groups' => 'service_restaurant:read']
-        );
+        $responseData = $this->serializer
+            ->serialize(
+                $serviceRestaurant,
+                'json',
+                ['groups' => 'service_restaurant:read']
+            );
 
         // Convertir les heures en chaîne formatée sans la date
         $serviceRestaurantArray = json_decode(
@@ -198,14 +199,18 @@ final class ServiceRestaurantController extends AbstractController
 
         if ($serviceRestaurant) {
             // Sérialisation des données du ServiceRestaurant, mais sans les champs heureDebut et heureFin
-            $responseData = $this->serializer->serialize(
-                $serviceRestaurant,
-                'json',
-                ['groups' => 'service_restaurant:read']
-            );
+            $responseData = $this->serializer
+                ->serialize(
+                    $serviceRestaurant,
+                    'json',
+                    ['groups' => 'service_restaurant:read']
+                );
 
             // Convertir les données sérialisées en tableau
-            $serviceRestaurantArray = json_decode($responseData, true);
+            $serviceRestaurantArray = json_decode(
+                $responseData,
+                true
+            );
 
             // Créer 'heureService' en combinant heureDebut et heureFin
             $heureService = $serviceRestaurant
@@ -270,7 +275,10 @@ final class ServiceRestaurantController extends AbstractController
             );
         }
 
-        $data = json_decode($request->getContent(), true);
+        $data = json_decode(
+            $request->getContent(),
+            true
+        );
 
         if (!isset($data['service'])) {
             return new JsonResponse(
@@ -349,11 +357,12 @@ final class ServiceRestaurantController extends AbstractController
         $this->manager->flush();
 
         // Sérialiser l'entité
-        $modify = $this->serializer->serialize(
-            $serviceRestaurant,
-            'json',
-            ['groups' => 'service_restaurant:read']
-        );
+        $modify = $this->serializer
+            ->serialize(
+                $serviceRestaurant,
+                'json',
+                ['groups' => 'service_restaurant:read']
+            );
 
         // Transformer en tableau pour manipulation
         $serviceRestaurantArray = json_decode($modify, true);

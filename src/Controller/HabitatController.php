@@ -38,7 +38,12 @@ final class HabitatController extends AbstractController
                 mediaType: "application/json",
                 schema: new OA\Schema(
                     type: "object",
-                    required: ["name", "description", "CommentHabitat", "image"],
+                    required: [
+                        "name",
+                        "description",
+                        "CommentHabitat",
+                        "image"
+                    ],
                     properties: [
                         new OA\Property(
                             property: "name",
@@ -59,7 +64,7 @@ final class HabitatController extends AbstractController
                             property: "image",
                             type: "string",
                             format: "binary",
-                            description: "Image de l'habitat (fichier à uploader)"
+                            description: "Image de l'habitat"
                         )
                     ]
                 )
@@ -118,23 +123,29 @@ final class HabitatController extends AbstractController
     )]
     public function new(Request $request): JsonResponse
     {
-        $habitat = $this->serializer->deserialize(
-            $request->getContent(),
-            Habitat::class,
-            'json'
-        );
+        $habitat = $this->serializer
+            ->deserialize(
+                $request->getContent(),
+                Habitat::class,
+                'json'
+            );
 
         $habitat->setCreatedAt(new DateTimeImmutable());
 
         $this->manager->persist($habitat);
         $this->manager->flush();
 
-        $responseData = $this->serializer->serialize($habitat, 'json');
-        $location = $this->urlGenerator->generate(
-            'app_api_habitat_show',
-            ['id' => $habitat->getId()],
-            UrlGeneratorInterface::ABSOLUTE_URL,
-        );
+        $responseData = $this->serializer
+            ->serialize(
+                $habitat,
+                'json'
+            );
+        $location = $this->urlGenerator
+            ->generate(
+                'app_api_habitat_show',
+                ['id' => $habitat->getId()],
+                UrlGeneratorInterface::ABSOLUTE_URL,
+            );
 
         return new JsonResponse(
             $responseData,
@@ -219,7 +230,11 @@ final class HabitatController extends AbstractController
         $habitat = $this->repository->findOneBy(['id' => $id]);
 
         if ($habitat) {
-            $responseData = $this->serializer->serialize($habitat, 'json');
+            $responseData = $this->serializer
+                ->serialize(
+                    $habitat,
+                    'json'
+                );
 
             return new JsonResponse(
                 $responseData,
@@ -278,7 +293,7 @@ final class HabitatController extends AbstractController
                             property: "image",
                             type: "string",
                             format: "binary",
-                            description: "Image de l'habitat (fichier à uploader)"
+                            description: "Image de l'habitat"
                         )
                     ]
                 )
@@ -339,23 +354,30 @@ final class HabitatController extends AbstractController
             )
         ]
     )]
-    public function edit(int $id, Request $request): JsonResponse
-    {
+    public function edit(
+        int $id,
+        Request $request
+    ): JsonResponse {
         $habitat = $this->repository->findOneBy(['id' => $id]);
 
         if ($habitat) {
-            $habitat = $this->serializer->deserialize(
-                $request->getContent(),
-                Habitat::class,
-                'json',
-                [AbstractNormalizer::OBJECT_TO_POPULATE => $habitat]
-            );
+            $habitat = $this->serializer
+                ->deserialize(
+                    $request->getContent(),
+                    Habitat::class,
+                    'json',
+                    [AbstractNormalizer::OBJECT_TO_POPULATE => $habitat]
+                );
 
             $habitat->setUpdatedAt(new DateTimeImmutable());
 
             $this->manager->flush();
 
-            $modify = $this->serializer->serialize($habitat, 'json');
+            $modify = $this->serializer
+                ->serialize(
+                    $habitat,
+                    'json'
+                );
 
             return new JsonResponse(
                 $modify,
@@ -422,7 +444,7 @@ final class HabitatController extends AbstractController
     #[OA\Get(
         path: "/api/habitat/api/rapports",
         summary: "Lister les habitats avec pagination et filtres",
-        description: "Cette route permet de récupérer une liste paginée des habitats avec plusieurs filtres disponibles."
+        description: "Liste paginée des habitats avec des filtres disponibles"
     )]
     #[OA\Parameter(
         name: "name",
@@ -477,7 +499,7 @@ final class HabitatController extends AbstractController
     #[OA\Parameter(
         name: "page",
         in: "query",
-        description: "Numéro de la page pour la pagination (par défaut: 1)",
+        description: "Page pour la pagination (par défaut: 1)",
         required: false,
         schema: new OA\Schema(
             type: "integer",
@@ -563,7 +585,9 @@ final class HabitatController extends AbstractController
         $imagesFilter = $request->query->get('images');
 
         // Création de la requête pour récupérer tous les animaux
-        $queryBuilder = $this->manager->getRepository(Habitat::class)->createQueryBuilder('a');
+        $queryBuilder = $this->manager
+            ->getRepository(Habitat::class)
+            ->createQueryBuilder('a');
 
         // Appliquer le filtre sur 'name' si le paramètre est présent
         if ($nameFilter) {
@@ -619,11 +643,17 @@ final class HabitatController extends AbstractController
             'currentPage' => $pagination->getCurrentPageNumber(),
             'totalItems' => $pagination->getTotalItemCount(),
             'itemsPerPage' => $pagination->getItemNumberPerPage(),
-            'totalPages' => ceil($pagination->getTotalItemCount() / $pagination->getItemNumberPerPage()),
+            'totalPages' => ceil(
+                $pagination->getTotalItemCount() / $pagination
+                    ->getItemNumberPerPage()
+            ),
             'items' => $items, // Les éléments paginés formatés
         ];
 
         // Retourner la réponse JSON avec les données paginées
-        return new JsonResponse($data, JsonResponse::HTTP_OK);
+        return new JsonResponse(
+            $data,
+            JsonResponse::HTTP_OK
+        );
     }
 }

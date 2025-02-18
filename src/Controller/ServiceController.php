@@ -32,11 +32,12 @@ final class ServiceController extends AbstractController
         Request $request,
         ValidatorInterface $validator,
     ): JsonResponse {
-        $service = $this->serializer->deserialize(
-            $request->getContent(),
-            Service::class,
-            'json'
-        );
+        $service = $this->serializer
+            ->deserialize(
+                $request->getContent(),
+                Service::class,
+                'json'
+            );
 
         // Validation
         $errors = $validator->validate($service);
@@ -56,11 +57,12 @@ final class ServiceController extends AbstractController
         $this->manager->persist($service);
         $this->manager->flush();
 
-        $responseData = $this->serializer->serialize(
-            $service,
-            'json',
-            ['groups' => 'service_user_read']
-        );
+        $responseData = $this->serializer
+            ->serialize(
+                $service,
+                'json',
+                ['groups' => 'service_user_read']
+            );
 
         $location = $this->urlGenerator->generate(
             'app_api_service_show',
@@ -82,10 +84,11 @@ final class ServiceController extends AbstractController
         $service = $this->repository->findOneBy(['id' => $id]);
 
         if ($service) {
-            $responseData = $this->serializer->serialize(
-                $service,
-                'json'
-            );
+            $responseData = $this->serializer
+                ->serialize(
+                    $service,
+                    'json'
+                );
 
             return new JsonResponse(
                 $responseData,
@@ -103,26 +106,30 @@ final class ServiceController extends AbstractController
 
     #[Route('/{id}', name: 'edit', methods: 'PUT')]
     #[IsGranted('ROLE_ADMIN')]
-    public function edit(int $id, Request $request): JsonResponse
-    {
+    public function edit(
+        int $id,
+        Request $request
+    ): JsonResponse {
         $service = $this->repository->findOneBy(['id' => $id]);
 
         if ($service) {
-            $service = $this->serializer->deserialize(
-                $request->getContent(),
-                Service::class,
-                'json',
-                [AbstractNormalizer::OBJECT_TO_POPULATE => $service]
-            );
+            $service = $this->serializer
+                ->deserialize(
+                    $request->getContent(),
+                    Service::class,
+                    'json',
+                    [AbstractNormalizer::OBJECT_TO_POPULATE => $service]
+                );
 
             $service->setUpdatedAt(new DateTimeImmutable());
 
             $this->manager->flush();
 
-            $modify = $this->serializer->serialize(
-                $service,
-                'json'
-            );
+            $modify = $this->serializer
+                ->serialize(
+                    $service,
+                    'json'
+                );
 
             return new JsonResponse(
                 $modify,

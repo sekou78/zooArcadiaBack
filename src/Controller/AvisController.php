@@ -100,11 +100,12 @@ final class AvisController extends AbstractController
     )]
     public function new(Request $request): JsonResponse
     {
-        $avis = $this->serializer->deserialize(
-            $request->getContent(),
-            Avis::class,
-            'json'
-        );
+        $avis = $this->serializer
+            ->deserialize(
+                $request->getContent(),
+                Avis::class,
+                'json'
+            );
 
         $avis->setCreatedAt(new DateTimeImmutable());
 
@@ -114,12 +115,17 @@ final class AvisController extends AbstractController
         $this->manager->persist($avis);
         $this->manager->flush();
 
-        $responseData = $this->serializer->serialize($avis, 'json');
-        $location = $this->urlGenerator->generate(
-            'app_api_avis_show',
-            ['id' => $avis->getId()],
-            UrlGeneratorInterface::ABSOLUTE_URL,
-        );
+        $responseData = $this->serializer
+            ->serialize(
+                $avis,
+                'json'
+            );
+        $location = $this->urlGenerator
+            ->generate(
+                'app_api_avis_show',
+                ['id' => $avis->getId()],
+                UrlGeneratorInterface::ABSOLUTE_URL,
+            );
 
         return new JsonResponse(
             $responseData,
@@ -130,12 +136,16 @@ final class AvisController extends AbstractController
     }
 
 
-    #[Route('/employee/validate-avis/{avisId}', name: 'employee_validate_avis', methods: 'PUT')]
+    #[Route(
+        '/employee/validate-avis/{avisId}',
+        name: 'employee_validate_avis',
+        methods: 'PUT'
+    )]
     #[IsGranted('ROLE_EMPLOYE')]
     #[OA\Put(
         path: "/api/avis/employee/validate-avis/{avisId}",
         summary: "Valider un avis de visiteur",
-        description: "Cette route permet à un employé ou un administrateur de valider un avis de visiteur"
+        description: "Permet de valider un avis de visiteur"
     )]
     #[OA\Parameter(
         name: 'avisId',
@@ -149,7 +159,7 @@ final class AvisController extends AbstractController
     )]
     #[OA\Response(
         response: 200,
-        description: "Avis validé avec succès",
+        description: "Validation de l'avis",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -162,7 +172,6 @@ final class AvisController extends AbstractController
     )]
     #[OA\Response(
         response: 403,
-        description: "Accès refusé",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -175,7 +184,6 @@ final class AvisController extends AbstractController
     )]
     #[OA\Response(
         response: 404,
-        description: "Avis non trouvé",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -190,10 +198,16 @@ final class AvisController extends AbstractController
         int $avisId,
         EntityManagerInterface $manager
     ): JsonResponse {
-        $avis = $manager->getRepository(Avis::class)->find($avisId);
+        $avis = $manager
+            ->getRepository(Avis::class)
+            ->find($avisId);
 
         // Vérification si l'utilisateur a l'un des rôles requis
-        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_EMPLOYE')) {
+        if (
+            !$this->isGranted('ROLE_ADMIN')
+            &&
+            !$this->isGranted('ROLE_EMPLOYE')
+        ) {
             return new JsonResponse(
                 ['message' => 'Accès réfusé'],
                 Response::HTTP_FORBIDDEN
@@ -287,7 +301,11 @@ final class AvisController extends AbstractController
         $avis = $this->repository->findOneBy(['id' => $id]);
 
         if ($avis) {
-            $responseData = $this->serializer->serialize($avis, 'json');
+            $responseData = $this->serializer
+                ->serialize(
+                    $avis,
+                    'json'
+                );
 
             return new JsonResponse(
                 $responseData,
@@ -307,7 +325,7 @@ final class AvisController extends AbstractController
     #[OA\Get(
         path: "/api/avis/",
         summary: "Récupérer la liste des avis visibles",
-        description: "Cette route retourne tous les avis publics visibles."
+        description: "Retourne tous les avis publics visibles."
     )]
     #[OA\Response(
         response: 200,
@@ -389,7 +407,11 @@ final class AvisController extends AbstractController
         $avis = $this->repository->findOneBy(['id' => $id]);
 
         // Vérification si l'utilisateur a l'un des rôles requis
-        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_EMPLOYE')) {
+        if (
+            !$this->isGranted('ROLE_ADMIN')
+            &&
+            !$this->isGranted('ROLE_EMPLOYE')
+        ) {
             return new JsonResponse(
                 ['message' => 'Accès réfusé'],
                 Response::HTTP_FORBIDDEN
