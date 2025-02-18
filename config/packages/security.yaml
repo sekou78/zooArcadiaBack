@@ -33,9 +33,9 @@ security:
   # Easy way to control access for large sections of your site
   # Note: Only the *first* access control that matches will be used
   access_control:
+    - { path: ^/pb/espacePublic, roles: PUBLIC_ACCESS }
+    - { path: ^/pb/habitat, roles: PUBLIC_ACCESS }
     - { path: ^/api/avis, roles: PUBLIC_ACCESS }
-    - { path: ^/api/habitat, roles: PUBLIC_ACCESS }
-    - { path: ^api/espacePublic, roles: PUBLIC_ACCESS }
     - { path: ^/admin, roles: ROLE_ADMIN }
     - { path: ^/employe, roles: ROLE_EMPLOYE }
     - { path: ^/veterinaire, roles: ROLE_VETERINAIRE }
