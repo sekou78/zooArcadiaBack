@@ -923,6 +923,42 @@ class SecurityController extends AbstractController
         methods: 'GET'
     )]
     #[IsGranted('ROLE_ADMIN')]
+    #[OA\Get(
+        path: "/api/admin/dashboardAnimal",
+        summary: "Visualiser les animaux les plus populaires",
+        description: "Retourne la liste des animaux triés en fonction du nombre de consultations",
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Liste des animaux triée par popularité",
+                content: new OA\JsonContent(
+                    type: 'array',
+                    items: new OA\Items(
+                        properties: [
+                            new OA\Property(
+                                property: 'nom',
+                                type: 'string',
+                                description: "Nom de l'animal"
+                            ),
+                            new OA\Property(
+                                property: 'consultations',
+                                type: 'integer',
+                                description: "Nombre de consultations"
+                            )
+                        ]
+                    )
+                )
+            ),
+            new OA\Response(
+                response: 403,
+                description: "Accès refusé"
+            ),
+            new OA\Response(
+                response: 500,
+                description: "Erreur serveur"
+            )
+        ]
+    )]
     public function dashboardAnimal(
         ConsultationService $consultationService
     ): JsonResponse {

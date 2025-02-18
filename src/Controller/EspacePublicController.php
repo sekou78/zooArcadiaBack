@@ -21,7 +21,7 @@ final class EspacePublicController extends AbstractController
 
     #[Route('/animaux/{nom}', name: 'animauxDetail', methods: 'GET')]
     #[OA\Get(
-        path: "/espacePublic/animaux/{nom}",
+        path: "/pb/espacePublic/animaux/{nom}",
         summary: "Récupérer les détails d'un animal",
         description: "Retourne les informations d'un animal en fonction de son nom",
         parameters: [
@@ -201,7 +201,7 @@ final class EspacePublicController extends AbstractController
 
     #[Route('/habitats', name: 'habitats', methods: 'GET')]
     #[OA\Get(
-        path: "/habitats",
+        path: "/pb/espacePublic/habitats",
         summary: "Récupérer la liste des habitats visibles",
         description: "Cette route retourne tous les habitats"
     )]

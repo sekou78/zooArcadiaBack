@@ -172,6 +172,7 @@ final class AvisController extends AbstractController
     )]
     #[OA\Response(
         response: 403,
+        description: "Accès non autorisé",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
@@ -184,12 +185,13 @@ final class AvisController extends AbstractController
     )]
     #[OA\Response(
         response: 404,
+        description: "Avis non trouvé",
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(
                     property: 'error',
                     type: 'string',
-                    example: "Avis non trouvé"
+                    example: "Avis n'existe pas'"
                 )
             ]
         )
