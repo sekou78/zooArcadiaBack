@@ -53,7 +53,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\NotBlank]
     #[Assert\Length(min: 2, max: 50)]
     #[ORM\Column(length: 50)]
-    #[Groups(['user_read', 'user_write'])]  // Exemple de groupes
+    #[Groups(['user_read', 'user_write', 'service_user_read'])]  // Exemple de groupes
     private ?string $username = null;
 
     #[Assert\NotBlank]

@@ -47,6 +47,10 @@ final class ServiceController extends AbstractController
             );
         }
 
+
+        // Ajouter l'utilisateur connecté
+        $service->addUtilisateur($this->getUser());
+
         $service->setCreatedAt(new DateTimeImmutable());
 
         $this->manager->persist($service);
@@ -54,7 +58,8 @@ final class ServiceController extends AbstractController
 
         $responseData = $this->serializer->serialize(
             $service,
-            'json'
+            'json',
+            ['groups' => 'service_user_read']
         );
 
         $location = $this->urlGenerator->generate(
