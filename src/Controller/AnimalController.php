@@ -156,7 +156,7 @@ final class AnimalController extends AbstractController
         responses: [
             new OA\Response(
                 response: 200,
-                description: "Booking trouvé avec succès",
+                description: "Animal trouvé avec succès",
                 content: new OA\MediaType(
                     mediaType: "application/json",
                     schema: new OA\Schema(
@@ -280,7 +280,7 @@ final class AnimalController extends AbstractController
         responses: [
             new OA\Response(
                 response: 204,
-                description: "Booking modifé avec succès",
+                description: "Animal modifé avec succès",
                 content: new OA\MediaType(
                     mediaType: "application/json",
                     schema: new OA\Schema(

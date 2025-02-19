@@ -41,7 +41,7 @@ final class ServiceVisitePetitTrainController extends AbstractController
                     required: [
                         "parcours",
                         "description",
-                        "disponibilité",
+                        "disponibilite",
                         "duree",
                         "service"
                     ],
@@ -57,7 +57,7 @@ final class ServiceVisitePetitTrainController extends AbstractController
                             example: "Un voyage à travers la jungle"
                         ),
                         new OA\Property(
-                            property: "disponibilité",
+                            property: "disponibilite",
                             type: "array",
                             items: new OA\Items(
                                 type: "string"
@@ -103,7 +103,7 @@ final class ServiceVisitePetitTrainController extends AbstractController
                                 example: "Un voyage à travers la jungle"
                             ),
                             new OA\Property(
-                                property: "disponibilité",
+                                property: "disponibilite",
                                 type: "array",
                                 items: new OA\Items(
                                     type: "string"
@@ -301,7 +301,7 @@ final class ServiceVisitePetitTrainController extends AbstractController
                                 example: "Un voyage à travers la jungle"
                             ),
                             new OA\Property(
-                                property: "disponibilité",
+                                property: "disponibilite",
                                 type: "array",
                                 items: new OA\Items(
                                     type: "string"
@@ -398,7 +398,6 @@ final class ServiceVisitePetitTrainController extends AbstractController
 
 
     #[Route('/{id}', name: 'edit', methods: 'PUT')]
-    #[IsGranted('ROLE_ADMIN')]
     #[OA\Put(
         path: "/api/serviceVisitePetitTrain/{id}",
         summary: "Modifier un Service visite petit train",
@@ -430,12 +429,12 @@ final class ServiceVisitePetitTrainController extends AbstractController
                             example: "Un voyage à travers la jungle modifié"
                         ),
                         new OA\Property(
-                            property: "disponibilité",
+                            property: "disponibilite",
                             type: "array",
                             items: new OA\Items(
                                 type: "string"
                             ),
-                            example: ["Lundi", "Mercredi", "Vendredi"]
+                            example: ["Lundi", "Jeudi"]
                         ),
                         new OA\Property(
                             property: "duree",
@@ -444,35 +443,86 @@ final class ServiceVisitePetitTrainController extends AbstractController
                         ),
                         new OA\Property(
                             property: "service",
-                            type: "object",
-                            properties: [
-                                new OA\Property(
-                                    property: "id",
-                                    type: "integer",
-                                    example: 1
-                                ),
-                                new OA\Property(
-                                    property: "nom",
-                                    type: "string",
-                                    example: "Service 3"
-                                ),
-                                new OA\Property(
-                                    property: "description",
-                                    type: "string",
-                                    example: "Description du service 3"
-                                )
-                            ]
-                        ),
-                        new OA\Property(
-                            property: "updatedAt",
-                            type: "string",
-                            format: "date-time",
-                            example: "18-02-2025 19:49:18"
+                            type: "integer",
+                            example: 3
                         )
                     ]
                 )
             )
-        )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: "Service restaurant créer avec succès",
+                content: new OA\MediaType(
+                    mediaType: "application/json",
+                    schema: new OA\Schema(
+                        type: "object",
+                        properties: [
+                            new OA\Property(
+                                property: "id",
+                                type: "integer",
+                                example: 1
+                            ),
+                            new OA\Property(
+                                property: "parcours",
+                                type: "string",
+                                example: "Circuit Jungle modifié"
+                            ),
+                            new OA\Property(
+                                property: "description",
+                                type: "string",
+                                example: "Un voyage à travers la jungle modifié"
+                            ),
+                            new OA\Property(
+                                property: "disponibilite",
+                                type: "array",
+                                items: new OA\Items(
+                                    type: "string"
+                                ),
+                                example: ["Lundi", "Mercredi", "Vendredi"]
+                            ),
+                            new OA\Property(
+                                property: "duree",
+                                type: "string",
+                                example: "2h45 min"
+                            ),
+                            new OA\Property(
+                                property: "service",
+                                type: "object",
+                                properties: [
+                                    new OA\Property(
+                                        property: "id",
+                                        type: "integer",
+                                        example: 1
+                                    ),
+                                    new OA\Property(
+                                        property: "nom",
+                                        type: "string",
+                                        example: "Service 3"
+                                    ),
+                                    new OA\Property(
+                                        property: "description",
+                                        type: "string",
+                                        example: "Description du service 3"
+                                    )
+                                ]
+                            ),
+                            new OA\Property(
+                                property: "updatedAt",
+                                type: "string",
+                                format: "date-time",
+                                example: "18-02-2025 19:49:18"
+                            )
+                        ]
+                    )
+                )
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Service restaurant non trouvé"
+            )
+        ]
     )]
     public function edit(
         int $id,

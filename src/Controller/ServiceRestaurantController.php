@@ -46,12 +46,12 @@ final class ServiceRestaurantController extends AbstractController
                         new OA\Property(
                             property: "nom",
                             type: "string",
-                            example: "Bamba"
+                            example: "Restaurant du Zoo"
                         ),
                         new OA\Property(
                             property: "description",
                             type: "string",
-                            example: "Sain"
+                            example: "Produits et boissons de la region"
                         ),
                         new OA\Property(
                             property: "heureService",
@@ -84,12 +84,12 @@ final class ServiceRestaurantController extends AbstractController
                             new OA\Property(
                                 property: "nom",
                                 type: "string",
-                                example: "Bamba"
+                                example: "Restaurant du Zoo"
                             ),
                             new OA\Property(
                                 property: "description",
                                 type: "string",
-                                example: "Sain"
+                                example: "Produits et boissons de la region"
                             ),
                             new OA\Property(
                                 property: "service",
@@ -104,25 +104,24 @@ final class ServiceRestaurantController extends AbstractController
                                     new OA\Property(
                                         property: "nom",
                                         type: "string",
-                                        example: "Nettoyage des cages"
+                                        example: "cuisinier et serveur"
                                     ),
                                     new OA\Property(
                                         property: "description",
                                         type: "string",
-                                        example: "Nettoyage quotidien des cages des animaux"
+                                        example: "Cuisine pour vous et vos compagnons"
                                     )
                                 ]
                             ),
                             new OA\Property(
                                 property: "heureService",
                                 type: "string",
-                                example: "10:00 - 18:00"
+                                example: "09:00 - 20:00"
                             ),
                             new OA\Property(
                                 property: "createdAt",
                                 type: "string",
                                 format: "date-time",
-                                description: "Date de création",
                                 example: "18-02-2025 18:53:08"
                             )
                         ]
@@ -330,12 +329,12 @@ final class ServiceRestaurantController extends AbstractController
                             new OA\Property(
                                 property: "nom",
                                 type: "string",
-                                example: "Bamba"
+                                example: "Restaurant du Zoo"
                             ),
                             new OA\Property(
                                 property: "description",
                                 type: "string",
-                                example: "Sain"
+                                example: "Produits et boissons de la region"
                             ),
                             new OA\Property(
                                 property: "service",
@@ -350,25 +349,24 @@ final class ServiceRestaurantController extends AbstractController
                                     new OA\Property(
                                         property: "nom",
                                         type: "string",
-                                        example: "Nettoyage des cages"
+                                        example: "cuisinier et serveur"
                                     ),
                                     new OA\Property(
                                         property: "description",
                                         type: "string",
-                                        example: "Nettoyage quotidien des cages des animaux"
+                                        example: "Cuisine pour vous et vos compagnons"
                                     )
                                 ]
                             ),
                             new OA\Property(
                                 property: "heureService",
                                 type: "string",
-                                example: "10:00 - 18:00"
+                                example: "09:00 - 20:00"
                             ),
                             new OA\Property(
                                 property: "createdAt",
                                 type: "string",
                                 format: "date-time",
-                                description: "Date de création",
                                 example: "18-02-2025 18:53:08"
                             )
                         ]
@@ -472,22 +470,22 @@ final class ServiceRestaurantController extends AbstractController
                         new OA\Property(
                             property: "nom",
                             type: "string",
-                            example: "Bamba"
+                            example: "Restaurant du Zoo modifié"
                         ),
                         new OA\Property(
                             property: "description",
                             type: "string",
-                            example: "Sain"
+                            example: "Produits et boissons de la region modifiée"
                         ),
                         new OA\Property(
                             property: "heureService",
                             type: "string",
-                            example: "09:00 - 20:00"
+                            example: "08:00 - 16:00"
                         ),
                         new OA\Property(
                             property: "service",
                             type: "interger",
-                            example: 1
+                            example: 5
                         )
                     ]
                 )
@@ -510,12 +508,12 @@ final class ServiceRestaurantController extends AbstractController
                             new OA\Property(
                                 property: "nom",
                                 type: "string",
-                                example: "Bamba"
+                                example: "Restaurant du Zoo modifié"
                             ),
                             new OA\Property(
                                 property: "description",
                                 type: "string",
-                                example: "Sain"
+                                example: "Produits et boissons de la region modifiée"
                             ),
                             new OA\Property(
                                 property: "service",
@@ -530,25 +528,24 @@ final class ServiceRestaurantController extends AbstractController
                                     new OA\Property(
                                         property: "nom",
                                         type: "string",
-                                        example: "Nettoyage des cages"
+                                        example: "Serveur"
                                     ),
                                     new OA\Property(
                                         property: "description",
                                         type: "string",
-                                        example: "Nettoyage quotidien des cages des animaux"
+                                        example: "Service pour vous et vos compagnons"
                                     )
                                 ]
                             ),
                             new OA\Property(
                                 property: "heureService",
                                 type: "string",
-                                example: "10:00 - 18:00"
+                                example: "08:00 - 16:00"
                             ),
                             new OA\Property(
                                 property: "updatedAt",
                                 type: "string",
                                 format: "date-time",
-                                description: "Date de création",
                                 example: "18-02-2025 18:53:08"
                             )
                         ]
@@ -682,13 +679,6 @@ final class ServiceRestaurantController extends AbstractController
             ->format('H:i');
         unset($serviceRestaurantArray['heureDebut']);
         unset($serviceRestaurantArray['heureFin']);
-
-        // Ajouter createdAt uniquement s'il n'est pas null
-        if ($serviceRestaurant->getCreatedAt()) {
-            $serviceRestaurantArray['createdAt'] = $serviceRestaurant
-                ->getCreatedAt()
-                ->format('d-m-Y H:i:s');
-        }
 
         // Supprimer updatedAt s'il est null
         if ($serviceRestaurant->getUpdatedAt()) {

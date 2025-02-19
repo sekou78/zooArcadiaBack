@@ -75,7 +75,7 @@ class ServiceVisitePetitTrain
 
     public function getDisponibilite(): array
     {
-        return $this->disponibilite;
+        return $this->disponibilite ?? [];
     }
 
     public function setDisponibilite(array $disponibilite): static
