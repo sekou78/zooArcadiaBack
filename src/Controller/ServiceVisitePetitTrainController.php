@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Service;
 use App\Entity\ServiceVisitePetitTrain;
-use App\Form\ServiceVisitePetitTrainType;
 use App\Repository\ServiceVisitePetitTrainRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -16,6 +15,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use OpenApi\Attributes as OA;
 
 #[Route('api/serviceVisitePetitTrain', name: 'app_api_serviceVisitePetitTrain_')]
 final class ServiceVisitePetitTrainController extends AbstractController
@@ -28,6 +28,139 @@ final class ServiceVisitePetitTrainController extends AbstractController
     ) {}
 
     #[Route(name: 'new', methods: 'POST')]
+    #[OA\Post(
+        path: "/api/serviceVisitePetitTrain",
+        summary: "Créer un Service visite petit train",
+        requestBody: new OA\RequestBody(
+            required: true,
+            description: "Le Service visite petit train a créer",
+            content: new OA\MediaType(
+                mediaType: "application/json",
+                schema: new OA\Schema(
+                    type: "object",
+                    required: [
+                        "parcours",
+                        "description",
+                        "disponibilité",
+                        "duree",
+                        "service"
+                    ],
+                    properties: [
+                        new OA\Property(
+                            property: "parcours",
+                            type: "string",
+                            example: "Circuit Jungle"
+                        ),
+                        new OA\Property(
+                            property: "description",
+                            type: "string",
+                            example: "Un voyage à travers la jungle"
+                        ),
+                        new OA\Property(
+                            property: "disponibilité",
+                            type: "array",
+                            items: new OA\Items(
+                                type: "string"
+                            ),
+                            example: ["Lundi", "Mercredi", "Vendredi"]
+                        ),
+                        new OA\Property(
+                            property: "duree",
+                            type: "string",
+                            example: "1h30 min"
+                        ),
+                        new OA\Property(
+                            property: "service",
+                            type: "integer",
+                            example: 1
+                        )
+                    ]
+                )
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: "Parcours créé avec succès",
+                content: new OA\MediaType(
+                    mediaType: "application/json",
+                    schema: new OA\Schema(
+                        type: "object",
+                        properties: [
+                            new OA\Property(
+                                property: "id",
+                                type: "integer",
+                                example: 1
+                            ),
+                            new OA\Property(
+                                property: "parcours",
+                                type: "string",
+                                example: "Circuit Jungle"
+                            ),
+                            new OA\Property(
+                                property: "description",
+                                type: "string",
+                                example: "Un voyage à travers la jungle"
+                            ),
+                            new OA\Property(
+                                property: "disponibilité",
+                                type: "array",
+                                items: new OA\Items(
+                                    type: "string"
+                                ),
+                                example: ["Lundi", "Mercredi", "Vendredi"]
+                            ),
+                            new OA\Property(
+                                property: "duree",
+                                type: "string",
+                                description: "Durée du parcours",
+                                example: "1h30 min"
+                            ),
+                            new OA\Property(
+                                property: "service",
+                                type: "object",
+                                properties: [
+                                    new OA\Property(
+                                        property: "id",
+                                        type: "integer",
+                                        example: 1
+                                    ),
+                                    new OA\Property(
+                                        property: "nom",
+                                        type: "string",
+                                        example: "Service 1"
+                                    ),
+                                    new OA\Property(
+                                        property: "description",
+                                        type: "string",
+                                        example: "Description du service 1"
+                                    )
+                                ]
+                            ),
+                            new OA\Property(
+                                property: "createdAt",
+                                type: "string",
+                                format: "date-time",
+                                example: "18-02-2025 19:49:18"
+                            )
+                        ]
+                    )
+                )
+            ),
+            new OA\Response(
+                response: 400,
+                description: "Données invalides",
+            ),
+            new OA\Response(
+                response: 403,
+                description: "Accès refusé",
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Service non trouvé",
+            )
+        ]
+    )]
     public function new(
         Request $request,
         ValidatorInterface $validator
@@ -89,11 +222,15 @@ final class ServiceVisitePetitTrainController extends AbstractController
         $this->manager->flush();
 
         // Sérialisation en tableau pour modification
-        $responseData = json_decode($this->serializer->serialize(
-            $serviceVisitePetitTrain,
-            'json',
-            ['groups' => 'service_visite_petit_train:read']
-        ), true);
+        $responseData = json_decode(
+            $this->serializer
+                ->serialize(
+                    $serviceVisitePetitTrain,
+                    'json',
+                    ['groups' => 'service_visite_petit_train:read']
+                ),
+            true
+        );
 
         // Ajouter createdAt uniquement s'il n'est pas null
         if ($serviceVisitePetitTrain->getCreatedAt()) {
@@ -125,6 +262,94 @@ final class ServiceVisitePetitTrainController extends AbstractController
     }
 
     #[Route('/{id}', name: 'show', methods: 'GET')]
+    #[OA\Get(
+        path: "/api/serviceVisitePetitTrain/{id}",
+        summary: "Afficher un Service visite petit train par son ID",
+        parameters: [
+            new OA\Parameter(
+                name: "id",
+                in: "path",
+                required: true,
+                description: "ID du Service visite petit train",
+                schema: new OA\Schema(
+                    type: "integer",
+                )
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Affichage du Service visite petit train",
+                content: new OA\MediaType(
+                    mediaType: "application/json",
+                    schema: new OA\Schema(
+                        type: "object",
+                        properties: [
+                            new OA\Property(
+                                property: "id",
+                                type: "integer",
+                                example: 1
+                            ),
+                            new OA\Property(
+                                property: "parcours",
+                                type: "string",
+                                example: "Circuit Jungle"
+                            ),
+                            new OA\Property(
+                                property: "description",
+                                type: "string",
+                                example: "Un voyage à travers la jungle"
+                            ),
+                            new OA\Property(
+                                property: "disponibilité",
+                                type: "array",
+                                items: new OA\Items(
+                                    type: "string"
+                                ),
+                                example: ["Lundi", "Mercredi", "Vendredi"]
+                            ),
+                            new OA\Property(
+                                property: "duree",
+                                type: "string",
+                                example: "1h30 min"
+                            ),
+                            new OA\Property(
+                                property: "service",
+                                type: "object",
+                                properties: [
+                                    new OA\Property(
+                                        property: "id",
+                                        type: "integer",
+                                        example: 1
+                                    ),
+                                    new OA\Property(
+                                        property: "nom",
+                                        type: "string",
+                                        example: "Service 1"
+                                    ),
+                                    new OA\Property(
+                                        property: "description",
+                                        type: "string",
+                                        example: "Description du service 1"
+                                    )
+                                ]
+                            ),
+                            new OA\Property(
+                                property: "createdAt",
+                                type: "string",
+                                format: "date-time",
+                                example: "18-02-2025 19:49:18"
+                            )
+                        ]
+                    )
+                )
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Service visite petit train non trouvé",
+            )
+        ]
+    )]
     public function show(int $id): JsonResponse
     {
         $serviceVisitePetitTrain = $this->repository->findOneBy(['id' => $id]);
@@ -174,6 +399,81 @@ final class ServiceVisitePetitTrainController extends AbstractController
 
     #[Route('/{id}', name: 'edit', methods: 'PUT')]
     #[IsGranted('ROLE_ADMIN')]
+    #[OA\Put(
+        path: "/api/serviceVisitePetitTrain/{id}",
+        summary: "Modifier un Service visite petit train",
+        parameters: [
+            new OA\Parameter(
+                name: "id",
+                in: "path",
+                required: true,
+                description: "ID du Service visite petit train",
+                schema: new OA\Schema(
+                    type: "integer",
+                )
+            )
+        ],
+        requestBody: new OA\RequestBody(
+            content: new OA\MediaType(
+                mediaType: "application/json",
+                schema: new OA\Schema(
+                    type: "object",
+                    properties: [
+                        new OA\Property(
+                            property: "parcours",
+                            type: "string",
+                            example: "Circuit Jungle modifié"
+                        ),
+                        new OA\Property(
+                            property: "description",
+                            type: "string",
+                            example: "Un voyage à travers la jungle modifié"
+                        ),
+                        new OA\Property(
+                            property: "disponibilité",
+                            type: "array",
+                            items: new OA\Items(
+                                type: "string"
+                            ),
+                            example: ["Lundi", "Mercredi", "Vendredi"]
+                        ),
+                        new OA\Property(
+                            property: "duree",
+                            type: "string",
+                            example: "2h45 min"
+                        ),
+                        new OA\Property(
+                            property: "service",
+                            type: "object",
+                            properties: [
+                                new OA\Property(
+                                    property: "id",
+                                    type: "integer",
+                                    example: 1
+                                ),
+                                new OA\Property(
+                                    property: "nom",
+                                    type: "string",
+                                    example: "Service 3"
+                                ),
+                                new OA\Property(
+                                    property: "description",
+                                    type: "string",
+                                    example: "Description du service 3"
+                                )
+                            ]
+                        ),
+                        new OA\Property(
+                            property: "updatedAt",
+                            type: "string",
+                            format: "date-time",
+                            example: "18-02-2025 19:49:18"
+                        )
+                    ]
+                )
+            )
+        )
+    )]
     public function edit(
         int $id,
         Request $request,
@@ -243,7 +543,10 @@ final class ServiceVisitePetitTrainController extends AbstractController
 
         $errors = $validator->validate($serviceVisitePetitTrain);
         if (count($errors) > 0) {
-            return new JsonResponse(['error' => (string) $errors], JsonResponse::HTTP_BAD_REQUEST);
+            return new JsonResponse(
+                ['error' => (string) $errors],
+                JsonResponse::HTTP_BAD_REQUEST
+            );
         }
 
         $serviceVisitePetitTrain->setUpdatedAt(new DateTimeImmutable());
@@ -286,6 +589,31 @@ final class ServiceVisitePetitTrainController extends AbstractController
     }
 
     #[Route('/{id}', name: 'delete', methods: 'DELETE')]
+    #[OA\Delete(
+        path: "/api/serviceVisitePetitTrain/{id}",
+        summary: "Supprimer un Service visite petit train",
+        parameters: [
+            new OA\Parameter(
+                name: "id",
+                in: "path",
+                required: true,
+                description: "ID du Service visite petit train",
+                schema: new OA\Schema(
+                    type: "integer",
+                )
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 204,
+                description: "Service visite petit train supprimé avec succès",
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Service visite petit train non trouvé",
+            )
+        ]
+    )]
     public function delete(int $id): JsonResponse
     {
         $serviceVisitePetitTrain = $this->repository->findOneBy(['id' => $id]);

@@ -13,7 +13,6 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 use OpenApi\Attributes as OA;
@@ -160,18 +159,8 @@ final class RapportVeterinaireController extends AbstractController
     public function new(
         Request $request,
         Security $security,
-        EntityManagerInterface $manager,
-        CsrfTokenManagerInterface $csrfTokenManager
+        EntityManagerInterface $manager
     ): JsonResponse {
-        //Utiliser un jeton CSRF
-        // $csrfToken = $request->headers->get('X-CSRF-TOKEN');
-        // if (!$csrfTokenManager->isTokenValid(new CsrfToken('registration', $csrfToken))) {
-        //     return new JsonResponse(
-        //         ['error' => 'Invalid CSRF token'],
-        //         Response::HTTP_FORBIDDEN
-        //     );
-        // }
-
         // Récupérer l'utilisateur actuellement connecté
         $user = $security->getUser();
 
@@ -184,14 +173,18 @@ final class RapportVeterinaireController extends AbstractController
         }
 
         // Désérialisation du JSON reçu dans un objet RapportVeterinaire
-        $rapportVeterinaire = $this->serializer->deserialize(
-            $request->getContent(),
-            RapportVeterinaire::class,
-            'json',
-            ['groups' => ['rapportVeterinaire:write']] // Appliquer le groupe d'écriture
-        );
+        $rapportVeterinaire = $this->serializer
+            ->deserialize(
+                $request->getContent(),
+                RapportVeterinaire::class,
+                'json',
+                ['groups' => ['rapportVeterinaire:write']] // Appliquer le groupe d'écriture
+            );
 
-        $data = json_decode($request->getContent(), true);
+        $data = json_decode(
+            $request->getContent(),
+            true
+        );
 
         $rapportVeterinaire->setDate(new \DateTimeImmutable($data['date'] ?? 'now'));
         $rapportVeterinaire->setEtat($data['etat'] ?? null);
@@ -201,7 +194,9 @@ final class RapportVeterinaireController extends AbstractController
 
         // Assigner l'animal au rapport vétérinaire
         if (isset($data['animal'])) {
-            $animal = $manager->getRepository(Animal::class)->find($data['animal']);
+            $animal = $manager
+                ->getRepository(Animal::class)
+                ->find($data['animal']);
             if ($animal) {
                 $rapportVeterinaire->setAnimal($animal);
             } else {
@@ -221,18 +216,20 @@ final class RapportVeterinaireController extends AbstractController
         $this->manager->flush();
 
         // Sérialiser l'objet pour renvoyer une réponse JSON
-        $responseData = $this->serializer->serialize(
-            $rapportVeterinaire,
-            'json',
-            ['groups' => ['rapport:read']] // Appliquer le groupe de lecture pour la réponse
-        );
+        $responseData = $this->serializer
+            ->serialize(
+                $rapportVeterinaire,
+                'json',
+                ['groups' => ['rapport:read']] // Appliquer le groupe de lecture pour la réponse
+            );
 
         // Générer l'URL pour accéder au rapport créé
-        $location = $this->urlGenerator->generate(
-            'app_api_rapportVeterinaire_show',
-            ['id' => $rapportVeterinaire->getId()],
-            UrlGeneratorInterface::ABSOLUTE_URL,
-        );
+        $location = $this->urlGenerator
+            ->generate(
+                'app_api_rapportVeterinaire_show',
+                ['id' => $rapportVeterinaire->getId()],
+                UrlGeneratorInterface::ABSOLUTE_URL,
+            );
 
         // Retourner une réponse JSON
         return new JsonResponse(
@@ -249,7 +246,7 @@ final class RapportVeterinaireController extends AbstractController
     #[OA\Get(
         path: "/api/rapportVeterinaire/{id}",
         summary: "Afficher un rapport vétérinaire",
-        description: "Afficher les détails d'un rapport vétérinaire via son ID",
+        description: "Afficher un rapport vétérinaire via son ID",
         parameters: [
             new OA\Parameter(
                 name: "id",
@@ -264,7 +261,7 @@ final class RapportVeterinaireController extends AbstractController
         responses: [
             new OA\Response(
                 response: 200,
-                description: "Détails du rapport vétérinaire",
+                description: "Rapport vétérinaire",
                 content: new OA\MediaType(
                     mediaType: "application/json",
                     schema: new OA\Schema(
@@ -346,11 +343,12 @@ final class RapportVeterinaireController extends AbstractController
 
         // Si le rapport existe, on le sérialise et on retourne une réponse JSON
         if ($rapportVeterinaire) {
-            $responseData = $this->serializer->serialize(
-                $rapportVeterinaire,
-                'json',
-                ['groups' => 'rapport:read']
-            );
+            $responseData = $this->serializer
+                ->serialize(
+                    $rapportVeterinaire,
+                    'json',
+                    ['groups' => 'rapport:read']
+                );
             return new JsonResponse(
                 $responseData,
                 Response::HTTP_OK,
@@ -475,7 +473,8 @@ final class RapportVeterinaireController extends AbstractController
         Request $request
     ): JsonResponse {
         // Recherche du rapport vétérinaire existant
-        $rapportVeterinaire = $this->repository->findOneBy(['id' => $id]);
+        $rapportVeterinaire = $this->repository
+            ->findOneBy(['id' => $id]);
 
         if (!$rapportVeterinaire) {
             return new JsonResponse(
@@ -516,7 +515,9 @@ final class RapportVeterinaireController extends AbstractController
 
         // Mise à jour de l'animal si précisé dans la requête
         if (isset($data['animal'])) {
-            $animal = $this->manager->getRepository(Animal::class)->find($data['animal']);
+            $animal = $this->manager
+                ->getRepository(Animal::class)
+                ->find($data['animal']);
             if ($animal) {
                 $rapportVeterinaire->setAnimal($animal);
             } else {
@@ -534,11 +535,12 @@ final class RapportVeterinaireController extends AbstractController
         $this->manager->flush();
 
         // Sérialisation avec les groupes de lecture
-        $responseData = $this->serializer->serialize(
-            $rapportVeterinaire,
-            'json',
-            ['groups' => ['rapport:read']]
-        );
+        $responseData = $this->serializer
+            ->serialize(
+                $rapportVeterinaire,
+                'json',
+                ['groups' => ['rapport:read']]
+            );
 
         return new JsonResponse(
             $responseData,
@@ -580,10 +582,17 @@ final class RapportVeterinaireController extends AbstractController
     public function delete(int $id): JsonResponse
     {
         // Recherche du rapport vétérinaire à supprimer
-        $rapportVeterinaire = $this->repository->findOneBy(['id' => $id]);
+        $rapportVeterinaire = $this->repository
+            ->findOneBy(['id' => $id]);
 
         // Vérification si l'utilisateur a l'un des rôles requis
-        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_VETERINAIRE')) {
+        if (
+            !$this
+                ->isGranted('ROLE_ADMIN')
+            &&
+            !$this
+                ->isGranted('ROLE_VETERINAIRE')
+        ) {
             return new JsonResponse(
                 ['message' => 'Accès réfusé'],
                 Response::HTTP_FORBIDDEN
@@ -614,7 +623,7 @@ final class RapportVeterinaireController extends AbstractController
     #[OA\Get(
         path: "/api/rapportVeterinaire/api/rapports",
         summary: 'Liste des rapports vétérinaires avec pagination et filtrage',
-        description: 'Récupérer une liste paginée des rapports vétérinaires avec des filtres'
+        description: 'Liste paginée des rapports vétérinaires avec des filtres'
     )]
     #[OA\Parameter(
         name: 'page',
@@ -647,7 +656,7 @@ final class RapportVeterinaireController extends AbstractController
     )]
     #[OA\Response(
         response: 200,
-        description: 'Réponse avec la liste paginée des rapports vétérinaires',
+        description: 'La liste paginée des rapports vétérinaires',
         content: new OA\JsonContent(
             type: 'object',
             properties: [
@@ -765,7 +774,8 @@ final class RapportVeterinaireController extends AbstractController
         $animalFilter = $request->query->get('animal');
 
         // Création de la requête avec jointure sur Animal
-        $queryBuilder = $this->manager->getRepository(RapportVeterinaire::class)
+        $queryBuilder = $this->manager
+            ->getRepository(RapportVeterinaire::class)
             ->createQueryBuilder('a')
             ->leftJoin('a.animal', 'animal') // Jointure avec l'entité Animal
             ->addSelect('animal'); // Sélectionner aussi les données de l'animal
@@ -798,7 +808,8 @@ final class RapportVeterinaireController extends AbstractController
             $updatedAt = $rapportVeterinaire->getUpdatedAt(); // Récupération de updatedAt
             return [
                 'id' => $rapportVeterinaire->getId(),
-                'date' => $rapportVeterinaire->getDate()->format("d-m-Y"),
+                'date' => $rapportVeterinaire->getDate()
+                    ->format("d-m-Y"),
                 'etat' => $rapportVeterinaire->getEtat(),
                 'nourriture proposee' => $rapportVeterinaire->getNourritureProposee(),
                 'quantite nourriture' => $rapportVeterinaire->getquantiteNourriture(),
@@ -819,7 +830,8 @@ final class RapportVeterinaireController extends AbstractController
             'totalItems' => $pagination->getTotalItemCount(),
             'itemsPerPage' => $pagination->getItemNumberPerPage(),
             'totalPages' => ceil(
-                $pagination->getTotalItemCount() / $pagination->getItemNumberPerPage()
+                $pagination->getTotalItemCount() / $pagination
+                    ->getItemNumberPerPage()
             ),
             'items' => $items, // Les éléments paginés formatés
         ];

@@ -13,7 +13,6 @@ use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
-use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Http\Attribute\{CurrentUser, IsGranted};
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -139,19 +138,9 @@ class SecurityController extends AbstractController
     public function register(
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
-        CsrfTokenManagerInterface $csrfTokenManager,
         ValidatorInterface $validator,
         LoggerInterface $logger
     ): JsonResponse {
-        //Utiliser un jeton CSRF
-        // $csrfToken = $request->headers->get('X-CSRF-TOKEN');
-        // if (!$csrfTokenManager->isTokenValid(new CsrfToken('registration', $csrfToken))) {
-        //     return new JsonResponse(
-        //         ['error' => 'Invalid CSRF token'],
-        //         Response::HTTP_FORBIDDEN
-        //     );
-        // }
-
         // Désérialisation de l'utilisateur depuis le contenu de la requête
         $user = $this->serializer->deserialize(
             $request->getContent(),
@@ -164,15 +153,22 @@ class SecurityController extends AbstractController
         if (count($errors) > 0) {
             $errorMessages = [];
             foreach ($errors as $error) {
-                $errorMessages[$error->getPropertyPath()] = $error->getMessage();
+                $errorMessages[$error->getPropertyPath()]
+                    =
+                    $error->getMessage();
             }
-            return new JsonResponse(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(
+                ['errors' => $errorMessages],
+                Response::HTTP_BAD_REQUEST
+            );
         }
 
         // Vérification de l'e-mail dans la base de donnée
-        $existingUser = $this->manager->getRepository(User::class)->findOneBy(
-            ['email' => $user->getEmail()]
-        );
+        $existingUser = $this->manager
+            ->getRepository(User::class)
+            ->findOneBy(
+                ['email' => $user->getEmail()]
+            );
         if ($existingUser) {
             return new JsonResponse(
                 ['error' => 'Email déjà utilisé'],
@@ -181,11 +177,16 @@ class SecurityController extends AbstractController
         }
 
         // Si l'utilisateur tente de créer un administrateur, vérifiez s'il existe déjà un administrateur
-        if (in_array("ROLE_ADMIN", $user->getRoles())) {
-            $existingAdmin = $this->manager->getRepository(User::class)->findOneByRole('ROLE_ADMIN');
+        if (in_array(
+            "ROLE_ADMIN",
+            $user->getRoles()
+        )) {
+            $existingAdmin = $this->manager
+                ->getRepository(User::class)
+                ->findOneByRole('ROLE_ADMIN');
             if ($existingAdmin) {
                 return new JsonResponse(
-                    ['error' => 'Un compte administrateur existe déjà. Un seul administrateur peut être créé.'],
+                    ['error' => 'Un compte administrateur existe déjà'],
                     Response::HTTP_FORBIDDEN
                 );
             }
@@ -206,7 +207,11 @@ class SecurityController extends AbstractController
 
         $logger->info(
             'New user registered',
-            ['email' => substr($user->getEmail(), 0, 3) . '***']
+            ['email' => substr(
+                $user->getEmail(),
+                0,
+                3
+            ) . '***']
         );
 
 
@@ -222,7 +227,11 @@ class SecurityController extends AbstractController
         );
     }
 
-    #[Route('/admin/create-user', name: 'admin_create_user', methods: 'POST')]
+    #[Route(
+        '/admin/create-user',
+        name: 'admin_create_user',
+        methods: 'POST'
+    )]
     #[IsGranted('ROLE_ADMIN')]
     #[OA\Post(
         path: "/api/admin/create-user",
@@ -333,40 +342,38 @@ class SecurityController extends AbstractController
     public function createUser(
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
-        CsrfTokenManagerInterface $csrfTokenManager,
         ValidatorInterface $validator,
         LoggerInterface $logger
     ): JsonResponse {
-        //Utiliser un jeton CSRF
-        // $csrfToken = $request->headers->get('X-CSRF-TOKEN');
-        // if (!$csrfTokenManager->isTokenValid(new CsrfToken('registration', $csrfToken))) {
-        //     return new JsonResponse(
-        //         ['error' => 'Invalid CSRF token'],
-        //         Response::HTTP_FORBIDDEN
-        //     );
-        // }
-
         // Désérialisation de l'utilisateur depuis le contenu de la requête
-        $user = $this->serializer->deserialize(
-            $request->getContent(),
-            User::class,
-            'json'
-        );
+        $user = $this->serializer
+            ->deserialize(
+                $request->getContent(),
+                User::class,
+                'json'
+            );
 
         // Validation des données
         $errors = $validator->validate($user);
         if (count($errors) > 0) {
             $errorMessages = [];
             foreach ($errors as $error) {
-                $errorMessages[$error->getPropertyPath()] = $error->getMessage();
+                $errorMessages[$error->getPropertyPath()]
+                    =
+                    $error->getMessage();
             }
-            return new JsonResponse(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(
+                ['errors' => $errorMessages],
+                Response::HTTP_BAD_REQUEST
+            );
         }
 
         // Vérification de l'existence d'un utilisateur avec cet email
-        $existingUser = $this->manager->getRepository(User::class)->findOneBy(
-            ['email' => $user->getEmail()]
-        );
+        $existingUser = $this->manager
+            ->getRepository(User::class)
+            ->findOneBy(
+                ['email' => $user->getEmail()]
+            );
         if ($existingUser) {
             return new JsonResponse(
                 ['error' => 'Cet email est déjà utlisé'],
@@ -376,10 +383,12 @@ class SecurityController extends AbstractController
 
         // Si l'utilisateur tente de créer un administrateur, vérifiez s'il existe déjà un administrateur
         if (in_array("ROLE_ADMIN", $user->getRoles())) {
-            $existingAdmin = $this->manager->getRepository(User::class)->findOneByRole('ROLE_ADMIN');
+            $existingAdmin = $this->manager
+                ->getRepository(User::class)
+                ->findOneByRole('ROLE_ADMIN');
             if ($existingAdmin) {
                 return new JsonResponse(
-                    ['error' => 'Un compte administrateur existe déjà. Un seul administrateur peut être créé.'],
+                    ['error' => 'Un compte administrateur existe déjà'],
                     Response::HTTP_FORBIDDEN
                 );
             }
@@ -400,7 +409,11 @@ class SecurityController extends AbstractController
 
         $logger->info(
             'New user registered',
-            ['email' => substr($user->getEmail(), 0, 3) . '***']
+            ['email' => substr(
+                $user->getEmail(),
+                0,
+                3
+            ) . '***']
         );
 
 
@@ -483,7 +496,7 @@ class SecurityController extends AbstractController
     ): JsonResponse {
         if (null === $user) {
             $logger->warning(
-                'Tentative de connexion avec des identifiants manquants.'
+                'Un identifiants manquants'
             );
             return $this->json(
                 [
@@ -513,11 +526,11 @@ class SecurityController extends AbstractController
     #[Route('/account/me', name: 'me', methods: 'GET')]
     #[OA\Get(
         path: "/api/account/me",
-        summary: "Récupérer toutes les informations de l'objet User",
+        summary: "Les informations de l'objet User",
         responses: [
             new OA\Response(
                 response: 201,
-                description: "Afficher tous les champs de l'utilisateur",
+                description: "Les champs de l'utilisateur",
                 content: new OA\MediaType(
                     mediaType: "application/json",
                     schema: new OA\Schema(
@@ -567,20 +580,21 @@ class SecurityController extends AbstractController
     {
         $user = $this->getUser();
 
-        $responseData = $this->serializer->serialize(
-            $user,
-            'json',
-            [
-                AbstractNormalizer::ATTRIBUTES => [
-                    'id',
-                    'email',
-                    'roles',
-                    'username',
-                    'nom',
-                    'prenom'
+        $responseData = $this->serializer
+            ->serialize(
+                $user,
+                'json',
+                [
+                    AbstractNormalizer::ATTRIBUTES => [
+                        'id',
+                        'email',
+                        'roles',
+                        'username',
+                        'nom',
+                        'prenom'
+                    ]
                 ]
-            ]
-        );
+            );
 
         return new JsonResponse(
             $responseData,
@@ -593,10 +607,10 @@ class SecurityController extends AbstractController
     #[Route('/account/edit', name: 'edit', methods: 'PUT')]
     #[OA\Put(
         path: "/api/account/edit",
-        summary: "Modifier son compte utilisateur avec l'un ou tous les champs",
+        summary: "Modifier son compte",
         requestBody: new OA\RequestBody(
             required: true,
-            description: "Nouvelles données éventuelles de l'utilisateur à mettre à jour",
+            description: "Données à mettre à jour",
             content: new OA\MediaType(
                 mediaType: "application/json",
                 schema: new OA\Schema(
@@ -689,26 +703,16 @@ class SecurityController extends AbstractController
     )]
     public function edit(
         Request $request,
-        CsrfTokenManagerInterface $csrfTokenManager,
         LoggerInterface $logger
     ): JsonResponse {
-
-        // Récupération et validation du jeton CSRF
-        // $csrfToken = $request->headers->get('X-CSRF-TOKEN');
-        // if (!$csrfTokenManager->isTokenValid(new CsrfToken('edit_account', $csrfToken))) {
-        //     return new JsonResponse(
-        //         ['error' => 'Invalid CSRF token'],
-        //         Response::HTTP_FORBIDDEN
-        //     );
-        // }
-
         //Désérialisation des données de la requête pour mettre à jour l'utilisateur
-        $user = $this->serializer->deserialize(
-            $request->getContent(),
-            User::class,
-            'json',
-            [AbstractNormalizer::OBJECT_TO_POPULATE => $this->getUser()],
-        );
+        $user = $this->serializer
+            ->deserialize(
+                $request->getContent(),
+                User::class,
+                'json',
+                [AbstractNormalizer::OBJECT_TO_POPULATE => $this->getUser()],
+            );
         $user->setUpdatedAt(new \DateTimeImmutable());
 
         // Vérification si l'utilisateur tente de modifier ses rôles
@@ -722,11 +726,19 @@ class SecurityController extends AbstractController
 
         // Hachage du mot de passe si modifié
         if (isset($request->toArray()['password'])) {
-            $user->setPassword($this->passwordHasher->hashPassword($user, $user->getPassword()));
+            $user->setPassword(
+                $this->passwordHasher
+                    ->hashPassword(
+                        $user,
+                        $user->getPassword()
+                    )
+            );
         }
 
         if (in_array('ROLE_ADMIN', $user->getRoles())) {
-            $existingAdmin = $this->manager->getRepository(User::class)->findOneByRole('ROLE_ADMIN');
+            $existingAdmin = $this->manager
+                ->getRepository(User::class)
+                ->findOneByRole('ROLE_ADMIN');
             if ($existingAdmin) {
                 return new JsonResponse(
                     ['error' => 'Un compte administrateur existe déjà.'],
@@ -737,21 +749,25 @@ class SecurityController extends AbstractController
 
         $this->manager->flush();
 
-        $logger->info('New user registered', ['email' => $user->getEmail()]);
+        $logger->info(
+            'Nouvelle utilisateur enregistrer',
+            ['email' => $user->getEmail()]
+        );
 
         // Retourner la réponse JSON avec les informations mises à jour
-        $responseData = $this->serializer->serialize(
-            $user,
-            'json',
-            [
-                AbstractNormalizer::ATTRIBUTES => [
-                    'id',
-                    'email',
-                    'username',
-                    'roles'
+        $responseData = $this->serializer
+            ->serialize(
+                $user,
+                'json',
+                [
+                    AbstractNormalizer::ATTRIBUTES => [
+                        'id',
+                        'email',
+                        'username',
+                        'roles'
+                    ]
                 ]
-            ]
-        );
+            );
 
         return new JsonResponse(
             $responseData,
@@ -761,12 +777,16 @@ class SecurityController extends AbstractController
         );
     }
 
-    #[Route('/admin/reset-password/{username}', name: 'admin_reset_password', methods: 'POST')]
+    #[Route(
+        '/admin/reset-password/{username}',
+        name: 'admin_reset_password',
+        methods: 'POST'
+    )]
     #[IsGranted('ROLE_ADMIN')]
     #[OA\Post(
         path: "/api/admin/reset-password/{username}",
         summary: "Réinitialisation du mot de passe d'un utilisateur",
-        description: "Permet de réinitialiser le mot de passe d'un utilisateur
+        description: "Réinitialisation du mot de passe d'un utilisateur
             et de lui envoyer un nouveau mot de passe par email",
         parameters: [
             new OA\Parameter(
@@ -897,8 +917,48 @@ class SecurityController extends AbstractController
     }
 
     //le Dashboard pour visualiser quels animaux qui plaisent le plus
-    #[Route('/admin/dashboardAnimal', name: 'dashboardAnimal', methods: 'GET')]
+    #[Route(
+        '/admin/dashboardAnimal',
+        name: 'dashboardAnimal',
+        methods: 'GET'
+    )]
     #[IsGranted('ROLE_ADMIN')]
+    #[OA\Get(
+        path: "/api/admin/dashboardAnimal",
+        summary: "Visualiser les animaux les plus populaires",
+        description: "Retourne la liste des animaux triés en fonction du nombre de consultations",
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Liste des animaux triée par popularité",
+                content: new OA\JsonContent(
+                    type: 'array',
+                    items: new OA\Items(
+                        properties: [
+                            new OA\Property(
+                                property: 'nom',
+                                type: 'string',
+                                description: "Nom de l'animal"
+                            ),
+                            new OA\Property(
+                                property: 'consultations',
+                                type: 'integer',
+                                description: "Nombre de consultations"
+                            )
+                        ]
+                    )
+                )
+            ),
+            new OA\Response(
+                response: 403,
+                description: "Accès refusé"
+            ),
+            new OA\Response(
+                response: 500,
+                description: "Erreur serveur"
+            )
+        ]
+    )]
     public function dashboardAnimal(
         ConsultationService $consultationService
     ): JsonResponse {

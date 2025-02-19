@@ -11,10 +11,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use OpenApi\Attributes as OA;
 
 #[Route('api/serviceRestaurant', name: 'app_api_serviceRestaurant_')]
 final class ServiceRestaurantController extends AbstractController
@@ -26,6 +26,111 @@ final class ServiceRestaurantController extends AbstractController
         private UrlGeneratorInterface $urlGenerator
     ) {}
     #[Route(name: 'new', methods: 'POST')]
+    #[OA\Post(
+        path: "/api/serviceRestaurant",
+        summary: "Créer un service restaurant",
+        requestBody: new OA\RequestBody(
+            required: true,
+            description: "Données du service restaurant",
+            content: new OA\MediaType(
+                mediaType: "application/json",
+                schema: new OA\Schema(
+                    type: "object",
+                    required: [
+                        "nom",
+                        "description",
+                        "heureService",
+                        "service"
+                    ],
+                    properties: [
+                        new OA\Property(
+                            property: "nom",
+                            type: "string",
+                            example: "Bamba"
+                        ),
+                        new OA\Property(
+                            property: "description",
+                            type: "string",
+                            example: "Sain"
+                        ),
+                        new OA\Property(
+                            property: "heureService",
+                            type: "string",
+                            example: "09:00 - 20:00"
+                        ),
+                        new OA\Property(
+                            property: "service",
+                            type: "interger",
+                            example: 1
+                        )
+                    ]
+                )
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: "Service restaurant créer avec succès",
+                content: new OA\MediaType(
+                    mediaType: "application/json",
+                    schema: new OA\Schema(
+                        type: "object",
+                        properties: [
+                            new OA\Property(
+                                property: "id",
+                                type: "integer",
+                                example: 1
+                            ),
+                            new OA\Property(
+                                property: "nom",
+                                type: "string",
+                                example: "Bamba"
+                            ),
+                            new OA\Property(
+                                property: "description",
+                                type: "string",
+                                example: "Sain"
+                            ),
+                            new OA\Property(
+                                property: "service",
+                                type: "object",
+                                description: "Service associé",
+                                properties: [
+                                    new OA\Property(
+                                        property: "id",
+                                        type: "integer",
+                                        example: 3
+                                    ),
+                                    new OA\Property(
+                                        property: "nom",
+                                        type: "string",
+                                        example: "Nettoyage des cages"
+                                    ),
+                                    new OA\Property(
+                                        property: "description",
+                                        type: "string",
+                                        example: "Nettoyage quotidien des cages des animaux"
+                                    )
+                                ]
+                            ),
+                            new OA\Property(
+                                property: "heureService",
+                                type: "string",
+                                example: "10:00 - 18:00"
+                            ),
+                            new OA\Property(
+                                property: "createdAt",
+                                type: "string",
+                                format: "date-time",
+                                description: "Date de création",
+                                example: "18-02-2025 18:53:08"
+                            )
+                        ]
+                    )
+                )
+            )
+        ]
+    )]
     public function new(
         Request $request,
         ValidatorInterface $validator
@@ -111,11 +216,12 @@ final class ServiceRestaurantController extends AbstractController
         }
 
         // Désérialisation de l'objet ServiceRestaurant
-        $serviceRestaurant = $this->serializer->deserialize(
-            $request->getContent(),
-            ServiceRestaurant::class,
-            'json'
-        );
+        $serviceRestaurant = $this->serializer
+            ->deserialize(
+                $request->getContent(),
+                ServiceRestaurant::class,
+                'json'
+            );
 
         // Associer le Service récupéré
         $serviceRestaurant->setService($service);
@@ -140,11 +246,12 @@ final class ServiceRestaurantController extends AbstractController
         $this->manager->persist($serviceRestaurant);
         $this->manager->flush();
 
-        $responseData = $this->serializer->serialize(
-            $serviceRestaurant,
-            'json',
-            ['groups' => 'service_restaurant:read']
-        );
+        $responseData = $this->serializer
+            ->serialize(
+                $serviceRestaurant,
+                'json',
+                ['groups' => 'service_restaurant:read']
+            );
 
         // Convertir les heures en chaîne formatée sans la date
         $serviceRestaurantArray = json_decode(
@@ -192,20 +299,106 @@ final class ServiceRestaurantController extends AbstractController
     }
 
     #[Route('/{id}', name: 'show', methods: 'GET')]
+    #[OA\Get(
+        path: "/api/serviceRestaurant/{id}",
+        summary: "Afficher un service restaurant par son ID",
+        parameters: [
+            new OA\Parameter(
+                name: "id",
+                in: "path",
+                required: true,
+                description: "ID du service restaurant à afficher",
+                schema: new OA\Schema(
+                    type: "integer"
+                )
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Service restaurant trouvé avec succès",
+                content: new OA\MediaType(
+                    mediaType: "application/json",
+                    schema: new OA\Schema(
+                        type: "object",
+                        properties: [
+                            new OA\Property(
+                                property: "id",
+                                type: "integer",
+                                example: 1
+                            ),
+                            new OA\Property(
+                                property: "nom",
+                                type: "string",
+                                example: "Bamba"
+                            ),
+                            new OA\Property(
+                                property: "description",
+                                type: "string",
+                                example: "Sain"
+                            ),
+                            new OA\Property(
+                                property: "service",
+                                type: "object",
+                                description: "Service associé",
+                                properties: [
+                                    new OA\Property(
+                                        property: "id",
+                                        type: "integer",
+                                        example: 3
+                                    ),
+                                    new OA\Property(
+                                        property: "nom",
+                                        type: "string",
+                                        example: "Nettoyage des cages"
+                                    ),
+                                    new OA\Property(
+                                        property: "description",
+                                        type: "string",
+                                        example: "Nettoyage quotidien des cages des animaux"
+                                    )
+                                ]
+                            ),
+                            new OA\Property(
+                                property: "heureService",
+                                type: "string",
+                                example: "10:00 - 18:00"
+                            ),
+                            new OA\Property(
+                                property: "createdAt",
+                                type: "string",
+                                format: "date-time",
+                                description: "Date de création",
+                                example: "18-02-2025 18:53:08"
+                            )
+                        ]
+                    )
+                )
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Service restaurant non trouvé"
+            )
+        ]
+    )]
     public function show(int $id): JsonResponse
     {
         $serviceRestaurant = $this->repository->findOneBy(['id' => $id]);
 
         if ($serviceRestaurant) {
             // Sérialisation des données du ServiceRestaurant, mais sans les champs heureDebut et heureFin
-            $responseData = $this->serializer->serialize(
-                $serviceRestaurant,
-                'json',
-                ['groups' => 'service_restaurant:read']
-            );
+            $responseData = $this->serializer
+                ->serialize(
+                    $serviceRestaurant,
+                    'json',
+                    ['groups' => 'service_restaurant:read']
+                );
 
             // Convertir les données sérialisées en tableau
-            $serviceRestaurantArray = json_decode($responseData, true);
+            $serviceRestaurantArray = json_decode(
+                $responseData,
+                true
+            );
 
             // Créer 'heureService' en combinant heureDebut et heureFin
             $heureService = $serviceRestaurant
@@ -248,6 +441,126 @@ final class ServiceRestaurantController extends AbstractController
     }
 
     #[Route('/{id}', name: 'edit', methods: 'PUT')]
+    #[OA\Put(
+        path: "/api/serviceRestaurant/{id}",
+        summary: "Modifier un service restaurant par son ID",
+        parameters: [
+            new OA\Parameter(
+                name: "id",
+                in: "path",
+                required: true,
+                description: "ID du service restaurant à modifier",
+                schema: new OA\Schema(
+                    type: "integer"
+                )
+            )
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            description: "Données du service restaurant à modifier",
+            content: new OA\MediaType(
+                mediaType: "application/json",
+                schema: new OA\Schema(
+                    type: "object",
+                    required: [
+                        "nom",
+                        "description",
+                        "heureService",
+                        "service"
+                    ],
+                    properties: [
+                        new OA\Property(
+                            property: "nom",
+                            type: "string",
+                            example: "Bamba"
+                        ),
+                        new OA\Property(
+                            property: "description",
+                            type: "string",
+                            example: "Sain"
+                        ),
+                        new OA\Property(
+                            property: "heureService",
+                            type: "string",
+                            example: "09:00 - 20:00"
+                        ),
+                        new OA\Property(
+                            property: "service",
+                            type: "interger",
+                            example: 1
+                        )
+                    ]
+                )
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: "Service restaurant créer avec succès",
+                content: new OA\MediaType(
+                    mediaType: "application/json",
+                    schema: new OA\Schema(
+                        type: "object",
+                        properties: [
+                            new OA\Property(
+                                property: "id",
+                                type: "integer",
+                                example: 1
+                            ),
+                            new OA\Property(
+                                property: "nom",
+                                type: "string",
+                                example: "Bamba"
+                            ),
+                            new OA\Property(
+                                property: "description",
+                                type: "string",
+                                example: "Sain"
+                            ),
+                            new OA\Property(
+                                property: "service",
+                                type: "object",
+                                description: "Service associé",
+                                properties: [
+                                    new OA\Property(
+                                        property: "id",
+                                        type: "integer",
+                                        example: 3
+                                    ),
+                                    new OA\Property(
+                                        property: "nom",
+                                        type: "string",
+                                        example: "Nettoyage des cages"
+                                    ),
+                                    new OA\Property(
+                                        property: "description",
+                                        type: "string",
+                                        example: "Nettoyage quotidien des cages des animaux"
+                                    )
+                                ]
+                            ),
+                            new OA\Property(
+                                property: "heureService",
+                                type: "string",
+                                example: "10:00 - 18:00"
+                            ),
+                            new OA\Property(
+                                property: "updatedAt",
+                                type: "string",
+                                format: "date-time",
+                                description: "Date de création",
+                                example: "18-02-2025 18:53:08"
+                            )
+                        ]
+                    )
+                )
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Service restaurant non trouvé"
+            )
+        ]
+    )]
     public function edit(
         int $id,
         Request $request,
@@ -270,7 +583,10 @@ final class ServiceRestaurantController extends AbstractController
             );
         }
 
-        $data = json_decode($request->getContent(), true);
+        $data = json_decode(
+            $request->getContent(),
+            true
+        );
 
         if (!isset($data['service'])) {
             return new JsonResponse(
@@ -349,11 +665,12 @@ final class ServiceRestaurantController extends AbstractController
         $this->manager->flush();
 
         // Sérialiser l'entité
-        $modify = $this->serializer->serialize(
-            $serviceRestaurant,
-            'json',
-            ['groups' => 'service_restaurant:read']
-        );
+        $modify = $this->serializer
+            ->serialize(
+                $serviceRestaurant,
+                'json',
+                ['groups' => 'service_restaurant:read']
+            );
 
         // Transformer en tableau pour manipulation
         $serviceRestaurantArray = json_decode($modify, true);
@@ -389,6 +706,31 @@ final class ServiceRestaurantController extends AbstractController
     }
 
     #[Route('/{id}', name: 'delete', methods: 'DELETE')]
+    #[OA\Delete(
+        path: "/api/serviceRestaurant/{id}",
+        summary: "Suppression du service restaurant",
+        parameters: [
+            new OA\Parameter(
+                name: "id",
+                in: "path",
+                required: true,
+                description: "ID du service restaurant à supprimer",
+                schema: new OA\Schema(
+                    type: "integer"
+                )
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 204,
+                description: "Service restaurant supprimer avec succès",
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Service restaurant non trouvé"
+            )
+        ]
+    )]
     public function delete(int $id): JsonResponse
     {
         $serviceRestaurant = $this->repository->findOneBy(['id' => $id]);

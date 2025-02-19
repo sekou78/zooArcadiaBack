@@ -32,13 +32,18 @@ final class ServiceAnimauxController extends AbstractController
     #[OA\Post(
         path: '/api/serviceAnimaux',
         summary: 'Créer un service animal',
-        description: 'Créer un nouveau service pour un animal',
+        description: 'Créer un service pour un animal',
         requestBody: new OA\RequestBody(
             content: new OA\MediaType(
                 mediaType: 'application/json',
                 schema: new OA\Schema(
                     type: 'object',
-                    required: ['nom', 'description', 'nourriture', 'quantite'],
+                    required: [
+                        'nom',
+                        'description',
+                        'nourriture',
+                        'quantite'
+                    ],
                     properties: [
                         new OA\Property(
                             property: 'nom',
@@ -139,18 +144,8 @@ final class ServiceAnimauxController extends AbstractController
     )]
     public function new(
         Request $request,
-        Security $security,
-        CsrfTokenManagerInterface $csrfTokenManager
+        Security $security
     ): JsonResponse {
-        //Utiliser un jeton CSRF
-        // $csrfToken = $request->headers->get('X-CSRF-TOKEN');
-        // if (!$csrfTokenManager->isTokenValid(new CsrfToken('registration', $csrfToken))) {
-        //     return new JsonResponse(
-        //         ['error' => 'Invalid CSRF token'],
-        //         Response::HTTP_FORBIDDEN
-        //     );
-        // }
-
         // Récupérer l'utilisateur actuellement connecté
         $user = $security->getUser();
 
@@ -188,11 +183,12 @@ final class ServiceAnimauxController extends AbstractController
             ['groups' => ['service_animaux_read']]
         );
 
-        $location = $this->urlGenerator->generate(
-            'app_api_service_show',
-            ['id' => $serviceAnimal->getId()],
-            UrlGeneratorInterface::ABSOLUTE_URL
-        );
+        $location = $this->urlGenerator
+            ->generate(
+                'app_api_service_show',
+                ['id' => $serviceAnimal->getId()],
+                UrlGeneratorInterface::ABSOLUTE_URL
+            );
 
         return new JsonResponse(
             // ['message' => 'Service Animal registered successfully']
@@ -291,14 +287,19 @@ final class ServiceAnimauxController extends AbstractController
     )]
     public function show(int $id): JsonResponse
     {
-        $serviceAnimal = $this->repository->findOneBy(['id' => $id]);
+        $serviceAnimal = $this->repository
+            ->findOneBy(['id' => $id]);
 
         if ($serviceAnimal) {
-            $responseData = $this->serializer->serialize(
-                $serviceAnimal,
-                'json',
-                ['groups' => ['service_animaux_read', 'user_read']]
-            );
+            $responseData = $this->serializer
+                ->serialize(
+                    $serviceAnimal,
+                    'json',
+                    ['groups' => [
+                        'service_animaux_read',
+                        'user_read'
+                    ]]
+                );
 
             return new JsonResponse(
                 $responseData,
@@ -319,7 +320,7 @@ final class ServiceAnimauxController extends AbstractController
     #[OA\Put(
         path: '/api/serviceAnimaux/{id}',
         summary: 'Modifier un service pour un animal',
-        description: "Mettre à jour les informations d'un service animal",
+        description: "Mettre à jour un service animal",
         parameters: [
             new OA\Parameter(
                 name: 'id',
@@ -336,7 +337,12 @@ final class ServiceAnimauxController extends AbstractController
                 mediaType: 'application/json',
                 schema: new OA\Schema(
                     type: 'object',
-                    required: ['nom', 'description', 'nourriture', 'quantite'],
+                    required: [
+                        'nom',
+                        'description',
+                        'nourriture',
+                        'quantite'
+                    ],
                     properties: [
                         new OA\Property(
                             property: "id",
@@ -382,7 +388,7 @@ final class ServiceAnimauxController extends AbstractController
         responses: [
             new OA\Response(
                 response: 200,
-                description: "Service animal mis à jour avec succès",
+                description: "Service mis à jour avec succès",
                 content: new OA\MediaType(
                     mediaType: "application/json",
                     schema: new OA\Schema(
@@ -472,7 +478,10 @@ final class ServiceAnimauxController extends AbstractController
         $serviceAnimal = $this->repository->findOneBy(['id' => $id]);
 
         if ($serviceAnimal) {
-            $data = json_decode($request->getContent(), true);
+            $data = json_decode(
+                $request->getContent(),
+                true
+            );
 
             // Mise à jour des informations
             $serviceAnimal->setNomAnimal($data['nom'] ?? null);
@@ -485,11 +494,15 @@ final class ServiceAnimauxController extends AbstractController
 
             $this->manager->flush();
 
-            $modify = $this->serializer->serialize(
-                $serviceAnimal,
-                'json',
-                ['groups' => ['service_animaux_read', 'user_read']]
-            );
+            $modify = $this->serializer
+                ->serialize(
+                    $serviceAnimal,
+                    'json',
+                    ['groups' => [
+                        'service_animaux_read',
+                        'user_read'
+                    ]]
+                );
 
             return new JsonResponse(
                 // ['message' => 'Service Animal modify successfully']

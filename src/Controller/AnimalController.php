@@ -218,7 +218,11 @@ final class AnimalController extends AbstractController
         $animal = $this->repository->findOneBy(['id' => $id]);
 
         if ($animal) {
-            $responseData = $this->serializer->serialize($animal, 'json');
+            $responseData = $this->serializer
+                ->serialize(
+                    $animal,
+                    'json'
+                );
 
             return new JsonResponse(
                 $responseData,
@@ -333,8 +337,10 @@ final class AnimalController extends AbstractController
             )
         ]
     )]
-    public function edit(int $id, Request $request): JsonResponse
-    {
+    public function edit(
+        int $id,
+        Request $request
+    ): JsonResponse {
         $animal = $this->repository->findOneBy(['id' => $id]);
 
         if ($animal) {
@@ -349,7 +355,11 @@ final class AnimalController extends AbstractController
 
             $this->manager->flush();
 
-            $modify = $this->serializer->serialize($animal, 'json');
+            $modify = $this->serializer
+                ->serialize(
+                    $animal,
+                    'json'
+                );
 
             return new JsonResponse(
                 $modify,
@@ -636,7 +646,9 @@ final class AnimalController extends AbstractController
         $avisFilter = $request->query->get('avis');
 
         // Création de la requête pour récupérer tous les animaux
-        $queryBuilder = $this->manager->getRepository(Animal::class)->createQueryBuilder('a');
+        $queryBuilder = $this->manager
+            ->getRepository(Animal::class)
+            ->createQueryBuilder('a');
 
         // Appliquer le filtre sur 'firstname' si le paramètre est présent
         if ($firstnameFilter) {
@@ -695,12 +707,20 @@ final class AnimalController extends AbstractController
                         'id' => $rapportVeterinaire->getVeterinaire()->getId(),
                         'nom' => $rapportVeterinaire->getVeterinaire()->getNom(),
                     ] : null,
-                    'date' => $rapportVeterinaire->getDate()->format("d-m-Y"),
-                    'etat' => $rapportVeterinaire->getEtat(),
-                    'nourriture proposee' => $rapportVeterinaire->getNourritureProposee(),
-                    'quantite nourriture' => $rapportVeterinaire->getQuantiteNourriture(),
-                    'commentaire habitat' => $rapportVeterinaire->getCommentaireHabitat(),
-                    'createdAt' => $rapportVeterinaire->getCreatedAt()->format("d-m-Y"),
+                    'date' => $rapportVeterinaire
+                        ->getDate()
+                        ->format("d-m-Y"),
+                    'etat' => $rapportVeterinaire
+                        ->getEtat(),
+                    'nourriture proposee' => $rapportVeterinaire
+                        ->getNourritureProposee(),
+                    'quantite nourriture' => $rapportVeterinaire
+                        ->getQuantiteNourriture(),
+                    'commentaire habitat' => $rapportVeterinaire
+                        ->getCommentaireHabitat(),
+                    'createdAt' => $rapportVeterinaire
+                        ->getCreatedAt()
+                        ->format("d-m-Y"),
                     'updatedAt' =>
                     $rapportVeterinaire->getUpdatedAt() ? $rapportVeterinaire
                         ->getUpdatedAt()
@@ -711,23 +731,38 @@ final class AnimalController extends AbstractController
 
             return [
                 'id' => $animal->getId(),
-                'firstname' => $animal->getFirstname(),
-                'etat' => $animal->getEtat(),
-                'habitat' => $animal->getHabitat(),
-                'race' => $animal->getRace(),
+                'firstname' => $animal
+                    ->getFirstname(),
+                'etat' => $animal
+                    ->getEtat(),
+                'habitat' => $animal
+                    ->getHabitat(),
+                'race' => $animal
+                    ->getRace(),
                 'rapport veterinaires' => $rapportVeterinaireData,
-                'avis' => $animal->getAvis(),
-                'images' => $animal->getImages(),
-                'createdAt' => $animal->getCreatedAt()->format("d-m-Y"),
+                'avis' => $animal
+                    ->getAvis(),
+                'images' => $animal
+                    ->getImages(),
+                'createdAt' => $animal
+                    ->getCreatedAt()
+                    ->format("d-m-Y"),
             ];
         }, (array) $pagination->getItems());
 
         // Structure de réponse avec les informations de pagination
         $data = [
-            'currentPage' => $pagination->getCurrentPageNumber(),
-            'totalItems' => $pagination->getTotalItemCount(),
-            'itemsPerPage' => $pagination->getItemNumberPerPage(),
-            'totalPages' => ceil($pagination->getTotalItemCount() / $pagination->getItemNumberPerPage()),
+            'currentPage' => $pagination
+                ->getCurrentPageNumber(),
+            'totalItems' => $pagination
+                ->getTotalItemCount(),
+            'itemsPerPage' => $pagination
+                ->getItemNumberPerPage(),
+            'totalPages' => ceil(
+                $pagination
+                    ->getTotalItemCount() / $pagination
+                    ->getItemNumberPerPage()
+            ),
             'items' => $items, // Les éléments paginés formatés
         ];
 

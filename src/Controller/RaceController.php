@@ -81,12 +81,13 @@ final class RaceController extends AbstractController
     )]
     public function new(Request $request): JsonResponse
     {
-        $race = $this->serializer->deserialize(
-            $request->getContent(),
-            Race::class,
-            '
+        $race = $this->serializer
+            ->deserialize(
+                $request->getContent(),
+                Race::class,
+                '
             json'
-        );
+            );
 
         $race->setCreatedAt(new DateTimeImmutable());
 
@@ -98,11 +99,12 @@ final class RaceController extends AbstractController
                 $race,
                 'json'
             );
-        $location = $this->urlGenerator->generate(
-            'app_api_race_show',
-            ['id' => $race->getId()],
-            UrlGeneratorInterface::ABSOLUTE_URL
-        );
+        $location = $this->urlGenerator
+            ->generate(
+                'app_api_race_show',
+                ['id' => $race->getId()],
+                UrlGeneratorInterface::ABSOLUTE_URL
+            );
 
         return new JsonResponse(
             $responseData,
@@ -255,23 +257,30 @@ final class RaceController extends AbstractController
             )
         ]
     )]
-    public function edit(int $id, Request $request): JsonResponse
-    {
+    public function edit(
+        int $id,
+        Request $request
+    ): JsonResponse {
         $race = $this->repository->findOneBy(['id' => $id]);
 
         if ($race) {
-            $race = $this->serializer->deserialize(
-                $request->getContent(),
-                race::class,
-                'json',
-                [AbstractNormalizer::OBJECT_TO_POPULATE => $race]
-            );
+            $race = $this->serializer
+                ->deserialize(
+                    $request->getContent(),
+                    race::class,
+                    'json',
+                    [AbstractNormalizer::OBJECT_TO_POPULATE => $race]
+                );
 
             $race->setUpdatedAt(new DateTimeImmutable());
 
             $this->manager->flush();
 
-            $modify = $this->serializer->serialize($race, 'json');
+            $modify = $this->serializer
+                ->serialize(
+                    $race,
+                    'json'
+                );
 
             return new JsonResponse(
                 $modify,
