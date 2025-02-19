@@ -24,3 +24,8 @@
     * Mise en place du fichier .env.local et paramétrage
         - $ cp .env .env.local
         - $ php bin/console database:doctrine:create
+
+# Teste de l'application
+
+    *Installation du pack teste
+        -$ composer require --dev symfony/test-pack
