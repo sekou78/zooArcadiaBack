@@ -35,11 +35,11 @@ class Service
     #[Groups('service_user_read')]
     private Collection $utilisateurs;
 
-    #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $createdAt;
+    #[ORM\Column]
+    private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $updatedAt;
+    private ?\DateTimeImmutable $updatedAt = null;
 
     /**
      * @var Collection<int, ServiceRestaurant>

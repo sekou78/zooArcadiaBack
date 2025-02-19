@@ -27,5 +27,8 @@
 
 # Teste de l'application
 
-    *Installation du pack teste
+    * Installation du pack teste
         -$ composer require --dev symfony/test-pack
+    * Teste Unitaire
+        -$ composer require --dev phpunit/phpunit
+            Exécutez le test avec: php bin/phpunit
