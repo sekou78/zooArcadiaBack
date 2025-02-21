@@ -1,60 +1,326 @@
 <?php
 
-// namespace App\Tests\Controller;
+namespace App\Tests\Controller;
 
-// use App\Entity\User;
-// use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-// use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use App\Entity\User;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-// class LoginControllerTest extends WebTestCase
-// {
-//     public function testLoginSuccess(): void
-//     {
-//         // Créer un client
-//         $client = static::createClient();
+class SecurityControllerTest extends WebTestCase
+{
+    public function testApiDocUrlIsSuccessful(): void
+    {
+        $client = self::createClient();
+        $client->followRedirects(false);
+        $client->request("GET", "/api/doc");
 
-//         // Accéder au conteneur de services pour obtenir le service PasswordHasher
-//         $passwordHasher = self::getContainer()->get(UserPasswordHasherInterface::class);
+        self::assertResponseIsSuccessful();
+    }
 
-//         // Créer un utilisateur de test et l'insérer dans la base de données
-//         $entityManager = self::getContainer()->get('doctrine')->getManager();
+    // public function testRegistrationAdminRouteCanConnectValid(): void
+    // {
+    //     $client = self::createClient();
+    //     $client->followRedirects(false);
 
-//         $user = new User();
-//         $user->setEmail('adressetest@email.com');
-//         $user->setRoles(['ROLE_ADMIN']);
+    //     $client->request(
+    //         'POST',
+    //         '/api/registration',
+    //         [],
+    //         [],
+    //         [
+    //             'CONTENT_TYPE' => 'application/json',
+    //         ],
+    //         json_encode([
+    //             "email" => "testAdmin@mail.com",
+    //             "password" => "Azert$12",
+    //             'roles' => ['ROLE_ADMIN'],
+    //             "username" => "test",
+    //             "nom" => "test",
+    //             "prenom" => "test"
+    //         ], JSON_THROW_ON_ERROR)
+    //     );
 
-//         // Hacher le mot de passe avec PasswordHasherInterface
-//         $password = 'Azerty$1';
-//         $hashedPassword = $passwordHasher->hash($password);
-//         $user->setPassword($hashedPassword);
+    //     $statusCode = $client->getResponse()->getStatusCode();
+    //     $this->assertEquals(201, $statusCode);
+    // }
 
-//         $entityManager->persist($user);
-//         $entityManager->flush();
+    // public function testRegistrationAdminRouteCanConnectInvalid(): void
+    // {
+    //     $client = self::createClient();
+    //     $client->followRedirects(false);
 
-//         // Simuler la requête de connexion
-//         $client->request('POST', '/api/login', [
-//             'json' => [
-//                 'username' => 'adresse@email.com',
-//                 'password' => $password,
-//             ]
-//         ]);
+    //     $client->request(
+    //         'POST',
+    //         '/api/registration',
+    //         [],
+    //         [],
+    //         [
+    //             'CONTENT_TYPE' => 'application/json',
+    //         ],
+    //         json_encode([
+    //             "email" => "testAdmin@mail.com",
+    //             "password" => "Azert$12",
+    //             'roles' => ['ROLE_ADMIN'],
+    //             "username" => "test",
+    //             "nom" => "test",
+    //             "prenom" => "test"
+    //         ], JSON_THROW_ON_ERROR)
+    //     );
 
-//         // Vérifier que la réponse a un code HTTP 200
-//         $this->assertResponseIsSuccessful();
+    //     $statusCode = $client->getResponse()->getStatusCode();
+    //     $this->assertEquals(403, $statusCode);
+    // }
 
-//         // Récupérer le contenu de la réponse
-//         $responseData = json_decode($client->getResponse()->getContent(), true);
+    // public function testRouteCanConnectCreateUserForAdminValid(): void
+    // {
+    //     $client = self::createClient();
+    //     $client->followRedirects(false);
 
-//         // Vérifier que les données de la réponse contiennent le bon user, token et rôles
-//         $this->assertArrayHasKey('user', $responseData);
-//         $this->assertArrayHasKey('apiToken', $responseData);
-//         $this->assertArrayHasKey('roles', $responseData);
+    //     // 1. Authentification pour récupérer le token
+    //     $client->request(
+    //         "POST",
+    //         "/api/login",
+    //         [],
+    //         [],
+    //         [
+    //             "CONTENT_TYPE" => "application/json",
+    //         ],
+    //         json_encode([
+    //             "username" => "testAdmin@mail.com",
+    //             "password" => "Azert$12",
+    //         ])
+    //     );
 
-//         // Vérifier que l'email de l'utilisateur est bien retourné
-//         $this->assertEquals('adressetest@email.com', $responseData['user']);
+    //     // 2. Récupérer le token depuis la réponse
+    //     $responseData = json_decode($client->getResponse()->getContent(), true);
+    //     $apiToken = $responseData['apiToken'];
 
-//         // Nettoyer la base de données après le test
-//         $entityManager->remove($user);
-//         $entityManager->flush();
-//     }
-// }
+    //     // 3. Créer un utilisateur en tant qu'admin, avec le token dans l'en-tête
+    //     $client->request(
+    //         'POST',
+    //         '/api/admin/create-user',
+    //         [],
+    //         [],
+    //         [
+    //             'CONTENT_TYPE' => 'application/json',
+    //             'HTTP_X_AUTH_TOKEN' => $apiToken,
+    //         ],
+    //         json_encode([
+    //             // "email" => "testemploye@mail.com",
+    //             "email" => "testveterinaire@mail.com",
+    //             "password" => "Azert$12",
+    //             // 'roles' => ['ROLE_EMPLOYE'],
+    //             'roles' => ['ROLE_VETERINAIRE'],
+    //             "username" => "testveterinaire",
+    //             "nom" => "testveterinaire",
+    //             "prenom" => "testveterinaire"
+    //         ], JSON_THROW_ON_ERROR)
+    //     );
+
+    //     // 4. Vérifier la réponse
+    //     $statusCode = $client->getResponse()->getStatusCode();
+    //     $this->assertEquals(201, $statusCode);
+    // }
+
+    // public function testRouteCanConnectCreateUserForAdminInvalid(): void
+    // {
+    //     $client = self::createClient();
+    //     $client->followRedirects(false);
+
+    //     // 1. Authentification pour récupérer le token
+    //     $client->request(
+    //         "POST",
+    //         "/api/login",
+    //         [],
+    //         [],
+    //         [
+    //             "CONTENT_TYPE" => "application/json",
+    //         ],
+    //         json_encode([
+    //             "username" => "testAdmin@mail.com",
+    //             "password" => "Azert$12",
+    //         ])
+    //     );
+
+    //     // 2. Récupérer le token depuis la réponse
+    //     $responseData = json_decode($client->getResponse()->getContent(), true);
+    //     $apiToken = $responseData['apiToken'];
+
+    //     // 3. Créer un utilisateur en tant qu'admin, avec le token dans l'en-tête
+    //     $client->request(
+    //         'POST',
+    //         '/api/admin/create-user',
+    //         [],
+    //         [],
+    //         [
+    //             'CONTENT_TYPE' => 'application/json',
+    //             'HTTP_X_AUTH_TOKEN' => $apiToken,
+    //         ],
+    //         json_encode([
+    //             // "email" => "testemploye@mail.com",
+    //             "email" => "testveterinaire@mail.com",
+    //             "password" => "Azert$12",
+    //             // 'roles' => ['ROLE_EMPLOYE'],
+    //             'roles' => ['ROLE_VETERINAIRE'],
+    //             "username" => "testveterinaire",
+    //             "nom" => "testveterinaire",
+    //             "prenom" => "testveterinaire"
+    //         ], JSON_THROW_ON_ERROR)
+    //     );
+
+    //     // 4. Vérifier la réponse
+    //     $statusCode = $client->getResponse()->getStatusCode();
+    //     $this->assertEquals(400, $statusCode);
+    // }
+
+    // public function testRouteCanConnectLoginValid(): void
+    // {
+    //     $client = self::createClient();
+    //     $client->followRedirects(false);
+
+    //     $client->request(
+    //         "POST",
+    //         "/api/login",
+    //         [],
+    //         [],
+    //         [
+    //             "CONTENT_TYPE" => "application/json",
+    //         ],
+    //         json_encode([
+    //             "username" => "testAdmin@mail.com",
+    //             "password" => "Azert$12",
+    //         ])
+    //     );
+
+    //     $statusCode = $client->getResponse()->getStatusCode();
+    //     $this->assertEquals(200, $statusCode);
+    // }
+
+    // public function testRouteCanConnectLoginInvalid(): void
+    // {
+    //     $client = self::createClient();
+    //     $client->followRedirects(false);
+
+    //     $client->request(
+    //         "POST",
+    //         "/api/login",
+    //         [],
+    //         [],
+    //         [
+    //             "CONTENT_TYPE" => "application/json",
+    //         ],
+    //         json_encode([
+    //             "username" => "testAdmin@mail.com",
+    //             "password" => "Azert$136",
+    //         ])
+    //     );
+
+    //     $statusCode = $client->getResponse()->getStatusCode();
+    //     $this->assertEquals(401, $statusCode);
+    // }
+
+    // public function testApiAccountMeUrlIsSecure(): void
+    // {
+    //     $client = self::createClient();
+    //     $client->followRedirects(false);
+
+    //     $client->request("GET", "/api/account/me");
+
+    //     self::assertResponseStatusCodeSame(401);
+    // }
+
+    // public function testApiAccountEditUrlIsSecure(): void
+    // {
+    //     $client = self::createClient();
+    //     $client->followRedirects(false);
+
+    //     $client->request("PUT", "/api/account/edit");
+
+    //     self::assertResponseStatusCodeSame(401);
+    // }
+
+    // public function testRouteCanConnectResetPasswordForAdminIvalid(): void
+    // {
+    //     $client = self::createClient();
+    //     $client->followRedirects(false);
+
+    //     // 1. Authentification pour récupérer le token
+    //     $client->request(
+    //         "POST",
+    //         "/api/login",
+    //         [],
+    //         [],
+    //         [
+    //             "CONTENT_TYPE" => "application/json",
+    //         ],
+    //         json_encode([
+    //             "username" => "testAdmin@mail.com",
+    //             "password" => "Azert$12",
+    //         ])
+    //     );
+
+    //     // 2. Récupérer le token depuis la réponse
+    //     $responseData = json_decode($client->getResponse()->getContent(), true);
+    //     $apiToken = $responseData['apiToken'];
+
+    //     // 3. Créer un utilisateur en tant qu'admin, avec le token dans l'en-tête
+    //     $client->request(
+    //         'POST',
+    //         "/api/admin/reset-password/{username}",
+    //         [],
+    //         [],
+    //         [
+    //             'CONTENT_TYPE' => 'application/json',
+    //             'HTTP_X_AUTH_TOKEN' => $apiToken,
+    //         ],
+    //         json_encode([
+    //             "username" => "testemploye",
+    //         ], JSON_THROW_ON_ERROR)
+    //     );
+
+    //     // 4. Vérifier la réponse
+    //     $statusCode = $client->getResponse()->getStatusCode();
+    //     $this->assertEquals(404, $statusCode);
+    // }
+
+    public function testRouteCanConnectListForAdminValid(): void
+    {
+        $client = self::createClient();
+        $client->followRedirects(false);
+
+        // 1. Authentification pour récupérer le token
+        $client->request(
+            "POST",
+            "/api/login",
+            [],
+            [],
+            [
+                "CONTENT_TYPE" => "application/json",
+            ],
+            json_encode([
+                "username" => "testAdmin@mail.com",
+                "password" => "Azert$12",
+            ])
+        );
+
+        // 2. Récupérer le token depuis la réponse
+        $responseData = json_decode($client->getResponse()->getContent(), true);
+        $apiToken = $responseData['apiToken'];
+
+        // 3. Créer un utilisateur en tant qu'admin, avec le token dans l'en-tête
+        $client->request(
+            'GET',
+            "/api/admin/dashboardAnimal",
+            [],
+            [],
+            [
+                'CONTENT_TYPE' => 'application/json',
+                'HTTP_X_AUTH_TOKEN' => $apiToken,
+            ]
+        );
+
+        // 4. Vérifier la réponse
+        $statusCode = $client->getResponse()->getStatusCode();
+        $this->assertEquals(200, $statusCode);
+    }
+}
