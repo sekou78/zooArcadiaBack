@@ -24,6 +24,7 @@
     * Mise en place du fichier .env.local et paramétrage
         - $ cp .env .env.local
         - $ php bin/console database:doctrine:create
+        - $php bin/console doctrine:migrations:migrate
 
 # Teste de l'application
 
@@ -32,3 +33,10 @@
     * Teste Unitaire
         -$ composer require --dev phpunit/phpunit
             Exécutez le test avec: php bin/phpunit
+
+# Création de la BDD Tests
+
+    * Mise en place du fichier .env.test.local et paramétrage
+        - $ cp .env .env.test.local
+        - $ php bin/console doctrine:database:create --env=test
+        - $ php bin/console doctrine:migrations:migrate --env=test
