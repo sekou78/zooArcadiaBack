@@ -69,7 +69,7 @@ final class AnimalController extends AbstractController
                                 example: 1
                             ),
                             new OA\Property(
-                                property: "firtname",
+                                property: "firstname",
                                 type: "string",
                                 example: "Bamba"
                             ),
@@ -168,7 +168,7 @@ final class AnimalController extends AbstractController
                                 example: 1
                             ),
                             new OA\Property(
-                                property: "firtname",
+                                property: "firstname",
                                 type: "string",
                                 example: "Bamba"
                             ),
@@ -239,7 +239,7 @@ final class AnimalController extends AbstractController
     }
 
     #[Route('/{id}', name: 'edit', methods: 'PUT')]
-    #[IsGranted('ROLE_ADMIN')]
+    // #[IsGranted('ROLE_ADMIN')]
     #[OA\Put(
         path: "/api/animal/{id}",
         summary: "Mise à jour du animal",
@@ -292,7 +292,7 @@ final class AnimalController extends AbstractController
                                 example: 1
                             ),
                             new OA\Property(
-                                property: "firtname",
+                                property: "firstname",
                                 type: "string",
                                 example: "Sama"
                             ),
@@ -376,7 +376,7 @@ final class AnimalController extends AbstractController
     }
 
     #[Route('/{id}', name: 'delete', methods: 'DELETE')]
-    #[IsGranted('ROLE_ADMIN')]
+    // #[IsGranted('ROLE_ADMIN')]
     #[OA\Delete(
         path: "/api/animal/{id}",
         summary: "Suppression de l'animal",

@@ -33,20 +33,20 @@ security:
   # Easy way to control access for large sections of your site
   # Note: Only the *first* access control that matches will be used
   access_control:
-    - { path: ^/pb/espacePublic, roles: PUBLIC_ACCESS }
-    - { path: ^/pb/habitat, roles: PUBLIC_ACCESS }
-    - { path: ^/api/avis, roles: PUBLIC_ACCESS }
-    - { path: ^/admin, roles: ROLE_ADMIN }
-    - { path: ^/employe, roles: ROLE_EMPLOYE }
-    - { path: ^/veterinaire, roles: ROLE_VETERINAIRE }
-    - { path: ^/api/registration, roles: PUBLIC_ACCESS }
-    - { path: ^/api/login, roles: PUBLIC_ACCESS }
-    - {
-        path: ^/api/account,
-        roles: [ROLE_ADMIN, ROLE_EMPLOYE, ROLE_VETERINAIRE],
-      }
-    - { path: ^/api/doc, roles: PUBLIC_ACCESS }
-    - { path: ^/api, roles: ROLE_USER }
+    # - { path: ^/pb/espacePublic, roles: PUBLIC_ACCESS }
+    # - { path: ^/pb/habitat, roles: PUBLIC_ACCESS }
+    # - { path: ^/api/avis, roles: PUBLIC_ACCESS }
+    # - { path: ^/admin, roles: ROLE_ADMIN }
+    # - { path: ^/employe, roles: ROLE_EMPLOYE }
+    # - { path: ^/veterinaire, roles: ROLE_VETERINAIRE }
+    # - { path: ^/api/registration, roles: PUBLIC_ACCESS }
+    # - { path: ^/api/login, roles: PUBLIC_ACCESS }
+    # - {
+    #     path: ^/api/account,
+    #     roles: [ROLE_ADMIN, ROLE_EMPLOYE, ROLE_VETERINAIRE],
+    #   }
+    # - { path: ^/api/doc, roles: PUBLIC_ACCESS }
+    # - { path: ^/api, roles: ROLE_USER }
 
 when@test:
   security:
