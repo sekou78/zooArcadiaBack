@@ -1,109 +1,171 @@
 <?php
 
-// namespace App\Tests\Controller;
+namespace App\Tests\Controller;
 
-// use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-// use Symfony\Component\HttpFoundation\Response;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\Response;
 
-// class AvisControllerTest extends WebTestCase
-// {
-//     public function testApiDocUrlIsSusseccfull(): void
-//     {
-//         $client = self::createClient();
-//         $client->request('Get', '/api/doc');
+class AvisControllerTest extends WebTestCase
+{
+    // public function testApiNewAvisIsSusseccfull(): void
+    // {
+    //     $client = self::createClient();
+    //     $client->followRedirects(false);
 
-//         self::assertResponseIsSuccessful();
-//     }
+    //     $client->request(
+    //         'POST',
+    //         '/api/avis',
+    //         [],
+    //         [],
+    //         ['CONTENT_TYPE' => 'application/json'],
+    //         json_encode([
+    //             'pseudo' => 'kolo',
+    //             'comments' => 'Super endroit !',
+    //             "isVisible" => false,
+    //         ], JSON_THROW_ON_ERROR)
+    //     );
 
-//     public function testApiNewAvisIsSusseccfull(): void
-//     {
-//         $client = self::createClient();
-//         $client->followRedirects(false);
+    //     $statusCode = $client->getResponse()->getStatusCode();
+    //     $this->assertEquals(201, $statusCode);
+    // }
 
-//         $client->request(
-//             'POST',
-//             '/api/avis',
-//             [],
-//             [],
-//             ['CONTENT_TYPE' => 'application/json'],
-//             json_encode([
-//                 'pseudo' => 'kolo',
-//                 'comments' => 'Super endroit !',
-//                 "isVisible" => false,
-//             ], JSON_THROW_ON_ERROR)
-//         );
+    // public function testApiValidEmployeIsSusseccfull(): void
+    // {
+    //     $client = self::createClient();
+    //     $client->followRedirects(false);
 
-//         // $statusCode = $client->getResponse()->getStatusCode();
-//         // dd($statusCode);
-//     }
+    //     // 1. Authentification pour récupérer le token
+    //     $client->request(
+    //         "POST",
+    //         "/api/login",
+    //         [],
+    //         [],
+    //         [
+    //             "CONTENT_TYPE" => "application/json",
+    //         ],
+    //         json_encode([
+    //             "username" => "testemploye@mail.com",
+    //             "password" => "Azert$12",
+    //         ])
+    //     );
 
+    //     // 2. Récupérer le token depuis la réponse
+    //     $responseData = json_decode($client->getResponse()->getContent(), true);
+    //     $apiToken = $responseData['apiToken'];
 
-//     public function testCreateAvisSuccessfully()
-//     {
-//         // Créez un client pour tester l'API
-//         $client = self::createClient();
+    //     // 3. Créer un utilisateur en tant qu'admin, avec le token dans l'en-tête
+    //     $client->request(
+    //         'PUT',
+    //         "/api/avis/employee/validate-avis/2",
+    //         [],
+    //         [],
+    //         [
+    //             'CONTENT_TYPE' => 'application/json',
+    //             'HTTP_X_AUTH_TOKEN' => $apiToken,
+    //         ],
+    //         json_encode([
+    //             "isVisible" => true,
+    //         ], JSON_THROW_ON_ERROR)
+    //     );
 
-//         // Préparez les données à envoyer dans la requête POST
-//         $data = [
-//             'pseudo' => 'kolo',
-//             'comments' => 'Super endroit !'
-//         ];
+    //     // 4. Vérifier la réponse
+    //     $statusCode = $client->getResponse()->getStatusCode();
+    //     $this->assertEquals(200, $statusCode);
+    // }
 
-//         // Faites une requête POST pour créer un avis
-//         $client->request(
-//             'POST',
-//             '/api/avis', // L'URL de la route
-//             [],
-//             [],
-//             ['CONTENT_TYPE' => 'application/json'],
-//             json_encode($data) // Données de l'avis en format JSON
-//         );
+    // public function testRouteCanConnectAvisShowValid(): void
+    // {
+    //     $client = self::createClient();
+    //     $client->followRedirects(false);
 
-//         // Vérifiez que la réponse est correcte (code 201)
-//         $this->assertEquals(Response::HTTP_CREATED, $client->getResponse()->getStatusCode());
+    //     $client->request(
+    //         "POST",
+    //         "/api/login",
+    //         [],
+    //         [],
+    //         [
+    //             "CONTENT_TYPE" => "application/json",
+    //         ],
+    //         json_encode([
+    //             "username" => "testemploye@mail.com",
+    //             "password" => "Azert$12",
+    //         ])
+    //     );
 
-//         // Vérifiez que la réponse contient l'ID, pseudo, commentaire, etc.
-//         $responseContent = json_decode($client->getResponse()->getContent(), true);
-//         $this->assertNotNull($responseContent);
-//         $this->assertArrayHasKey('id', $responseContent);
-//         $this->assertArrayHasKey('pseudo', $responseContent);
-//         $this->assertArrayHasKey('comments', $responseContent);
-//         $this->assertEquals('kolo', $responseContent['pseudo']);
-//         $this->assertEquals('Super endroit !', $responseContent['comments']);
+    //     $responseData = json_decode($client->getResponse()->getContent(), true);
+    //     $apiToken = $responseData['apiToken'];
 
-//         // Vérifiez la présence de l'header Location
-//         $this->assertArrayHasKey('location', $client->getResponse()->headers->all());
-//         $locationHeader = $client->getResponse()->headers->get('location');
-//         $this->assertStringContainsString('/api/avis/', $locationHeader); // L'URL doit contenir '/api/avis/'
-//     }
+    //     $client->request(
+    //         "GET",
+    //         "/api/avis/2",
+    //         [],
+    //         [],
+    //         [
+    //             'CONTENT_TYPE' => 'application/json',
+    //             'HTTP_X_AUTH_TOKEN' => $apiToken,
+    //         ]
+    //     );
 
-//     public function testCreateAvisMissingData()
-//     {
-//         // Créez un client pour tester l'API
-//         $client = static::createClient();
+    //     $statusCode = $client->getResponse()->getStatusCode();
+    //     $this->assertEquals(200, $statusCode);
+    // }
 
-//         // Données invalides (pseudo manquant)
-//         $data = [
-//             'comments' => 'Super endroit !'
-//         ];
+    // public function testRouteCanConnectAvisIndexValid(): void
+    // {
+    //     $client = self::createClient();
+    //     $client->followRedirects(false);
 
-//         // Faites une requête POST pour créer un avis sans données complètes
-//         $client->request(
-//             'POST',
-//             '/api/avis',
-//             [],
-//             [],
-//             ['CONTENT_TYPE' => 'application/json'],
-//             json_encode($data) // Données manquantes
-//         );
+    //     $client->request(
+    //         "GET",
+    //         "/api/avis/",
+    //         [],
+    //         [],
+    //         [
+    //             'CONTENT_TYPE' => 'application/json',
+    //         ]
+    //     );
 
-//         // Vérifiez que la réponse est une erreur 400 (Bad Request)
-//         $this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
+    //     $statusCode = $client->getResponse()->getStatusCode();
+    //     $this->assertEquals(200, $statusCode);
+    // }
 
-//         // Vérifiez que le message d'erreur est bien présent
-//         $responseContent = json_decode($client->getResponse()->getContent(), true);
-//         $this->assertNotNull($responseContent);
-//         $this->assertArrayHasKey('error', $responseContent);
-//         $this->assertEquals('Pseudo et commentaire sont obligatoires.', $responseContent['error']);
-//     }
-// }
+    // public function testDeleteAvisIsSuccess(): void
+    // {
+    //     $client = self::createClient();
+    //     $client->followRedirects(false);
+
+    //     //Authentification pour récupérer le token
+    //     $client->request(
+    //         "POST",
+    //         "/api/login",
+    //         [],
+    //         [],
+    //         [
+    //             "CONTENT_TYPE" => "application/json",
+    //         ],
+    //         json_encode([
+    //             "username" => "testemploye@mail.com",
+    //             "password" => "Azert$12",
+    //         ])
+    //     );
+
+    //     //Récupérer le token depuis la réponse
+    //     $responseData = json_decode($client->getResponse()->getContent(), true);
+    //     $apiToken = $responseData['apiToken'];
+
+    //     //Mise à jour de l'animal
+    //     $client->request(
+    //         'DELETE',
+    //         '/api/avis/5',
+    //         [],
+    //         [],
+    //         [
+    //             'CONTENT_TYPE' => 'application/json',
+    //             'HTTP_X_AUTH_TOKEN' => $apiToken,
+    //         ]
+    //     );
+
+    //     //Vérifier la réponse
+    //     $this->assertResponseStatusCodeSame(200);
+    // }
+}

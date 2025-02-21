@@ -239,7 +239,7 @@ final class AnimalController extends AbstractController
     }
 
     #[Route('/{id}', name: 'edit', methods: 'PUT')]
-    // #[IsGranted('ROLE_ADMIN')]
+    #[IsGranted('ROLE_ADMIN')]
     #[OA\Put(
         path: "/api/animal/{id}",
         summary: "Mise à jour du animal",
@@ -376,7 +376,7 @@ final class AnimalController extends AbstractController
     }
 
     #[Route('/{id}', name: 'delete', methods: 'DELETE')]
-    // #[IsGranted('ROLE_ADMIN')]
+    #[IsGranted('ROLE_ADMIN')]
     #[OA\Delete(
         path: "/api/animal/{id}",
         summary: "Suppression de l'animal",
@@ -423,7 +423,7 @@ final class AnimalController extends AbstractController
     }
 
     // Pagination des animaux
-    #[Route('/api/rapports', name: 'list', methods: ['GET'])]
+    #[Route('/api/rapports', name: 'list', methods: 'GET')]
     #[OA\Get(
         path: '/api/animal/api/rapports',
         summary: "Liste paginée des animaux avec filtres",
