@@ -515,7 +515,7 @@ final class RoleController extends AbstractController
 
         if (!$data || !isset($data['email'])) {
             return new JsonResponse(
-                ['message' => 'L\'email est requis.'],
+                ['message' => "L'email est requis"],
                 JsonResponse::HTTP_BAD_REQUEST
             );
         }

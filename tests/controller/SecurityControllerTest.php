@@ -106,16 +106,20 @@ class SecurityControllerTest extends WebTestCase
     //             'HTTP_X_AUTH_TOKEN' => $apiToken,
     //         ],
     //         json_encode([
-    //             "email" => "testemploye@mail.com",
+    //             // "email" => "testemploye@mail.com",
+    //             "email" => "test@test.com",
     //             // "email" => "testveterinaire@mail.com",
     //             "password" => "Azert$12",
     //             'roles' => ['ROLE_EMPLOYE'],
     //             // 'roles' => ['ROLE_VETERINAIRE'],
-    //             "username" => "testemploye",
+    //             // "username" => "testemploye",
+    //             "username" => "testes",
     //             // "username" => "testveterinaire",
-    //             "nom" => "testemploye",
+    //             // "nom" => "testemploye",
+    //             "nom" => "testes",
     //             // "nom" => "testveterinaire",
-    //             "prenom" => "testemploye",
+    //             // "prenom" => "testemploye",
+    //             "prenom" => "testes",
     //             // "prenom" => "testveterinaire"
     //         ], JSON_THROW_ON_ERROR)
     //     );

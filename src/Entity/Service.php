@@ -15,24 +15,39 @@ class Service
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['service_restaurant:read', 'service_visite_petit_train:read', 'service_user_read'])]
+    #[Groups([
+        'service_restaurant:read',
+        'service_visite_petit_train:read',
+        'service_user_read',
+        'service_read'
+    ])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50, nullable: true)]
     #[Assert\NotBlank]
-    #[Groups(['service_restaurant:read', 'service_visite_petit_train:read', 'service_user_read'])]
+    #[Groups([
+        'service_restaurant:read',
+        'service_visite_petit_train:read',
+        'service_user_read',
+        'service_read'
+    ])]
     private ?string $nom = null;
 
     #[ORM\Column(length: 250, nullable: true)]
     #[Assert\NotBlank]
-    #[Groups(['service_restaurant:read', 'service_visite_petit_train:read', 'service_user_read'])]
+    #[Groups([
+        'service_restaurant:read',
+        'service_visite_petit_train:read',
+        'service_user_read',
+        'service_read'
+    ])]
     private ?string $description = null;
 
     /**
      * @var Collection<int, User>
      */
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'services')]
-    #[Groups('service_user_read')]
+    #[Groups('service_user_read', 'service_read')]
     private Collection $utilisateurs;
 
     #[ORM\Column]
@@ -45,12 +60,14 @@ class Service
      * @var Collection<int, ServiceRestaurant>
      */
     #[ORM\OneToMany(targetEntity: ServiceRestaurant::class, mappedBy: 'service')]
+    #[Groups('service_read')]
     private Collection $serviceRestaurants;
 
     /**
      * @var Collection<int, ServiceVisitePetitTrain>
      */
     #[ORM\OneToMany(targetEntity: ServiceVisitePetitTrain::class, mappedBy: 'service')]
+    #[Groups('service_read')]
     private Collection $serviceVisitePetitTrains;
 
     /**

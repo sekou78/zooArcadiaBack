@@ -18,19 +18,19 @@ class ServiceRestaurant
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['service_restaurant:read'])]
+    #[Groups(['service_restaurant:read', 'service_read'])]
     private ?string $nom = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['service_restaurant:read'])]
+    #[Groups(['service_restaurant:read', 'service_read'])]
     private ?string $description = null;
 
     #[ORM\Column(type: "time", nullable: true)]
-    #[Groups(['service_restaurant:read'])]
+    #[Groups(['service_restaurant:read', 'service_read'])]
     private ?\DateTimeInterface $heureDebut = null;
 
     #[ORM\Column(type: "time", nullable: true)]
-    #[Groups(['service_restaurant:read'])]
+    #[Groups(['service_restaurant:read', 'service_read'])]
     private ?\DateTimeInterface $heureFin = null;
 
     #[ORM\Column]

@@ -40,6 +40,7 @@ final class ImageController extends AbstractController
     // Ajouter une image
     #[Route(name: 'new', methods: 'POST')]
     #[OA\Post(
+        path: "/api/image",
         summary: "Ajouter une nouvelle image",
         requestBody: new OA\RequestBody(
             required: true,

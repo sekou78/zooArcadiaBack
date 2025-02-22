@@ -85,8 +85,7 @@ final class RaceController extends AbstractController
             ->deserialize(
                 $request->getContent(),
                 Race::class,
-                '
-            json'
+                'json',
             );
 
         $race->setCreatedAt(new DateTimeImmutable());
