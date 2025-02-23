@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Tests\Controller;
+// namespace App\Tests\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+// use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class HabitatControllerTest extends WebTestCase
-{
+// class HabitatControllerTest extends WebTestCase
+// {
     // public function testRouteCanConnectCreateHabitatByAdminIsSuccessful(): void
     // {
     //     $client = self::createClient();
@@ -218,4 +218,4 @@ class HabitatControllerTest extends WebTestCase
     //     $statusCode = $client->getResponse()->getStatusCode();
     //     $this->assertEquals(200, $statusCode);
     // }
-}
+// }

@@ -1,21 +1,21 @@
 <?php
 
-namespace App\Tests\Controller;
+// namespace App\Tests\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
-use PHPUnit\Framework\MockObject\MockObject;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Serializer\SerializerInterface;
-use App\Repository\AnimalRepository;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use App\Controller\AnimalController;
-use App\Entity\Animal;
+// use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+// use Symfony\Component\HttpFoundation\JsonResponse;
+// use Symfony\Component\HttpFoundation\Request;
+// use PHPUnit\Framework\MockObject\MockObject;
+// use Doctrine\ORM\EntityManagerInterface;
+// use Symfony\Component\Serializer\SerializerInterface;
+// use App\Repository\AnimalRepository;
+// use Psr\Log\LoggerInterface;
+// use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+// use App\Controller\AnimalController;
+// use App\Entity\Animal;
 
-class AnimalControllerTest extends WebTestCase
-{
+// class AnimalControllerTest extends WebTestCase
+// {
     // public function testRouteCanConnectCreateAnimalValid(): void
     // {
     //     $client = self::createClient();
@@ -239,4 +239,4 @@ class AnimalControllerTest extends WebTestCase
     //     $statusCode = $client->getResponse()->getStatusCode();
     //     $this->assertEquals(200, $statusCode);
     // }
-}
+// }

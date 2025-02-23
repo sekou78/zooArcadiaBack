@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Tests\Controller;
+// namespace App\Tests\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+// use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class ServiceAnimauxControllerTest extends WebTestCase
-{
+// class ServiceAnimauxControllerTest extends WebTestCase
+// {
     // public function testRouteCanConnectCreateServiceAnimauxByEmployeIsSuccessful(): void
     // {
     //     $client = self::createClient();
@@ -139,4 +139,4 @@ class ServiceAnimauxControllerTest extends WebTestCase
     //     $statusCode = $client->getResponse()->getStatusCode();
     //     $this->assertEquals(200, $statusCode);
     // }
-}
+// }

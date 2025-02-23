@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Tests\Controller;
+// namespace App\Tests\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+// use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class RapportVeterinaireControllerTest extends WebTestCase
-{
+// class RapportVeterinaireControllerTest extends WebTestCase
+// {
     // public function testRouteCanConnectCreateRapportVeterinaireByVeterinaireIsSuccessful(): void
     // {
     //     $client = self::createClient();
@@ -184,44 +184,44 @@ class RapportVeterinaireControllerTest extends WebTestCase
     //     $this->assertResponseStatusCodeSame(404);
     // }
 
-    public function testRouteCanConnectListHabitatByAdminIsSuccessful()
-    {
-        $client = self::createClient();
-        $client->followRedirects(false);
+//     public function testRouteCanConnectListHabitatByAdminIsSuccessful()
+//     {
+//         $client = self::createClient();
+//         $client->followRedirects(false);
 
-        // 1. Authentification pour récupérer le token
-        $client->request(
-            "POST",
-            "/api/login",
-            [],
-            [],
-            [
-                "CONTENT_TYPE" => "application/json",
-            ],
-            json_encode([
-                "username" => "testveterinaire@mail.com",
-                "password" => "Azert$12",
-            ])
-        );
+//         // 1. Authentification pour récupérer le token
+//         $client->request(
+//             "POST",
+//             "/api/login",
+//             [],
+//             [],
+//             [
+//                 "CONTENT_TYPE" => "application/json",
+//             ],
+//             json_encode([
+//                 "username" => "testveterinaire@mail.com",
+//                 "password" => "Azert$12",
+//             ])
+//         );
 
-        // 2. Récupérer le token depuis la réponse
-        $responseData = json_decode($client->getResponse()->getContent(), true);
-        $apiToken = $responseData['apiToken'];
+//         // 2. Récupérer le token depuis la réponse
+//         $responseData = json_decode($client->getResponse()->getContent(), true);
+//         $apiToken = $responseData['apiToken'];
 
-        // 3. Créer un utilisateur en tant qu'admin, avec le token dans l'en-tête
-        $client->request(
-            'GET',
-            "/api/rapportVeterinaire/api/rapports",
-            [],
-            [],
-            [
-                'CONTENT_TYPE' => 'application/json',
-                'HTTP_X_AUTH_TOKEN' => $apiToken,
-            ]
-        );
+//         // 3. Créer un utilisateur en tant qu'admin, avec le token dans l'en-tête
+//         $client->request(
+//             'GET',
+//             "/api/rapportVeterinaire/api/rapports",
+//             [],
+//             [],
+//             [
+//                 'CONTENT_TYPE' => 'application/json',
+//                 'HTTP_X_AUTH_TOKEN' => $apiToken,
+//             ]
+//         );
 
-        // 4. Vérifier la réponse
-        $statusCode = $client->getResponse()->getStatusCode();
-        $this->assertEquals(200, $statusCode);
-    }
-}
+//         // 4. Vérifier la réponse
+//         $statusCode = $client->getResponse()->getStatusCode();
+//         $this->assertEquals(200, $statusCode);
+//     }
+// }

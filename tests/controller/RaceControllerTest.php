@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Tests\Controller;
+// namespace App\Tests\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+// use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class RaceControllerTest extends WebTestCase
-{
+// class RaceControllerTest extends WebTestCase
+// {
     // public function testRouteCanConnectCreateRaceByAdminIsSuccessful(): void
     // {
     //     $client = self::createClient();
@@ -173,4 +173,4 @@ class RaceControllerTest extends WebTestCase
     //     //Vérifier la réponse
     //     $this->assertResponseStatusCodeSame(404);
     // }
-}
+// }

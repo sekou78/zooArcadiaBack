@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Tests\Controller;
+// namespace App\Tests\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\HttpFoundation\Response;
+// use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+// use Symfony\Component\HttpFoundation\Response;
 
-class AvisControllerTest extends WebTestCase
-{
+// class AvisControllerTest extends WebTestCase
+// {
     // public function testApiNewAvisIsSusseccfull(): void
     // {
     //     $client = self::createClient();
@@ -168,4 +168,4 @@ class AvisControllerTest extends WebTestCase
     //     //Vérifier la réponse
     //     $this->assertResponseStatusCodeSame(200);
     // }
-}
+// }

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Tests\Controller;
+// namespace App\Tests\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+// use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class ServiceVisitePetitTrainControllerTest extends WebTestCase
-{
+// class ServiceVisitePetitTrainControllerTest extends WebTestCase
+// {
     // public function testRouteCanConnectCreateServiceVisitePetitTrainByAdminAndEmployeIsSuccessful(): void
     // {
     //     $client = self::createClient();
@@ -181,4 +181,4 @@ class ServiceVisitePetitTrainControllerTest extends WebTestCase
     //     //Vérifier la réponse
     //     $this->assertResponseStatusCodeSame(404);
     // }
-}
+// }

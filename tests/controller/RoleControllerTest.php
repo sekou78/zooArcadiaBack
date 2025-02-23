@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Tests\Controller;
+// namespace App\Tests\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+// use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class RoleControllerTest extends WebTestCase
-{
+// class RoleControllerTest extends WebTestCase
+// {
     // public function testRouteCanConnectCreateRoleByAdminIsSuccessful(): void
     // {
     //     $client = self::createClient();
@@ -223,4 +223,4 @@ class RoleControllerTest extends WebTestCase
     //     $statusCode = $client->getResponse()->getStatusCode();
     //     $this->assertEquals(200, $statusCode);
     // }
-}
+// }

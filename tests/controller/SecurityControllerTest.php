@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Tests\Controller;
+// namespace App\Tests\Controller;
 
-use App\Entity\User;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+// use App\Entity\User;
+// use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+// use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-class SecurityControllerTest extends WebTestCase
-{
+// class SecurityControllerTest extends WebTestCase
+// {
     // public function testApiDocUrlIsSuccessful(): void
     // {
     //     $client = self::createClient();
@@ -330,4 +330,4 @@ class SecurityControllerTest extends WebTestCase
     //     $statusCode = $client->getResponse()->getStatusCode();
     //     $this->assertEquals(200, $statusCode);
     // }
-}
+// }
