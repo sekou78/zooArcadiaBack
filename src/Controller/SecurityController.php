@@ -416,7 +416,6 @@ class SecurityController extends AbstractController
             ) . '***']
         );
 
-
         return new JsonResponse(
             // ['message' => 'User registered successfully'],
             //Pour le test à supprimer avant production (mise en ligne)

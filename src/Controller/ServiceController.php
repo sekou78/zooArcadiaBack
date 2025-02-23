@@ -368,7 +368,11 @@ final class ServiceController extends AbstractController
             $modify = $this->serializer
                 ->serialize(
                     $service,
-                    'json'
+                    'json',
+                    ['groups' => [
+                        'service_read',
+                        'user_read'
+                    ]]
                 );
 
             return new JsonResponse(

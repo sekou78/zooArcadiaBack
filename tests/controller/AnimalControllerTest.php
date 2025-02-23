@@ -1,0 +1,242 @@
+<?php
+
+// namespace App\Tests\Controller;
+
+// use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+// use Symfony\Component\HttpFoundation\JsonResponse;
+// use Symfony\Component\HttpFoundation\Request;
+// use PHPUnit\Framework\MockObject\MockObject;
+// use Doctrine\ORM\EntityManagerInterface;
+// use Symfony\Component\Serializer\SerializerInterface;
+// use App\Repository\AnimalRepository;
+// use Psr\Log\LoggerInterface;
+// use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+// use App\Controller\AnimalController;
+// use App\Entity\Animal;
+
+// class AnimalControllerTest extends WebTestCase
+// {
+    // public function testRouteCanConnectCreateAnimalValid(): void
+    // {
+    //     $client = self::createClient();
+    //     $client->followRedirects(false);
+
+    //     // 1. Authentification pour récupérer le token
+    //     $client->request(
+    //         "POST",
+    //         "/api/login",
+    //         [],
+    //         [],
+    //         [
+    //             "CONTENT_TYPE" => "application/json",
+    //         ],
+    //         json_encode([
+    //             "username" => "testAdmin@mail.com",
+    //             "password" => "Azert$12",
+    //         ])
+    //     );
+
+    //     // 2. Récupérer le token depuis la réponse
+    //     $responseData = json_decode($client->getResponse()->getContent(), true);
+    //     $apiToken = $responseData['apiToken'];
+
+    //     // 3. Créer un utilisateur en tant qu'admin, avec le token dans l'en-tête
+    //     $client->request(
+    //         'POST',
+    //         "/api/animal",
+    //         [],
+    //         [],
+    //         [
+    //             'CONTENT_TYPE' => 'application/json',
+    //             'HTTP_X_AUTH_TOKEN' => $apiToken,
+    //         ],
+    //         json_encode(
+    //             [
+    //                 "firstname" => "Bamba",
+    //                 "etat" => "Sain"
+    //             ],
+    //             JSON_THROW_ON_ERROR
+    //         )
+    //     );
+
+    //     // 4. Vérifier la réponse
+    //     $statusCode = $client->getResponse()->getStatusCode();
+    //     $this->assertEquals(201, $statusCode);
+    // }
+
+    // public function testRouteCanConnectAnimalShowInvalid(): void
+    // {
+    //     $client = self::createClient();
+    //     $client->followRedirects(false);
+
+    //     $client->request("Get", "/api/animal/1");
+
+    //     self::assertResponseStatusCodeSame(401);
+    // }
+
+    // public function testEditAnimalSuccessfully()
+    // {
+    //     $client = self::createClient();
+    //     $client->followRedirects(false);
+
+    //     //Authentification pour récupérer le token
+    //     $client->request(
+    //         "POST",
+    //         "/api/login",
+    //         [],
+    //         [],
+    //         [
+    //             "CONTENT_TYPE" => "application/json",
+    //         ],
+    //         json_encode([
+    //             "username" => "testAdmin@mail.com",
+    //             "password" => "Azert$12",
+    //         ])
+    //     );
+
+    //     //Récupérer le token depuis la réponse
+    //     $responseData = json_decode($client->getResponse()->getContent(), true);
+    //     $apiToken = $responseData['apiToken'];
+
+    //     //Mise à jour de l'animal
+    //     $client->request(
+    //         'PUT',
+    //         '/api/animal/1',
+    //         [],
+    //         [],
+    //         [
+    //             'CONTENT_TYPE' => 'application/json',
+    //             'HTTP_X_AUTH_TOKEN' => $apiToken,
+    //         ],
+    //         json_encode([
+    //             "firstname" => "Girafe",
+    //             "etat" => "Blesse"
+    //         ])
+    //     );
+
+    //     //Vérifier la réponse
+    //     $this->assertResponseStatusCodeSame(200);
+    // }
+
+    // public function testEditAnimalIsNotFound(): void
+    // {
+    //     $client = self::createClient();
+    //     $client->followRedirects(false);
+
+    //     //Authentification pour récupérer le token
+    //     $client->request(
+    //         "POST",
+    //         "/api/login",
+    //         [],
+    //         [],
+    //         [
+    //             "CONTENT_TYPE" => "application/json",
+    //         ],
+    //         json_encode([
+    //             "username" => "testAdmin@mail.com",
+    //             "password" => "Azert$12",
+    //         ])
+    //     );
+
+    //     //Récupérer le token depuis la réponse
+    //     $responseData = json_decode($client->getResponse()->getContent(), true);
+    //     $apiToken = $responseData['apiToken'];
+
+    //     //Mise à jour de l'animal
+    //     $client->request(
+    //         'PUT',
+    //         '/api/animal/9999',
+    //         [],
+    //         [],
+    //         [
+    //             'CONTENT_TYPE' => 'application/json',
+    //             'HTTP_X_AUTH_TOKEN' => $apiToken,
+    //         ],
+    //         json_encode([
+    //             "firstname" => "Girafe",
+    //             "etat" => "Blesse"
+    //         ])
+    //     );
+
+    //     //Vérifier la réponse
+    //     $this->assertResponseStatusCodeSame(404);
+    // }
+
+    // public function testDeleteAnimalIsSuccess(): void
+    // {
+    //     $client = self::createClient();
+    //     $client->followRedirects(false);
+
+    //     //Authentification pour récupérer le token
+    //     $client->request(
+    //         "POST",
+    //         "/api/login",
+    //         [],
+    //         [],
+    //         [
+    //             "CONTENT_TYPE" => "application/json",
+    //         ],
+    //         json_encode([
+    //             "username" => "testAdmin@mail.com",
+    //             "password" => "Azert$12",
+    //         ])
+    //     );
+
+    //     //Récupérer le token depuis la réponse
+    //     $responseData = json_decode($client->getResponse()->getContent(), true);
+    //     $apiToken = $responseData['apiToken'];
+
+    //     //Mise à jour de l'animal
+    //     $client->request(
+    //         'DELETE',
+    //         '/api/animal/2',
+    //         [],
+    //         [],
+    //         [
+    //             'CONTENT_TYPE' => 'application/json',
+    //             'HTTP_X_AUTH_TOKEN' => $apiToken,
+    //         ]
+    //     );
+
+    //     //Vérifier la réponse
+    //     $this->assertResponseStatusCodeSame(200);
+    // }
+
+    // public function testListAnimalIsSuccess(): void
+    // {
+    //     $client = self::createClient();
+    //     $client->followRedirects(false);
+
+    //     $client->request(
+    //         "POST",
+    //         "/api/login",
+    //         [],
+    //         [],
+    //         [
+    //             "CONTENT_TYPE" => "application/json",
+    //         ],
+    //         json_encode([
+    //             "username" => "testAdmin@mail.com",
+    //             "password" => "Azert$12",
+    //         ])
+    //     );
+
+    //     //Récupérer le token depuis la réponse
+    //     $responseData = json_decode($client->getResponse()->getContent(), true);
+    //     $apiToken = $responseData['apiToken'];
+
+    //     $client->request(
+    //         'GET',
+    //         '/api/animal/api/rapports',
+    //         [],
+    //         [],
+    //         [
+    //             'CONTENT_TYPE' => 'application/json',
+    //             'HTTP_X_AUTH_TOKEN' => $apiToken,
+    //         ]
+    //     );
+
+    //     $statusCode = $client->getResponse()->getStatusCode();
+    //     $this->assertEquals(200, $statusCode);
+    // }
+// }

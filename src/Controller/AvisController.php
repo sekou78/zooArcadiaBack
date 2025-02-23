@@ -135,7 +135,6 @@ final class AvisController extends AbstractController
         );
     }
 
-
     #[Route(
         '/employee/validate-avis/{avisId}',
         name: 'employee_validate_avis',

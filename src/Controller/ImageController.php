@@ -40,6 +40,7 @@ final class ImageController extends AbstractController
     // Ajouter une image
     #[Route(name: 'new', methods: 'POST')]
     #[OA\Post(
+        path: "/api/image",
         summary: "Ajouter une nouvelle image",
         requestBody: new OA\RequestBody(
             required: true,
@@ -647,6 +648,7 @@ final class ImageController extends AbstractController
     // Pagination des images
     #[Route('/api/rapports', name: 'list', methods: 'GET')]
     #[OA\Get(
+        path: "/api/image/api/rapports",
         summary: "Liste paginée des images",
         parameters: [
             new OA\Parameter(

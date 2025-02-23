@@ -17,19 +17,19 @@ class ServiceVisitePetitTrain
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['service_visite_petit_train:read'])]
+    #[Groups(['service_visite_petit_train:read', 'service_read'])]
     private ?string $parcours = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['service_visite_petit_train:read'])]
+    #[Groups(['service_visite_petit_train:read', 'service_read'])]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::JSON)]
-    #[Groups(['service_visite_petit_train:read'])]
+    #[Groups(['service_visite_petit_train:read', 'service_read'])]
     private array $disponibilite = [];
 
     #[ORM\Column(length: 50)]
-    #[Groups(['service_visite_petit_train:read'])]
+    #[Groups(['service_visite_petit_train:read', 'service_read'])]
     private ?string $duree = null;
 
     #[ORM\ManyToOne(inversedBy: 'serviceVisitePetitTrains')]

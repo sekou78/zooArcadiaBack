@@ -69,7 +69,7 @@ final class AnimalController extends AbstractController
                                 example: 1
                             ),
                             new OA\Property(
-                                property: "firtname",
+                                property: "firstname",
                                 type: "string",
                                 example: "Bamba"
                             ),
@@ -168,7 +168,7 @@ final class AnimalController extends AbstractController
                                 example: 1
                             ),
                             new OA\Property(
-                                property: "firtname",
+                                property: "firstname",
                                 type: "string",
                                 example: "Bamba"
                             ),
@@ -292,7 +292,7 @@ final class AnimalController extends AbstractController
                                 example: 1
                             ),
                             new OA\Property(
-                                property: "firtname",
+                                property: "firstname",
                                 type: "string",
                                 example: "Sama"
                             ),
@@ -423,7 +423,7 @@ final class AnimalController extends AbstractController
     }
 
     // Pagination des animaux
-    #[Route('/api/rapports', name: 'list', methods: ['GET'])]
+    #[Route('/api/rapports', name: 'list', methods: 'GET')]
     #[OA\Get(
         path: '/api/animal/api/rapports',
         summary: "Liste paginée des animaux avec filtres",
