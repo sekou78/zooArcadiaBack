@@ -18,7 +18,7 @@ class AnimalFixtures extends Fixture implements DependentFixtureInterface
         $faker = Faker\Factory::create('fr_FR');
 
         for ($i = 1; $i <= self::ANIMAL_NB_TUPLES; $i++) {
-            // $habitat = $this->getReference(HabitatFixtures::HABITAT_REFERENCE . $i);
+            $habitat = $this->getReference(HabitatFixtures::HABITAT_REFERENCE . $i, HabitatFixtures::class);
 
             $animal = (new Animal())
                 ->setFirstname($faker->firstName)
@@ -31,13 +31,14 @@ class AnimalFixtures extends Fixture implements DependentFixtureInterface
                         ]
                     )
                 )
-                // ->setHabitat($habitat);
+                ->setHabitat($habitat)
 
                 ->setCreatedAt(new \DateTimeImmutable());
 
             $manager->persist($animal);
 
             $this->addReference(self::ANIMAL_REFERENCE . $i, $animal);
+            echo "Création de l'animal " . $i . "\n"; // Ajout de cette ligne pour déboguer
         }
 
         $manager->flush();
@@ -47,6 +48,8 @@ class AnimalFixtures extends Fixture implements DependentFixtureInterface
     {
         return [
             UserFixtures::class,
+            HabitatFixtures::class,
+            // RaceFixtures::class,
         ];
     }
 }

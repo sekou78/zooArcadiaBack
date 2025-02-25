@@ -22,10 +22,13 @@ class HabitatFixtures extends Fixture implements DependentFixtureInterface
                 ->setName($faker->word)
                 ->setDescription($faker->sentence())
                 ->setCommentHabitat($faker->sentence())
+
                 ->setCreatedAt(new \DateTimeImmutable());
 
             $manager->persist($habitat);
+
             $this->addReference(self::HABITAT_REFERENCE . $i, $habitat);
+            echo "Création de l'habitat " . $i . "\n";  // Debugging inside the loop
         }
 
         $manager->flush();
@@ -35,6 +38,9 @@ class HabitatFixtures extends Fixture implements DependentFixtureInterface
     {
         return [
             UserFixtures::class,
+            // ServiceFixtures::class,
+            // ImageFixtures::class,
+            // RapportVeterinaireFixtures::class,
         ];
     }
 }
