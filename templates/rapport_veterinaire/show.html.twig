@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}RapportVeterinaire{% endblock %}
+
+{% block body %}
+    <h1>RapportVeterinaire</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ rapport_veterinaire.id }}</td>
+            </tr>
+            <tr>
+                <th>Date</th>
+                <td>{{ rapport_veterinaire.date ? rapport_veterinaire.date|date('Y-m-d') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Detail</th>
+                <td>{{ rapport_veterinaire.detail }}</td>
+            </tr>
+            <tr>
+                <th>CreatedAt</th>
+                <td>{{ rapport_veterinaire.createdAt ? rapport_veterinaire.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>UpdatedAt</th>
+                <td>{{ rapport_veterinaire.updatedAt ? rapport_veterinaire.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_rapport_veterinaire_index') }}">back to list</a>
+
+    <a href="{{ path('app_rapport_veterinaire_edit', {'id': rapport_veterinaire.id}) }}">edit</a>
+
+    {{ include('rapport_veterinaire/_delete_form.html.twig') }}
+{% endblock %}

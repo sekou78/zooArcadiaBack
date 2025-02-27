@@ -9,8 +9,9 @@ use Symfony\Component\Routing\Attribute\Route;
 class HomeController extends AbstractController
 {
     #[Route("/")]
-    public function home() : Response
+
+    public function home(): Response
     {
-        return new Response("Bienvenue sur ma page d'accueil");
+        return new Response("Bienvenue sur ma page d'accueil test");
     }
 }
