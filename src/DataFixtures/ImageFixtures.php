@@ -1,47 +1,57 @@
 <?php
 
-// namespace App\DataFixtures;
+namespace App\DataFixtures;
 
-// use App\Entity\Image;
-// use Doctrine\Bundle\FixturesBundle\Fixture;
-// use Doctrine\Common\DataFixtures\DependentFixtureInterface;
-// use Doctrine\Persistence\ObjectManager;
-// use Faker;
+use App\Entity\Animal;
+use App\Entity\Habitat;
+use App\Entity\Image;
+use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Common\DataFixtures\DependentFixtureInterface;
+use Doctrine\Persistence\ObjectManager;
+use Faker;
 
-// class ImageFixtures extends Fixture implements DependentFixtureInterface
-// {
-//     public const IMAGE_NB_TUPLES = 5;
-//     public const IMAGE_REFERENCE = "image";
+class ImageFixtures extends Fixture implements DependentFixtureInterface
+{
+    public const IMAGE_NB_TUPLES = 5;
+    public const IMAGE_REFERENCE = "image";
 
-//     public function load(ObjectManager $manager): void
-//     {
-//         $faker = Faker\Factory::create('fr_FR');
+    public function load(ObjectManager $manager): void
+    {
+        $faker = Faker\Factory::create('fr_FR');
 
-//         for ($i = 1; $i <= self::IMAGE_NB_TUPLES; $i++) {
-//             $animal = $this->getReference(AnimalFixtures::ANIMAL_REFERENCE . $i, AnimalFixtures::class);
-//             $habitat = $this->getReference(HabitatFixtures::HABITAT_REFERENCE . $i, HabitatFixtures::class);
-//             $image = (new Image())
-//                 ->setImageData($faker->imageUrl())
-//                 ->setFilePath($faker->imageUrl())
-//                 ->setAnimal($animal)
-//                 ->setHabitat($habitat)
+        for ($i = 1; $i <= self::IMAGE_NB_TUPLES; $i++) {
 
-//                 ->setCreatedAt(new \DateTimeImmutable());
+            $image = (new Image())
+                ->setImageData($faker->imageUrl())
+                ->setFilePath($faker->imageUrl())
+                ->setAnimal($this->getReference(
+                    AnimalFixtures::ANIMAL_REFERENCE . $i,
+                    Animal::class
+                ))
+                ->setHabitat($this->getReference(
+                    HabitatFixtures::HABITAT_REFERENCE . $i,
+                    Habitat::class
+                ))
 
-//             $manager->persist($image);
+                ->setCreatedAt(new \DateTimeImmutable());
 
-//             $this->addReference(self::IMAGE_REFERENCE . $i, $image);
-//         }
+            $manager->persist($image);
 
-//         $manager->flush();
-//     }
+            $this->addReference(
+                self::IMAGE_REFERENCE . $i,
+                $image
+            );
+        }
 
-//     public function getDependencies(): array
-//     {
-//         return [
-//             UserFixtures::class,
-//             AnimalFixtures::class,
-//             HabitatFixtures::class,
-//         ];
-//     }
-// }
+        $manager->flush();
+    }
+
+    public function getDependencies(): array
+    {
+        return [
+            UserFixtures::class,
+            AnimalFixtures::class,
+            HabitatFixtures::class,
+        ];
+    }
+}

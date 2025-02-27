@@ -3,6 +3,7 @@
 namespace App\DataFixtures;
 
 use App\Entity\Habitat;
+use App\Entity\Service;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -22,13 +23,19 @@ class HabitatFixtures extends Fixture implements DependentFixtureInterface
                 ->setName($faker->word)
                 ->setDescription($faker->sentence())
                 ->setCommentHabitat($faker->sentence())
+                ->setService($this->getReference(
+                    ServiceFixtures::SERVICE_REFERENCE . $i,
+                    Service::class
+                ))
 
                 ->setCreatedAt(new \DateTimeImmutable());
 
             $manager->persist($habitat);
 
-            $this->addReference(self::HABITAT_REFERENCE . $i, $habitat);
-            echo "Création de l'habitat " . $i . "\n";  // Debugging inside the loop
+            $this->addReference(
+                self::HABITAT_REFERENCE . $i,
+                $habitat
+            );
         }
 
         $manager->flush();
@@ -38,7 +45,7 @@ class HabitatFixtures extends Fixture implements DependentFixtureInterface
     {
         return [
             UserFixtures::class,
-            // ServiceFixtures::class,
+            ServiceFixtures::class,
             // ImageFixtures::class,
             // RapportVeterinaireFixtures::class,
         ];
