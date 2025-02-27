@@ -3,6 +3,7 @@
 namespace App\DataFixtures;
 
 use App\Entity\Service;
+use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -17,10 +18,35 @@ class ServiceFixtures extends Fixture implements DependentFixtureInterface
     {
         $faker = Faker\Factory::create('fr_FR');
 
+        // Récupération des utilisateurs uniquement
+        $utilisateurs = [];
+        for ($i = 1; $i <= UserFixtures::User_NB_TUPLES; $i++) {
+            $user = $this->getReference(
+                UserFixtures::User_REFERENCE . $i,
+                User::class
+            );
+            if (in_array(
+                'ROLE_EMPLOYE',
+                $user->getRoles()
+            )) {
+                $utilisateurs[] = $user;
+            }
+        }
+
+        if (empty($utilisateurs)) {
+            throw new \Exception(
+                "Aucun utilisateur avec le rôle 
+                'ROLE_EMPLOYE' trouvé dans les fixtures"
+            );
+        }
+
         for ($i = 1; $i <= self::SERVICE_NB_TUPLES; $i++) {
+            $employe = $faker->randomElement($utilisateurs);
+
             $service = (new Service())
                 ->setNom($faker->word)
                 ->setDescription($faker->sentence())
+                ->addUtilisateur($employe)
 
                 ->setCreatedAt(new \DateTimeImmutable());
 
@@ -36,7 +62,6 @@ class ServiceFixtures extends Fixture implements DependentFixtureInterface
     {
         return [
             UserFixtures::class,
-            // AnimalFixtures::class,
         ];
     }
 }

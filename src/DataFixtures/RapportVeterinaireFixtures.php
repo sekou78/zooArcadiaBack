@@ -35,7 +35,10 @@ class RapportVeterinaireFixtures extends Fixture implements DependentFixtureInte
         }
 
         if (empty($veterinaires)) {
-            throw new \Exception("Aucun utilisateur avec le rôle 'ROLE_VETERINAIRE' trouvé dans les fixtures");
+            throw new \Exception(
+                "Aucun utilisateur avec le rôle 'ROLE_VETERINAIRE' 
+                trouvé dans les fixtures"
+            );
         }
 
         for ($i = 1; $i <= self::RAPPORT_NB_TUPLES; $i++) {

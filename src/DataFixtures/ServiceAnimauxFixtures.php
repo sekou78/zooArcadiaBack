@@ -4,6 +4,7 @@ namespace App\DataFixtures;
 
 use App\Entity\Animal;
 use App\Entity\ServiceAnimaux;
+use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -18,7 +19,28 @@ class ServiceAnimauxFixtures extends Fixture implements DependentFixtureInterfac
     {
         $faker = Faker\Factory::create('fr_FR');
 
+        // Récupération des employés uniquement
+        $employes = [];
+        for ($i = 1; $i <= UserFixtures::User_NB_TUPLES; $i++) {
+            $user = $this->getReference(
+                UserFixtures::User_REFERENCE . $i,
+                User::class
+            );
+            if (in_array(
+                'ROLE_EMPLOYE',
+                $user->getRoles()
+            )) {
+                $employes[] = $user;
+            }
+        }
+
+        if (empty($employes)) {
+            throw new \Exception("Aucun utilisateur avec le rôle 'ROLE_EMPLOYE' trouvé dans les fixtures");
+        }
+
         for ($i = 1; $i <= self::SERVICE_ANIMAUX_NB_TUPLES; $i++) {
+            $employe = $faker->randomElement($employes);
+
             $service = (new ServiceAnimaux())
                 ->setNom($faker->word)
                 ->setDescription($faker->text(100))
@@ -29,6 +51,7 @@ class ServiceAnimauxFixtures extends Fixture implements DependentFixtureInterfac
                     AnimalFixtures::ANIMAL_REFERENCE . $i,
                     Animal::class
                 ))
+                ->addUser($employe)
 
                 ->setCreatedAt(new \DateTimeImmutable());
 

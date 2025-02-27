@@ -20,7 +20,8 @@ class UserFixtures extends Fixture
     public function load(ObjectManager $manager): void
     {
         $faker = Faker\Factory::create('fr_FR');
-        $adminCreated = false; // Permet de s'assurer qu'un seul admin est créé
+        // Permet de s'assurer qu'un seul admin est créé
+        $adminCreated = false;
 
         for ($i = 1; $i <= self::User_NB_TUPLES; $i++) {
             $user = (new User())

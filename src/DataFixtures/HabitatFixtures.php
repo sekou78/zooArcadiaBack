@@ -46,8 +46,6 @@ class HabitatFixtures extends Fixture implements DependentFixtureInterface
         return [
             UserFixtures::class,
             ServiceFixtures::class,
-            // ImageFixtures::class,
-            // RapportVeterinaireFixtures::class,
         ];
     }
 }
