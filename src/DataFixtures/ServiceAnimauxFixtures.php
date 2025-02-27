@@ -20,11 +20,15 @@ class ServiceAnimauxFixtures extends Fixture implements DependentFixtureInterfac
 
         for ($i = 1; $i <= self::SERVICE_ANIMAUX_NB_TUPLES; $i++) {
             $service = (new ServiceAnimaux())
+                ->setNom($faker->word)
                 ->setDescription($faker->text(100))
                 ->setNourriture($faker->word)
                 ->setQuantite($faker->randomFloat(5, 0.5, 1000))
                 ->setDateHeure(new \DateTimeImmutable())
-                ->setNomAnimal($faker->word)
+                ->setAnimal($this->getReference(
+                    AnimalFixtures::ANIMAL_REFERENCE . $i,
+                    Animal::class
+                ))
 
                 ->setCreatedAt(new \DateTimeImmutable());
 
