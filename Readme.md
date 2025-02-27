@@ -23,8 +23,8 @@
 
     * Mise en place du fichier .env.local et paramétrage
         - $ cp .env .env.local
-        - $ php bin/console database:doctrine:create
-        - $php bin/console doctrine:migrations:migrate
+        - $ php bin/console database:doctrine:create (php bin/console d:d:c)
+        - $ php bin/console doctrine:migrations:migrate (php bin/console d:m:m)
 
 # Teste de l'application
 
@@ -38,5 +38,17 @@
 
     * Mise en place du fichier .env.test.local et paramétrage
         - $ cp .env .env.test.local
-        - $ php bin/console doctrine:database:create --env=test
-        - $ php bin/console doctrine:migrations:migrate --env=test
+        - $ php bin/console doctrine:database:create --env=test (php bin/console d:d:c --env=test)
+        - $ php bin/console doctrine:migrations:migrate --env=test (php bin/console d:m:m --env=test)
+
+# Teste de l'application avec des fixtures
+
+    * Mise en place des composants pour les fixtures
+        - $ composer require --dev orm-fixtures
+    *Creation et parametrage de la BDD
+        - $ php bin/console database:doctrine:create (php bin/console d:d:c)
+        - $ php bin/console doctrine:migrations:migrate (php bin/console d:m:m)
+        - $ php bin/console doctrine:fixtures:load (php bin/console d:f:l)
+    * Mise en place de Faker
+        - $ composer require fakerphp/faker
+        - $ php bin/console doctrine:fixtures:load (php bin/console d:f:l)

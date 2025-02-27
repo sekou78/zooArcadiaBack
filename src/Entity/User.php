@@ -84,10 +84,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\ManyToOne(inversedBy: 'users')]
-    #[ORM\JoinColumn(nullable: true)]
-    private ?Role $role = null;
-
     #[ORM\OneToMany(mappedBy: 'veterinaire', targetEntity: RapportVeterinaire::class)]
     #[Groups(['user_read'])]
     private Collection $rapportsVeterinaires;
@@ -242,18 +238,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    public function getRole(): ?Role
-    {
-        return $this->role;
-    }
-
-    public function setRole(?Role $role): static
-    {
-        $this->role = $role;
 
         return $this;
     }

@@ -58,12 +58,19 @@ class Animal
     #[ORM\OneToMany(targetEntity: Image::class, mappedBy: 'animal', cascade: ['persist', 'remove'])]
     private Collection $images;
 
+    /**
+     * @var Collection<int, ServiceAnimaux>
+     */
+    #[ORM\OneToMany(targetEntity: ServiceAnimaux::class, mappedBy: 'animal')]
+    private Collection $serviceAnimals;
+
     public function __construct()
     {
         $this->rapportVeterinaires = new ArrayCollection();
         $this->avis = new ArrayCollection();
         $this->images = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable(); // Date de création automatique
+        $this->serviceAnimals = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -206,6 +213,36 @@ class Animal
                 $image->setAnimal(null);
             }
         }
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ServiceAnimaux>
+     */
+    public function getServiceAnimals(): Collection
+    {
+        return $this->serviceAnimals;
+    }
+
+    public function addServiceAnimal(ServiceAnimaux $serviceAnimal): static
+    {
+        if (!$this->serviceAnimals->contains($serviceAnimal)) {
+            $this->serviceAnimals->add($serviceAnimal);
+            $serviceAnimal->setAnimal($this);
+        }
+
+        return $this;
+    }
+
+    public function removeServiceAnimal(ServiceAnimaux $serviceAnimal): static
+    {
+        if ($this->serviceAnimals->removeElement($serviceAnimal)) {
+            // set the owning side to null (unless already changed)
+            if ($serviceAnimal->getAnimal() === $this) {
+                $serviceAnimal->setAnimal(null);
+            }
+        }
+
         return $this;
     }
 }

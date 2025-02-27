@@ -20,7 +20,7 @@ class ServiceAnimaux
 
     #[ORM\Column(length: 50)]
     #[Groups(['service_animaux_read', 'service_animaux_write'])]
-    private ?string $nomAnimal = null;
+    private ?string $nom = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups(['service_animaux_read', 'service_animaux_write'])]
@@ -50,6 +50,9 @@ class ServiceAnimaux
     #[Groups(['service_animaux_read', 'user_read'])]
     private Collection $users;
 
+    #[ORM\ManyToOne(inversedBy: 'serviceAnimals')]
+    private ?Animal $animal = null;
+
     public function __construct()
     {
         $this->users = new ArrayCollection();
@@ -60,14 +63,14 @@ class ServiceAnimaux
         return $this->id;
     }
 
-    public function getNomAnimal(): ?string
+    public function getNom(): ?string
     {
-        return $this->nomAnimal;
+        return $this->nom;
     }
 
-    public function setNomAnimal(string $nomAnimal): static
+    public function setNom(string $nom): static
     {
-        $this->nomAnimal = $nomAnimal;
+        $this->nom = $nom;
         return $this;
     }
 
@@ -156,6 +159,18 @@ class ServiceAnimaux
     public function removeUser(User $user): static
     {
         $this->users->removeElement($user);
+        return $this;
+    }
+
+    public function getAnimal(): ?Animal
+    {
+        return $this->animal;
+    }
+
+    public function setAnimal(?Animal $animal): static
+    {
+        $this->animal = $animal;
+
         return $this;
     }
 }
