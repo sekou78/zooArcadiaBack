@@ -45,10 +45,17 @@ class Habitat
     #[ORM\ManyToOne(inversedBy: 'habitats')]
     private ?Service $service = null;
 
+    /**
+     * @var Collection<int, Image>
+     */
+    #[ORM\ManyToMany(targetEntity: Image::class, inversedBy: 'habitats')]
+    private Collection $image;
+
     public function __construct()
     {
         $this->animals = new ArrayCollection();
         $this->images = new ArrayCollection();
+        $this->image = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -186,5 +193,13 @@ class Habitat
         $this->service = $service;
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Image>
+     */
+    public function getImage(): Collection
+    {
+        return $this->image;
     }
 }

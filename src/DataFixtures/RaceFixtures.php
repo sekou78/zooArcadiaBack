@@ -37,6 +37,8 @@ class RaceFixtures extends Fixture implements DependentFixtureInterface
     {
         return [
             UserFixtures::class,
+            HabitatFixtures::class,
+            ImageFixtures::class
         ];
     }
 }

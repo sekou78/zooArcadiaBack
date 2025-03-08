@@ -5,6 +5,7 @@ namespace App\DataFixtures;
 use App\Entity\Animal;
 use App\Entity\Habitat;
 use App\Entity\Image;
+use App\Entity\Service;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -50,8 +51,6 @@ class ImageFixtures extends Fixture implements DependentFixtureInterface
     {
         return [
             UserFixtures::class,
-            AnimalFixtures::class,
-            HabitatFixtures::class,
         ];
     }
 }

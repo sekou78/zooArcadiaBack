@@ -44,6 +44,10 @@ class ServiceRestaurantFixtures extends Fixture implements DependentFixtureInter
     {
         return [
             UserFixtures::class,
+            ImageFixtures::class,
+            HabitatFixtures::class,
+            RaceFixtures::class,
+            AnimalFixtures::class,
             ServiceFixtures::class,
         ];
     }

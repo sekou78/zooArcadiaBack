@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ImageRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -35,9 +37,36 @@ class Image
     #[ORM\ManyToOne(inversedBy: 'images')]
     private ?Animal $animal = null;
 
+    #[ORM\ManyToOne(inversedBy: 'images')]
+    private ?Service $service = null;
+
+    /**
+     * @var Collection<int, Habitat>
+     */
+    #[ORM\ManyToMany(targetEntity: Habitat::class, mappedBy: 'image')]
+    private Collection $habitats;
+
+    /**
+     * @var Collection<int, ServiceRestaurant>
+     */
+    #[ORM\ManyToMany(targetEntity: ServiceRestaurant::class, inversedBy: 'images')]
+    private Collection $serviceRestaurant;
+
+    /**
+     * @var Collection<int, ServiceVisitePetitTrain>
+     */
+    #[ORM\ManyToMany(targetEntity: ServiceVisitePetitTrain::class, inversedBy: 'images')]
+    private Collection $serviceVisitePetitTrain;
+
+    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
+    private ?User $user = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+        $this->habitats = new ArrayCollection();
+        $this->serviceRestaurant = new ArrayCollection();
+        $this->serviceVisitePetitTrain = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -110,6 +139,105 @@ class Image
     public function setAnimal(?Animal $animal): static
     {
         $this->animal = $animal;
+        return $this;
+    }
+
+    public function getService(): ?Service
+    {
+        return $this->service;
+    }
+
+    public function setService(?Service $service): static
+    {
+        $this->service = $service;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Habitat>
+     */
+    public function getHabitats(): Collection
+    {
+        return $this->habitats;
+    }
+
+    public function addHabitat(Habitat $habitat): static
+    {
+        if (!$this->habitats->contains($habitat)) {
+            $this->habitats->add($habitat);
+            $habitat->addImage($this);
+        }
+
+        return $this;
+    }
+
+    public function removeHabitat(Habitat $habitat): static
+    {
+        if ($this->habitats->removeElement($habitat)) {
+            $habitat->removeImage($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ServiceRestaurant>
+     */
+    public function getServiceRestaurant(): Collection
+    {
+        return $this->serviceRestaurant;
+    }
+
+    public function addServiceRestaurant(ServiceRestaurant $serviceRestaurant): static
+    {
+        if (!$this->serviceRestaurant->contains($serviceRestaurant)) {
+            $this->serviceRestaurant->add($serviceRestaurant);
+        }
+
+        return $this;
+    }
+
+    public function removeServiceRestaurant(ServiceRestaurant $serviceRestaurant): static
+    {
+        $this->serviceRestaurant->removeElement($serviceRestaurant);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ServiceVisitePetitTrain>
+     */
+    public function getServiceVisitePetitTrain(): Collection
+    {
+        return $this->serviceVisitePetitTrain;
+    }
+
+    public function addServiceVisitePetitTrain(ServiceVisitePetitTrain $serviceVisitePetitTrain): static
+    {
+        if (!$this->serviceVisitePetitTrain->contains($serviceVisitePetitTrain)) {
+            $this->serviceVisitePetitTrain->add($serviceVisitePetitTrain);
+        }
+
+        return $this;
+    }
+
+    public function removeServiceVisitePetitTrain(ServiceVisitePetitTrain $serviceVisitePetitTrain): static
+    {
+        $this->serviceVisitePetitTrain->removeElement($serviceVisitePetitTrain);
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
+
         return $this;
     }
 }

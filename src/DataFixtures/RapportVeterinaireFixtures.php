@@ -78,7 +78,12 @@ class RapportVeterinaireFixtures extends Fixture implements DependentFixtureInte
     {
         return [
             UserFixtures::class,
+            ImageFixtures::class,
+            HabitatFixtures::class,
+            RaceFixtures::class,
             AnimalFixtures::class,
+            ServiceFixtures::class,
+            AvisFixtures::class,
         ];
     }
 }
