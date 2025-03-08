@@ -2,6 +2,7 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Animal;
 use App\Entity\Race;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
@@ -20,6 +21,11 @@ class RaceFixtures extends Fixture implements DependentFixtureInterface
         for ($i = 1; $i <= self::RACE_NB_TUPLES; $i++) {
             $race = (new Race())
                 ->setLabel($faker->word)
+                // ->addAnimal($this->getReference(
+                //     AnimalFixtures::ANIMAL_REFERENCE . $i,
+                //     Animal::class
+                // ))
+
                 ->setCreatedAt(new \DateTimeImmutable());
 
             $manager->persist($race);
@@ -37,8 +43,7 @@ class RaceFixtures extends Fixture implements DependentFixtureInterface
     {
         return [
             UserFixtures::class,
-            HabitatFixtures::class,
-            ImageFixtures::class
+            // AnimalFixtures::class,
         ];
     }
 }

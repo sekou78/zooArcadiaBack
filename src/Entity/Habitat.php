@@ -30,12 +30,6 @@ class Habitat
     #[ORM\OneToMany(targetEntity: Animal::class, mappedBy: 'habitat')]
     private Collection $animals;
 
-    /**
-     * @var Collection<int, Image>
-     */
-    #[ORM\OneToMany(targetEntity: Image::class, mappedBy: 'habitat')]
-    private Collection $images;
-
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -49,13 +43,12 @@ class Habitat
      * @var Collection<int, Image>
      */
     #[ORM\ManyToMany(targetEntity: Image::class, inversedBy: 'habitats')]
-    private Collection $image;
+    private Collection $images;
 
     public function __construct()
     {
         $this->animals = new ArrayCollection();
         $this->images = new ArrayCollection();
-        $this->image = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -129,36 +122,6 @@ class Habitat
         return $this;
     }
 
-    /**
-     * @return Collection<int, Image>
-     */
-    public function getImages(): Collection
-    {
-        return $this->images;
-    }
-
-    public function addImage(Image $image): static
-    {
-        if (!$this->images->contains($image)) {
-            $this->images->add($image);
-            $image->setHabitat($this);
-        }
-
-        return $this;
-    }
-
-    public function removeImage(Image $image): static
-    {
-        if ($this->images->removeElement($image)) {
-            // set the owning side to null (unless already changed)
-            if ($image->getHabitat() === $this) {
-                $image->setHabitat(null);
-            }
-        }
-
-        return $this;
-    }
-
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
@@ -198,8 +161,25 @@ class Habitat
     /**
      * @return Collection<int, Image>
      */
-    public function getImage(): Collection
+    public function getImages(): Collection
     {
-        return $this->image;
+        return $this->images;
+    }
+
+    public function addImage(Image $image): static
+    {
+        if (!$this->images->contains($image)) {
+            $this->images->add($image);
+            $image->addHabitat($this);
+        }
+        return $this;
+    }
+
+    public function removeImage(Image $image): static
+    {
+        if ($this->images->removeElement($image)) {
+            $image->removeHabitat($this);
+        }
+        return $this;
     }
 }

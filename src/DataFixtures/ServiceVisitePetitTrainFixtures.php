@@ -45,10 +45,6 @@ class ServiceVisitePetitTrainFixtures extends Fixture implements DependentFixtur
     {
         return [
             UserFixtures::class,
-            ImageFixtures::class,
-            HabitatFixtures::class,
-            RaceFixtures::class,
-            AnimalFixtures::class,
             ServiceFixtures::class,
         ];
     }

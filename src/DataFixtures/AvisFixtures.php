@@ -44,11 +44,7 @@ class AvisFixtures extends Fixture implements DependentFixtureInterface
     {
         return [
             UserFixtures::class,
-            ImageFixtures::class,
-            HabitatFixtures::class,
-            RaceFixtures::class,
             AnimalFixtures::class,
-            ServiceFixtures::class,
         ];
     }
 }

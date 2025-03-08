@@ -20,9 +20,6 @@ class Image
     #[ORM\Column(type: Types::BLOB, nullable: true)]
     private $imageData;
 
-    #[ORM\ManyToOne(inversedBy: 'images')]
-    private ?Habitat $habitat = null;
-
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -82,18 +79,6 @@ class Image
     public function setImageData($imageData): static
     {
         $this->imageData = $imageData;
-
-        return $this;
-    }
-
-    public function getHabitat(): ?Habitat
-    {
-        return $this->habitat;
-    }
-
-    public function setHabitat(?Habitat $habitat): static
-    {
-        $this->habitat = $habitat;
 
         return $this;
     }
@@ -168,7 +153,6 @@ class Image
             $this->habitats->add($habitat);
             $habitat->addImage($this);
         }
-
         return $this;
     }
 
@@ -177,7 +161,6 @@ class Image
         if ($this->habitats->removeElement($habitat)) {
             $habitat->removeImage($this);
         }
-
         return $this;
     }
 

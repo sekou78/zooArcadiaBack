@@ -22,6 +22,8 @@ class ServiceRestaurantFixtures extends Fixture implements DependentFixtureInter
             $serviceRestaurant = (new ServiceRestaurant())
                 ->setNom($faker->company)
                 ->setDescription($faker->sentence())
+                ->setHeureDebut(new \DateTime('08:00:00'))
+                ->setHeureFin(new \DateTime('22:00:00'))
                 ->setService($this->getReference(
                     ServiceFixtures::SERVICE_REFERENCE . $i,
                     Service::class
@@ -44,10 +46,6 @@ class ServiceRestaurantFixtures extends Fixture implements DependentFixtureInter
     {
         return [
             UserFixtures::class,
-            ImageFixtures::class,
-            HabitatFixtures::class,
-            RaceFixtures::class,
-            AnimalFixtures::class,
             ServiceFixtures::class,
         ];
     }

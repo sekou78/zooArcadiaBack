@@ -59,7 +59,7 @@ class AnimalFixtures extends Fixture implements DependentFixtureInterface
             UserFixtures::class,
             HabitatFixtures::class,
             RaceFixtures::class,
-            ImageFixtures::class
+            // ImageFixtures::class,
         ];
     }
 }

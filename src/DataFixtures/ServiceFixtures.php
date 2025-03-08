@@ -49,18 +49,14 @@ class ServiceFixtures extends Fixture implements DependentFixtureInterface
             $service = (new Service())
                 ->setNom($faker->word)
                 ->setDescription($faker->sentence())
-                ->addServiceRestaurant($this->getReference(
-                    ServiceRestaurantFixtures::SERVICE_RESTAURANT_REFERENCE . $i,
-                    ServiceRestaurant::class
-                ))
-                ->addServiceVisitePetitTrain($this->getReference(
-                    ServiceVisitePetitTrainFixtures::SERVICE_VISITE_PETIT_TRAIN_REFERENCE . $i,
-                    ServiceVisitePetitTrain::class
-                ))
-                ->addImage($this->getReference(
-                    ImageFixtures::IMAGE_REFERENCE . $i,
-                    Image::class
-                ))
+                // ->addServiceRestaurant($this->getReference(
+                //     ServiceRestaurantFixtures::SERVICE_RESTAURANT_REFERENCE . $i,
+                //     ServiceRestaurant::class
+                // ))
+                // ->addServiceVisitePetitTrain($this->getReference(
+                //     ServiceVisitePetitTrainFixtures::SERVICE_VISITE_PETIT_TRAIN_REFERENCE . $i,
+                //     ServiceVisitePetitTrain::class
+                // ))
                 ->addUtilisateur($employe)
 
                 ->setCreatedAt(new \DateTimeImmutable());
@@ -77,11 +73,8 @@ class ServiceFixtures extends Fixture implements DependentFixtureInterface
     {
         return [
             UserFixtures::class,
-            ImageFixtures::class,
-            HabitatFixtures::class,
-            RaceFixtures::class,
-            AnimalFixtures::class,
-
+            // ServiceRestaurantFixtures::class,
+            // ServiceVisitePetitTrainFixtures::class,
         ];
     }
 }

@@ -70,13 +70,7 @@ class ServiceAnimauxFixtures extends Fixture implements DependentFixtureInterfac
     {
         return [
             UserFixtures::class,
-            ImageFixtures::class,
-            HabitatFixtures::class,
-            RaceFixtures::class,
             AnimalFixtures::class,
-            ServiceFixtures::class,
-            AvisFixtures::class,
-            RapportVeterinaireFixtures::class,
         ];
     }
 }
